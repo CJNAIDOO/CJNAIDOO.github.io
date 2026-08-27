@@ -1,100 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portfolio XMB</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0a0d18; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; }
-    
-    #wave-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
+<!-- Place at the top of <body> -->
+<div id="boot-screen">
+  <div class="sony-logo">Sony Computer Entertainment</div>
+  <div class="press-start">PRESS ANY KEY TO START</div>
+</div>
 
-    /* Fixed Crosshair Point */
-    #xmb-viewport { position: fixed; top: 35%; left: 20%; z-index: 2; }
-    
-    .category-axis { display: flex; gap: 100px; position: absolute; transition: transform 0.25s cubic-bezier(0.1, 0.8, 0.2, 1); }
-    .category { width: 80px; text-align: center; opacity: 0.35; transform: scale(0.85); transition: all 0.25s ease; position: relative; }
-    .category.active { opacity: 1; transform: scale(1.15); font-weight: bold; text-shadow: 0 0 12px rgba(255,255,255,0.6); }
+<style>
+  #boot-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: opacity 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+  }
 
-    .item-axis { position: absolute; top: 90px; left: 0; display: flex; flex-direction: column; gap: 40px; transition: transform 0.25s cubic-bezier(0.1, 0.8, 0.2, 1); }
-    .item { opacity: 0.3; transform: scale(0.85); transition: all 0.25s ease; white-space: nowrap; text-align: left; }
-    .item.active { opacity: 1; transform: scale(1.1); color: #00d2ff; text-shadow: 0 0 10px rgba(0,210,255,0.5); }
-  </style>
-</head>
-<body>
-  <canvas id="wave-canvas"></canvas>
+  .sony-logo {
+    font-family: sans-serif;
+    letter-spacing: 4px;
+    font-size: 1.2rem;
+    color: #fff;
+    opacity: 0;
+    animation: fadeIn 2s forwards 0.5s;
+  }
 
-  <div id="xmb-viewport">
-    <div id="category-axis" class="category-axis">
-      
-      <!-- Category 1: User -->
-      <div class="category active">User
-        <div class="item-axis">
-          <div class="item active">About Me</div>
-          <div class="item">Resume</div>
-        </div>
-      </div>
+  .press-start {
+    margin-top: 40px;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    color: #888;
+    animation: pulse 2s infinite ease-in-out;
+  }
 
-      <!-- Category 2: Projects -->
-      <div class="category">Projects
-        <div class="item-axis">
-          <div class="item">Featured Work</div>
-          <div class="item">Experiments</div>
-        </div>
-      </div>
-
-      <!-- Category 3: Contact -->
-      <div class="category">Contact
-        <div class="item-axis">
-          <div class="item">Send Email</div>
-          <div class="item">GitHub Profile</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <script>
-    let catIdx = 0, itemIdx = 0;
-    const catAxis = document.getElementById('category-axis');
-
-    function updateMenu() {
-      const cats = document.querySelectorAll('.category');
-      
-      // Translate horizontal axis relative to fixed crosshair
-      catAxis.style.transform = `translateX(${-catIdx * 180}px)`;
-
-      cats.forEach((c, cI) => {
-        const isCatActive = (cI === catIdx);
-        c.classList.toggle('active', isCatActive);
-        
-        const col = c.querySelector('.item-axis');
-        if (col) {
-          // Translate vertical axis of active category
-          col.style.transform = `translateY(${-itemIdx * 60}px)`;
-          col.querySelectorAll('.item').forEach((it, iI) => {
-            it.classList.toggle('active', isCatActive && iI === itemIdx);
-          });
-        }
-      });
-    }
-
-    document.addEventListener('keydown', (e) => {
-      const cats = document.querySelectorAll('.category');
-      const curCat = cats[catIdx];
-      const items = curCat.querySelectorAll('.item');
-
-      if (e.key === 'ArrowRight' && catIdx < cats.length - 1) { catIdx++; itemIdx = 0; }
-      if (e.key === 'ArrowLeft' && catIdx > 0) { catIdx--; itemIdx = 0; }
-      if (e.key === 'ArrowDown' && itemIdx < items.length - 1) { itemIdx++; }
-      if (e.key === 'ArrowUp' && itemIdx > 0) { itemIdx--; }
-
-      updateMenu();
-    });
-  </script>
-</body>
-</html>
-
-</body>
-</html>
+  @keyframes fadeIn { to { opacity: 0.9; } }
+  @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.9; } }
+  
+  .fade-out { opacity: 0 !important; pointer-events: none; }
+</style>
