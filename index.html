@@ -8,24 +8,40 @@
     * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
     body { background: #000; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; height: 100vh; width: 100vw; }
 
-    /* --- BOOT SCREEN --- */
+    /* --- CANVAS BACKGROUND (RIBBON WAVE) --- */
+    #wave-canvas { 
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; 
+      background: radial-gradient(circle at center, #111e38 0%, #03060d 100%); 
+    }
+
+    /* --- BOOT SCREEN OVERLAY --- */
     #boot-screen {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: #000; z-index: 999; display: flex; flex-direction: column;
+      background: rgba(3, 6, 13, 0.7);
+      backdrop-filter: blur(2px);
+      z-index: 999; display: flex; flex-direction: column;
       justify-content: center; align-items: center; cursor: pointer;
       transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1);
     }
     .sony-logo { letter-spacing: 5px; font-size: 1.1rem; color: #e1e1e1; opacity: 0; animation: fadeIn 2s forwards 0.4s; }
-    .press-start { margin-top: 35px; font-size: 0.8rem; letter-spacing: 2px; color: #666; animation: pulse 2s infinite ease-in-out; }
+    .press-start { margin-top: 35px; font-size: 0.8rem; letter-spacing: 2px; color: #88aacc; animation: pulse 2s infinite ease-in-out; }
     @keyframes fadeIn { to { opacity: 0.85; } }
     @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
     .fade-out { opacity: 0 !important; pointer-events: none; }
 
-    /* --- CANVAS BACKGROUND (RIBBON WAVE) --- */
-    #wave-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; background: radial-gradient(circle at center, #111e38 0%, #03060d 100%); }
-
     /* --- XMB VIEWPORT & GRID --- */
-    #xmb-viewport { position: fixed; top: 38%; left: 18%; z-index: 2; width: 80vw; height: 50vh; }
+    #xmb-viewport { 
+      position: fixed; top: 38%; left: 18%; z-index: 2; width: 80vw; height: 50vh;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 1s ease, transform 1s ease;
+      pointer-events: none;
+    }
+    #xmb-viewport.visible {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
     
     .category-axis { display: flex; gap: 130px; position: absolute; transition: transform 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); }
     
@@ -46,20 +62,20 @@
 </head>
 <body>
 
-  <!-- Boot Overlay -->
+  <!-- Background Animated Ribbon Canvas (Runs Immediately) -->
+  <canvas id="wave-canvas"></canvas>
+
+  <!-- Semi-Transparent Boot Overlay -->
   <div id="boot-screen">
     <div class="sony-logo">SONY COMPUTER ENTERTAINMENT</div>
     <div class="press-start">PRESS ANY KEY TO START</div>
   </div>
 
-  <!-- Background Animated Ribbon Canvas -->
-  <canvas id="wave-canvas"></canvas>
-
-  <!-- Main XMB Grid UI -->
+  <!-- Main XMB Grid UI (Fades in after Boot) -->
   <div id="xmb-viewport">
     <div id="category-axis" class="category-axis">
       
-      <!-- Category 1: Users / About -->
+      <!-- Category 1: Profile -->
       <div class="category active">
         <div class="category-title">Profile</div>
         <div class="item-axis">
@@ -69,7 +85,7 @@
         </div>
       </div>
 
-      <!-- Category 2: Game / Projects -->
+      <!-- Category 2: Projects -->
       <div class="category">
         <div class="category-title">Projects</div>
         <div class="item-axis">
@@ -80,7 +96,7 @@
         </div>
       </div>
 
-      <!-- Category 3: Settings / Skills -->
+      <!-- Category 3: Settings -->
       <div class="category">
         <div class="category-title">Settings</div>
         <div class="item-axis">
@@ -90,7 +106,7 @@
         </div>
       </div>
 
-      <!-- Category 4: Network / Contact -->
+      <!-- Category 4: Network -->
       <div class="category">
         <div class="category-title">Network</div>
         <div class="item-axis">
@@ -110,7 +126,41 @@
   </div>
 
   <script>
-    // --- 1. AUDIO SYNTHESIZER (CHIME & TICKS) ---
+    // --- 1. CANVAS WAVE BACKGROUND (Starts Immediately) ---
+    const canvas = document.getElementById('wave-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, step = 0;
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function drawWaves() {
+      ctx.clearRect(0, 0, width, height);
+      step += 0.012;
+
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = `rgba(0, 180, 255, ${0.08 + i * 0.04})`;
+
+        for (let x = 0; x < width; x += 10) {
+          const y = height * 0.5 + 
+                    Math.sin(x * 0.003 + step + i * 0.8) * 90 + 
+                    Math.cos(x * 0.006 - step * 0.5) * 45;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      requestAnimationFrame(drawWaves);
+    }
+    drawWaves(); // Immediately animate behind boot text
+
+    // --- 2. AUDIO SYNTHESIZER ---
     let audioCtx = null;
 
     function initAudio() {
@@ -156,40 +206,6 @@
       osc.stop(audioCtx.currentTime + 0.03);
     }
 
-    // --- 2. CANVAS WAVE BACKGROUND ANIMATION ---
-    const canvas = document.getElementById('wave-canvas');
-    const ctx = canvas.getContext('2d');
-    let width, height, step = 0;
-
-    function resizeCanvas() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    function drawWaves() {
-      ctx.clearRect(0, 0, width, height);
-      step += 0.012;
-
-      for (let i = 0; i < 3; i++) {
-        ctx.beginPath();
-        ctx.lineWidth = 1.5;
-        ctx.strokeStyle = `rgba(0, 180, 255, ${0.08 + i * 0.04})`;
-
-        for (let x = 0; x < width; x += 10) {
-          const y = height * 0.5 + 
-                    Math.sin(x * 0.003 + step + i * 0.8) * 90 + 
-                    Math.cos(x * 0.006 - step * 0.5) * 45;
-          if (x === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-      }
-      requestAnimationFrame(drawWaves);
-    }
-    drawWaves();
-
     // --- 3. XMB NAVIGATION LOGIC ---
     let catIdx = 0, itemIdx = 0;
     const catAxis = document.getElementById('category-axis');
@@ -212,13 +228,22 @@
       });
     }
 
+    // --- 4. BOOT CONTROLLER ---
     let isBooted = false;
-    function triggerBoot(e) {
+    function triggerBoot() {
       if (isBooted) return;
       isBooted = true;
       playPS3StartupChime();
+
       const boot = document.getElementById('boot-screen');
+      const viewport = document.getElementById('xmb-viewport');
+
       boot.classList.add('fade-out');
+
+      setTimeout(() => {
+        viewport.classList.add('visible');
+      }, 400);
+
       setTimeout(() => boot.remove(), 1500);
     }
 
@@ -244,9 +269,7 @@
       }
     });
 
-    document.addEventListener('click', (e) => {
-      if (!isBooted) triggerBoot();
-    });
+    document.addEventListener('click', triggerBoot);
   </script>
 </body>
 </html>
