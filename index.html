@@ -1,260 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAMERON J. NAIDOO // 2000s ROOM</title>
-    <style>
-        :root {
-            --bg-color: #050505;
-            --primary-glow: #00ffc4;
-            --danger-glow: #ff0055;
-            --text-main: #e0e0e0;
-            --font-retro: "Courier New", Courier, monospace;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio XMB</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0d18; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100vh; }
+    
+    #wave-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    /* Fixed Crosshair Point */
+    #xmb-viewport { position: fixed; top: 35%; left: 20%; z-index: 2; }
+    
+    .category-axis { display: flex; gap: 100px; position: absolute; transition: transform 0.25s cubic-bezier(0.1, 0.8, 0.2, 1); }
+    .category { width: 80px; text-align: center; opacity: 0.35; transform: scale(0.85); transition: all 0.25s ease; position: relative; }
+    .category.active { opacity: 1; transform: scale(1.15); font-weight: bold; text-shadow: 0 0 12px rgba(255,255,255,0.6); }
 
-        body, html {
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: var(--font-retro);
-            overflow: hidden;
-        }
-
-        /* Modular Component: Retro Splash Gate / Sign */
-        #splash-gate {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: rgba(5, 5, 5, 0.95);
-            z-index: 100;
-            transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .warning-sign {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
-            border: 3px dashed var(--danger-glow);
-            padding: 3rem 4rem;
-            background: #0a0a0a;
-            box-shadow: 0 0 40px rgba(255, 0, 85, 0.15);
-            max-width: 600px;
-            width: 90%;
-        }
-
-        .warning-header {
-            font-size: 0.8rem;
-            color: var(--danger-glow);
-            letter-spacing: 0.25em;
-            text-transform: uppercase;
-            animation: text-flicker 1.5s infinite alternate;
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            font-weight: bold;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--text-main);
-        }
-
-        .action-links {
-            display: flex;
-            gap: 2rem;
-            margin-top: 1rem;
-        }
-
-        .retro-btn {
-            background: transparent;
-            border: 2px solid var(--primary-glow);
-            color: var(--primary-glow);
-            padding: 0.75rem 1.5rem;
-            font-family: var(--font-retro);
-            font-size: 0.85rem;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            text-decoration: none;
-        }
-
-        .retro-btn:hover {
-            background: var(--primary-glow);
-            color: var(--bg-color);
-            box-shadow: 0 0 15px var(--primary-glow);
-        }
-
-        .retro-btn.danger {
-            border-color: var(--danger-glow);
-            color: var(--danger-glow);
-        }
-
-        .retro-btn.danger:hover {
-            background: var(--danger-glow);
-            color: var(--bg-color);
-            box-shadow: 0 0 15px var(--danger-glow);
-        }
-
-        /* Main 3D Experience View Container */
-        #experience-view {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            transition: opacity 1.5s ease 0.5s;
-        }
-
-        .active {
-            opacity: 1 !important;
-        }
-
-        /* HUD Overlay */
-        .hud-overlay {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            z-index: 10;
-            pointer-events: none;
-            color: var(--primary-glow);
-            font-size: 0.75rem;
-            text-shadow: 0 0 5px rgba(0,255,196,0.4);
-            line-height: 1.5;
-        }
-
-        @keyframes text-flicker {
-            0% { opacity: 0.8; }
-            100% { opacity: 1; text-shadow: 0 0 8px var(--danger-glow); }
-        }
-    </style>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+    .item-axis { position: absolute; top: 90px; left: 0; display: flex; flex-direction: column; gap: 40px; transition: transform 0.25s cubic-bezier(0.1, 0.8, 0.2, 1); }
+    .item { opacity: 0.3; transform: scale(0.85); transition: all 0.25s ease; white-space: nowrap; text-align: left; }
+    .item.active { opacity: 1; transform: scale(1.1); color: #00d2ff; text-shadow: 0 0 10px rgba(0,210,255,0.5); }
+  </style>
 </head>
 <body>
+  <canvas id="wave-canvas"></canvas>
 
-    <audio id="bg-audio" loop>
-        <source src="https://actions.google.com/sounds/v1/ambiences/arcade_room.ogg" type="audio/ogg">
-        Your browser does not support the audio element.
-    </audio>
-
-    <div id="splash-gate">
-        <div class="warning-sign">
-            <div class="warning-header">⚠️ WARNING: ENTER AT YOUR OWN RISK ⚠️</div>
-            <h1>CAMERON'S ROOM [2004]</h1>
-            <p style="font-size: 0.75rem; color: #888; letter-spacing: 0.1em;">
-                UNAUTHORIZED ACCESS DETECTED. LOUD MIDI MUSIC & RAW HTML AHEAD.
-            </p>
-            <div class="action-links">
-                <button class="retro-btn" onclick="App.initExperience()">[ STEP INSIDE ]</button>
-                <a href="coming-soon.html" class="retro-btn danger">[ COMING SOON ]</a>
-            </div>
+  <div id="xmb-viewport">
+    <div id="category-axis" class="category-axis">
+      
+      <!-- Category 1: User -->
+      <div class="category active">User
+        <div class="item-axis">
+          <div class="item active">About Me</div>
+          <div class="item">Resume</div>
         </div>
-    </div>
+      </div>
 
-    <div id="experience-view">
-        <div class="hud-overlay">
-            > SYSTEM: ONLINE<br>
-            > USER: VISITOR<br>
-            > TRACK: ARCADE_ROOM.OGG
+      <!-- Category 2: Projects -->
+      <div class="category">Projects
+        <div class="item-axis">
+          <div class="item">Featured Work</div>
+          <div class="item">Experiments</div>
         </div>
+      </div>
+
+      <!-- Category 3: Contact -->
+      <div class="category">Contact
+        <div class="item-axis">
+          <div class="item">Send Email</div>
+          <div class="item">GitHub Profile</div>
+        </div>
+      </div>
+
     </div>
+  </div>
 
-    <script>
-        const App = (() => {
-            let scene, camera, renderer, roomMesh;
+  <script>
+    let catIdx = 0, itemIdx = 0;
+    const catAxis = document.getElementById('category-axis');
 
-            const setupAudio = () => {
-                const audio = document.getElementById('bg-audio');
-                audio.play().catch(err => console.log("Audio autoplay blocked by browser:", err));
-            };
+    function updateMenu() {
+      const cats = document.querySelectorAll('.category');
+      
+      // Translate horizontal axis relative to fixed crosshair
+      catAxis.style.transform = `translateX(${-catIdx * 180}px)`;
 
-            const setupThreeScene = () => {
-                const container = document.getElementById('experience-view');
+      cats.forEach((c, cI) => {
+        const isCatActive = (cI === catIdx);
+        c.classList.toggle('active', isCatActive);
+        
+        const col = c.querySelector('.item-axis');
+        if (col) {
+          // Translate vertical axis of active category
+          col.style.transform = `translateY(${-itemIdx * 60}px)`;
+          col.querySelectorAll('.item').forEach((it, iI) => {
+            it.classList.toggle('active', isCatActive && iI === itemIdx);
+          });
+        }
+      });
+    }
 
-                // Scene & Camera
-                scene = new THREE.Scene();
-                scene.background = new THREE.Color(0x060609);
+    document.addEventListener('keydown', (e) => {
+      const cats = document.querySelectorAll('.category');
+      const curCat = cats[catIdx];
+      const items = curCat.querySelectorAll('.item');
 
-                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-                camera.position.set(0, 1.8, 4);
+      if (e.key === 'ArrowRight' && catIdx < cats.length - 1) { catIdx++; itemIdx = 0; }
+      if (e.key === 'ArrowLeft' && catIdx > 0) { catIdx--; itemIdx = 0; }
+      if (e.key === 'ArrowDown' && itemIdx < items.length - 1) { itemIdx++; }
+      if (e.key === 'ArrowUp' && itemIdx > 0) { itemIdx--; }
 
-                // Renderer
-                renderer = new THREE.WebGLRenderer({ antialias: true });
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-                container.appendChild(renderer.domElement);
-
-                // Lights
-                scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-                const neonLight = new THREE.PointLight(0xff0055, 2, 8);
-                neonLight.position.set(0, 2, 0);
-                scene.add(neonLight);
-
-                // Room Placeholder Box
-                const geometry = new THREE.BoxGeometry(5, 3.5, 5);
-                const material = new THREE.MeshBasicMaterial({ color: 0x111118, wireframe: true });
-                roomMesh = new THREE.Mesh(geometry, material);
-                scene.add(roomMesh);
-
-                // Mouse interaction loop vars
-                let mouseX = 0, mouseY = 0;
-                window.addEventListener('mousemove', (e) => {
-                    mouseX = (e.clientX / window.innerWidth) - 0.5;
-                    mouseY = (e.clientY / window.innerHeight) - 0.5;
-                });
-
-                // Window resizing
-                window.addEventListener('resize', () => {
-                    camera.aspect = window.innerWidth / window.innerHeight;
-                    camera.updateProjectionMatrix();
-                    renderer.setSize(window.innerWidth, window.innerHeight);
-                });
-
-                // Render loop
-                const animate = () => {
-                    requestAnimationFrame(animate);
-                    camera.position.x += (mouseX * 1.5 - camera.position.x) * 0.05;
-                    camera.position.y += (-mouseY * 1.5 - camera.position.y + 1.8) * 0.05;
-                    camera.lookAt(scene.position);
-                    renderer.render(scene, camera);
-                };
-                animate();
-            };
-
-            const initExperience = () => {
-                setupAudio();
-                setupThreeScene();
-
-                const splash = document.getElementById('splash-gate');
-                const experience = document.getElementById('experience-view');
-
-                splash.style.opacity = '0';
-                setTimeout(() => {
-                    splash.style.display = 'none';
-                    experience.classList.add('active');
-                }, 1000);
-            };
-
-            return { initExperience };
-        })();
-    </script>
-</body>
-</html>
+      updateMenu();
+    });
+  </script>
 </body>
 </html>
