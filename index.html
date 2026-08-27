@@ -1,45 +1,252 @@
-<!-- Place at the top of <body> -->
-<div id="boot-screen">
-  <div class="sony-logo">Sony Computer Entertainment</div>
-  <div class="press-start">PRESS ANY KEY TO START</div>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio // PS3 XMB</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+    body { background: #000; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; height: 100vh; width: 100vw; }
 
-<style>
-  #boot-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: #000;
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: opacity 1.5s cubic-bezier(0.25, 1, 0.5, 1);
-  }
+    /* --- BOOT SCREEN --- */
+    #boot-screen {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #000; z-index: 999; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; cursor: pointer;
+      transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .sony-logo { letter-spacing: 5px; font-size: 1.1rem; color: #e1e1e1; opacity: 0; animation: fadeIn 2s forwards 0.4s; }
+    .press-start { margin-top: 35px; font-size: 0.8rem; letter-spacing: 2px; color: #666; animation: pulse 2s infinite ease-in-out; }
+    @keyframes fadeIn { to { opacity: 0.85; } }
+    @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
+    .fade-out { opacity: 0 !important; pointer-events: none; }
 
-  .sony-logo {
-    font-family: sans-serif;
-    letter-spacing: 4px;
-    font-size: 1.2rem;
-    color: #fff;
-    opacity: 0;
-    animation: fadeIn 2s forwards 0.5s;
-  }
+    /* --- CANVAS BACKGROUND (RIBBON WAVE) --- */
+    #wave-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; background: radial-gradient(circle at center, #111e38 0%, #03060d 100%); }
 
-  .press-start {
-    margin-top: 40px;
-    font-size: 0.85rem;
-    letter-spacing: 2px;
-    color: #888;
-    animation: pulse 2s infinite ease-in-out;
-  }
+    /* --- XMB VIEWPORT & GRID --- */
+    #xmb-viewport { position: fixed; top: 38%; left: 18%; z-index: 2; width: 80vw; height: 50vh; }
+    
+    .category-axis { display: flex; gap: 130px; position: absolute; transition: transform 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); }
+    
+    .category { width: 90px; text-align: center; opacity: 0.35; transform: scale(0.8); transition: all 0.3s ease; position: relative; }
+    .category.active { opacity: 1; transform: scale(1.1); text-shadow: 0 0 15px rgba(255,255,255,0.7); }
+    .category-title { font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 15px; text-transform: uppercase; }
 
-  @keyframes fadeIn { to { opacity: 0.9; } }
-  @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.9; } }
-  
-  .fade-out { opacity: 0 !important; pointer-events: none; }
-</style>
+    .item-axis { position: absolute; top: 60px; left: -20px; display: flex; flex-direction: column; gap: 22px; transition: transform 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); width: 180px; }
+    
+    .item { opacity: 0.25; transform: scale(0.85); transition: all 0.25s ease; white-space: nowrap; text-align: left; font-size: 0.85rem; color: #aaa; }
+    .item.active { opacity: 1; transform: scale(1.05); color: #00e5ff; text-shadow: 0 0 10px rgba(0,229,255,0.6); font-weight: 500; }
+
+    /* --- CONTROLS HINT FOOTER --- */
+    #controls-hint { position: fixed; bottom: 30px; left: 40px; z-index: 10; font-size: 0.75rem; color: #556; letter-spacing: 1px; display: flex; gap: 20px; }
+    #controls-hint span { display: flex; align-items: center; gap: 6px; }
+    .key-badge { background: #1a233a; border: 1px solid #334466; padding: 2px 6px; border-radius: 4px; color: #88aacc; font-family: monospace; }
+  </style>
+</head>
+<body>
+
+  <!-- Boot Overlay -->
+  <div id="boot-screen">
+    <div class="sony-logo">SONY COMPUTER ENTERTAINMENT</div>
+    <div class="press-start">PRESS ANY KEY TO START</div>
+  </div>
+
+  <!-- Background Animated Ribbon Canvas -->
+  <canvas id="wave-canvas"></canvas>
+
+  <!-- Main XMB Grid UI -->
+  <div id="xmb-viewport">
+    <div id="category-axis" class="category-axis">
+      
+      <!-- Category 1: Users / About -->
+      <div class="category active">
+        <div class="category-title">Profile</div>
+        <div class="item-axis">
+          <div class="item active">About Me</div>
+          <div class="item">Education & Background</div>
+          <div class="item">Download Resume</div>
+        </div>
+      </div>
+
+      <!-- Category 2: Game / Projects -->
+      <div class="category">
+        <div class="category-title">Projects</div>
+        <div class="item-axis">
+          <div class="item">SAID Mobile Outreach App</div>
+          <div class="item">Peak Offline Hiking App</div>
+          <div class="item">Gamified Finance Tracker</div>
+          <div class="item">Three.js Portfolio Gallery</div>
+        </div>
+      </div>
+
+      <!-- Category 3: Settings / Skills -->
+      <div class="category">
+        <div class="category-title">Settings</div>
+        <div class="item-axis">
+          <div class="item">Languages & C# / Kotlin</div>
+          <div class="item">Web Tech (Node, JS, HTML)</div>
+          <div class="item">Databases & Architecture</div>
+        </div>
+      </div>
+
+      <!-- Category 4: Network / Contact -->
+      <div class="category">
+        <div class="category-title">Network</div>
+        <div class="item-axis">
+          <div class="item">GitHub Profile</div>
+          <div class="item">LinkedIn Connection</div>
+          <div class="item">Send Direct Email</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer Navigation Info -->
+  <div id="controls-hint">
+    <span><span class="key-badge">▲</span><span class="key-badge">▼</span> Navigate Items</span>
+    <span><span class="key-badge">◄</span><span class="key-badge">►</span> Switch Categories</span>
+  </div>
+
+  <script>
+    // --- 1. AUDIO SYNTHESIZER (CHIME & TICKS) ---
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+    }
+
+    function playPS3StartupChime() {
+      initAudio();
+      if (!audioCtx) return;
+      const freqs = [110.00, 220.00, 277.18, 329.63, 440.00, 554.37, 659.25, 880.00];
+      freqs.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.995, audioCtx.currentTime + 4.0);
+        const attack = 0.8 + idx * 0.08;
+        gain.gain.setValueAtTime(0, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.06 / freqs.length, audioCtx.currentTime + attack);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + attack + 4.0);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + attack + 4.0);
+      });
+    }
+
+    function playTickSound() {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.03);
+      gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.03);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + 0.03);
+    }
+
+    // --- 2. CANVAS WAVE BACKGROUND ANIMATION ---
+    const canvas = document.getElementById('wave-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, step = 0;
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function drawWaves() {
+      ctx.clearRect(0, 0, width, height);
+      step += 0.012;
+
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = `rgba(0, 180, 255, ${0.08 + i * 0.04})`;
+
+        for (let x = 0; x < width; x += 10) {
+          const y = height * 0.5 + 
+                    Math.sin(x * 0.003 + step + i * 0.8) * 90 + 
+                    Math.cos(x * 0.006 - step * 0.5) * 45;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      requestAnimationFrame(drawWaves);
+    }
+    drawWaves();
+
+    // --- 3. XMB NAVIGATION LOGIC ---
+    let catIdx = 0, itemIdx = 0;
+    const catAxis = document.getElementById('category-axis');
+
+    function updateMenu() {
+      const cats = document.querySelectorAll('.category');
+      catAxis.style.transform = `translateX(${-catIdx * 220}px)`;
+
+      cats.forEach((c, cI) => {
+        const isCatActive = (cI === catIdx);
+        c.classList.toggle('active', isCatActive);
+        
+        const col = c.querySelector('.item-axis');
+        if (col) {
+          col.style.transform = `translateY(${-itemIdx * 48}px)`;
+          col.querySelectorAll('.item').forEach((it, iI) => {
+            it.classList.toggle('active', isCatActive && iI === itemIdx);
+          });
+        }
+      });
+    }
+
+    let isBooted = false;
+    function triggerBoot(e) {
+      if (isBooted) return;
+      isBooted = true;
+      playPS3StartupChime();
+      const boot = document.getElementById('boot-screen');
+      boot.classList.add('fade-out');
+      setTimeout(() => boot.remove(), 1500);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (!isBooted) {
+        triggerBoot();
+        return;
+      }
+
+      const cats = document.querySelectorAll('.category');
+      const curCat = cats[catIdx];
+      const items = curCat.querySelectorAll('.item');
+      let moved = false;
+
+      if (e.key === 'ArrowRight' && catIdx < cats.length - 1) { catIdx++; itemIdx = 0; moved = true; }
+      else if (e.key === 'ArrowLeft' && catIdx > 0) { catIdx--; itemIdx = 0; moved = true; }
+      else if (e.key === 'ArrowDown' && itemIdx < items.length - 1) { itemIdx++; moved = true; }
+      else if (e.key === 'ArrowUp' && itemIdx > 0) { itemIdx--; moved = true; }
+
+      if (moved) {
+        playTickSound();
+        updateMenu();
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!isBooted) triggerBoot();
+    });
+  </script>
+</body>
+</html>
