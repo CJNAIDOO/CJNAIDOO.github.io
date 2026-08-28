@@ -11,9 +11,11 @@
 
 <body>
     <div id="start-screen" style="position: absolute; inset: 0; background: black; color: white; display: flex; align-items: center; justify-content: center; z-index: 9999; cursor: pointer;">
-        <h1>Click anywhere to start</h1>
+        <section class="title" id="title">       
+            <h1>Click anywhere to start</h1>
+        </section>
     </div>
-    
+
     <audio id="startup" src="audio/startup.mp3" type="audio/mpeg"></audio>
     <audio id="nav" src="audio/nav.mp3" type="audio/mpeg"></audio>
     <video autoplay loop muted plays-inline class="back-vid" id="vid" src="images/vid.mp4" type="video/mp4"></video>
