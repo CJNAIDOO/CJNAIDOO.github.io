@@ -652,7 +652,7 @@ body {
 
 /* Assign individual background image files */
 .gta6-bg {
-  background-image: url('images/gta_6_background.jpg');
+  background-image: url('../images/gta_6_background.jpg');
 }
 
 /* Fade in the image when both the Games category AND this submenu item are active */
