@@ -1,0 +1,244 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    background: #000;
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+.back-vid {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: 1;
+    filter: brightness(0.55);
+}
+
+/* ---------- BOOT SCREEN ---------- */
+#boot-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.sony-logo {
+    letter-spacing: 5px;
+    font-size: 1.1rem;
+    color: #e1e1e1;
+    opacity: 0;
+    animation: fadeIn 2s forwards 0.4s;
+}
+
+.press-start {
+    margin-top: 35px;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    color: #666;
+    animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes fadeIn { to { opacity: 0.85; } }
+@keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
+
+.fade-out {
+    opacity: 0 !important;
+    pointer-events: none;
+}
+
+/* ---------- HEADER / CLOCK / DISCLAIMER ---------- */
+header {
+    position: fixed;
+    top: 24px;
+    left: 40px;
+    z-index: 5;
+}
+
+.title h1 {
+    font-size: 1.6rem;
+    letter-spacing: 2px;
+}
+
+.title p {
+    font-size: 0.75rem;
+    color: #99aacc;
+    letter-spacing: 1px;
+}
+
+.warning {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    max-width: 320px;
+    z-index: 5;
+    font-size: 0.65rem;
+    color: #667;
+    text-align: right;
+    line-height: 1.4;
+}
+
+.warninghead {
+    font-weight: 700;
+    color: #889;
+}
+
+.clock {
+    position: fixed;
+    top: 24px;
+    right: 40px;
+    z-index: 5;
+}
+
+.clock-container p {
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    color: #cddcee;
+}
+
+/* ---------- XMB MENU ---------- */
+main#menu {
+    position: fixed;
+    top: 42%;
+    left: 0;
+    width: 100vw;
+    z-index: 2;
+    overflow: hidden;
+}
+
+.xmb-main {
+    display: flex;
+    gap: 140px;
+    padding-left: 50vw;
+    transition: transform 0.3s cubic-bezier(0.1, 0.8, 0.2, 1);
+    will-change: transform;
+}
+
+.xmb-title {
+    width: 90px;
+    flex-shrink: 0;
+    text-align: center;
+    opacity: 0.35;
+    transform: scale(0.8);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.xmb-title.active {
+    opacity: 1;
+    transform: scale(1.1);
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+}
+
+.xmb-title img {
+    width: 48px;
+    height: 48px;
+    display: block;
+    margin: 0 auto 10px;
+}
+
+.titletext {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* Item list under the active category only */
+.xmb-contents {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 220px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.xmb-title.active .xmb-contents {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.submenu {
+    opacity: 0.35;
+    transform: scale(0.9);
+    transition: all 0.25s ease;
+    font-size: 0.8rem;
+    color: #aaa;
+    text-align: center;
+}
+
+.submenu.active {
+    opacity: 1;
+    transform: scale(1.05);
+    color: #00e5ff;
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+    font-weight: 500;
+}
+
+.submenu p {
+    margin: 0;
+}
+
+.submenu .subtext {
+    font-size: 0.65rem;
+    color: #778;
+    margin-top: 2px;
+}
+
+/* "About" style detail panel — only shown when its submenu item is active */
+.about-bg {
+    display: none;
+    position: fixed;
+    top: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 480px;
+    max-width: 80vw;
+    background: rgba(10, 16, 30, 0.85);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    border-radius: 8px;
+    padding: 24px 28px;
+    z-index: 4;
+}
+
+.submenu.active .about-bg {
+    display: block;
+}
+
+.infowrapper h1 {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+
+.infowrapper p {
+    font-size: 0.8rem;
+    color: #cdd;
+    margin-bottom: 6px;
+    line-height: 1.4;
+}

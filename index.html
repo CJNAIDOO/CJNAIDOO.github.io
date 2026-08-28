@@ -1,258 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portfolio // PS3 XMB</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-    body { background: #000; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; height: 100vh; width: 100vw; }
-
-    /* --- BOOT SCREEN --- */
-    #boot-screen {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: #000; z-index: 999; display: flex; flex-direction: column;
-      justify-content: center; align-items: center; cursor: pointer;
-      transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-    .sony-logo { letter-spacing: 5px; font-size: 1.1rem; color: #e1e1e1; opacity: 0; animation: fadeIn 2s forwards 0.4s; }
-    .press-start { margin-top: 35px; font-size: 0.8rem; letter-spacing: 2px; color: #666; animation: pulse 2s infinite ease-in-out; }
-    @keyframes fadeIn { to { opacity: 0.85; } }
-    @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
-    .fade-out { opacity: 0 !important; pointer-events: none; }
-
-    /* --- CANVAS BACKGROUND (RIBBON WAVE) --- */
-    #wave-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; background: radial-gradient(circle at center, #111e38 0%, #03060d 100%); }
-
-    /* --- XMB VIEWPORT & GRID --- */
-    #xmb-viewport { position: fixed; top: 38%; left: 18%; z-index: 2; width: 80vw; height: 50vh; }
-    
-    .category-axis { display: flex; gap: 130px; position: absolute; transition: transform 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); }
-    
-    .category { width: 90px; text-align: center; opacity: 0.35; transform: scale(0.8); transition: all 0.3s ease; position: relative; }
-    .category.active { opacity: 1; transform: scale(1.1); text-shadow: 0 0 15px rgba(255,255,255,0.7); }
-    .category-title { font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 15px; text-transform: uppercase; }
-
-    .item-axis { position: absolute; top: 60px; left: -20px; display: flex; flex-direction: column; gap: 22px; transition: transform 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); width: 180px; }
-    
-    .item { opacity: 0.25; transform: scale(0.85); transition: all 0.25s ease; white-space: nowrap; text-align: left; font-size: 0.85rem; color: #aaa; }
-    .item.active { opacity: 1; transform: scale(1.05); color: #00e5ff; text-shadow: 0 0 10px rgba(0,229,255,0.6); font-weight: 500; }
-
-    /* --- CONTROLS HINT FOOTER --- */
-    #controls-hint { position: fixed; bottom: 30px; left: 40px; z-index: 10; font-size: 0.75rem; color: #556; letter-spacing: 1px; display: flex; gap: 20px; }
-    #controls-hint span { display: flex; align-items: center; gap: 6px; }
-    .key-badge { background: #1a233a; border: 1px solid #334466; padding: 2px 6px; border-radius: 4px; color: #88aacc; font-family: monospace; }
-  </style>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XMB</title>
+    <link rel="stylesheet" href="scss/main.css">
+    <script defer src="js/script.js"></script>
 </head>
 <body>
-  
-  <!--START UP AUDIO, BUTTON AUDIO AND BACKGROUND WAVE VIDEO-->
-  <audio id="startup" src="audio/startup.mp3" type="audio/mpeg"></audio>
-  <audio id="nav" src="audio/nav.mp3" type="audio/mpeg"></audio>
-  <video autoplay loop muted plays-inline class="back-vid" id="vid" src="images/vid.mp4" type="video/mp4"></video>
+    <audio id="startup" src="audio/startup.mp3" type="audio/mpeg"></audio>
+    <audio id="nav" src="audio/nav.mp3" type="audio/mpeg"></audio>
+    <video autoplay loop muted plays-inline class="back-vid" id="vid" src="images/vid.mp4" type="video/mp4"></video>
 
-
-  <!-- Boot Overlay -->
-  <div id="boot-screen">
-    <div class="sony-logo">SONY COMPUTER ENTERTAINMENT</div>
-    <div class="press-start">PRESS ANY KEY TO START</div>
-  </div>
-
-  <!-- Background Animated Ribbon Canvas -->
-  <canvas id="wave-canvas"></canvas>
-
-  <!-- Main XMB Grid UI -->
-  <div id="xmb-viewport">
-    <div id="category-axis" class="category-axis">
-      
-      <!-- Category 1: Users / About -->
-      <div class="category active">
-        <div class="category-title">Profile</div>
-        <div class="item-axis">
-          <div class="item active">About Me</div>
-          <div class="item">Education & Background</div>
-          <div class="item">Download Resume</div>
-        </div>
-      </div>
-
-      <!-- Category 2: Game / Projects -->
-      <div class="category">
-        <div class="category-title">Projects</div>
-        <div class="item-axis">
-          <div class="item">SAID Mobile Outreach App</div>
-          <div class="item">Peak Offline Hiking App</div>
-          <div class="item">Gamified Finance Tracker</div>
-          <div class="item">Three.js Portfolio Gallery</div>
-        </div>
-      </div>
-
-      <!-- Category 3: Settings / Skills -->
-      <div class="category">
-        <div class="category-title">Settings</div>
-        <div class="item-axis">
-          <div class="item">Languages & C# / Kotlin</div>
-          <div class="item">Web Tech (Node, JS, HTML)</div>
-          <div class="item">Databases & Architecture</div>
-        </div>
-      </div>
-
-      <!-- Category 4: Network / Contact -->
-      <div class="category">
-        <div class="category-title">Network</div>
-        <div class="item-axis">
-          <div class="item">GitHub Profile</div>
-          <div class="item">LinkedIn Connection</div>
-          <div class="item">Send Direct Email</div>
-        </div>
-      </div>
-
+    <!-- Boot overlay: click or press any key to start, plays startup.mp3 -->
+    <div id="boot-screen">
+        <div class="sony-logo">WEBSTATION 3</div>
+        <div class="press-start">PRESS ANY KEY TO START</div>
     </div>
-  </div>
 
-  <!-- Footer Navigation Info -->
-  <div id="controls-hint">
-    <span><span class="key-badge">▲</span><span class="key-badge">▼</span> Navigate Items</span>
-    <span><span class="key-badge">◄</span><span class="key-badge">►</span> Switch Categories</span>
-  </div>
+    <header>
+        <section class="title" id="title">
+            <h1>WS3</h1>
+            <p>WebStation 3</p>
+        </section>
+    </header>
 
-  <script>
-    // --- 1. AUDIO SYNTHESIZER (CHIME & TICKS) ---
-    let audioCtx = null;
+    <section class = "warning">
+        <p class="warninghead">DISCLAIMER:</p>
+        <p>This is a recreation of the PS3's XMB. This project is used for demonstrational purposes and the design and its rights belong to Sony.</p>
+    </section>
 
-    function initAudio() {
-      if (!audioCtx) {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        audioCtx = new AudioContext();
-      }
-    }
+    <section class = "clock">
+        <div class="clock-container">
+            <p id="date"></p>
+        </div>
+    </section>
 
-    function playPS3StartupChime() {
-      initAudio();
-      if (!audioCtx) return;
-      const freqs = [110.00, 220.00, 277.18, 329.63, 440.00, 554.37, 659.25, 880.00];
-      freqs.forEach((freq, idx) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(freq * 0.995, audioCtx.currentTime + 4.0);
-        const attack = 0.8 + idx * 0.08;
-        gain.gain.setValueAtTime(0, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.06 / freqs.length, audioCtx.currentTime + attack);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + attack + 4.0);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(audioCtx.currentTime);
-        osc.stop(audioCtx.currentTime + attack + 4.0);
-      });
-    }
+    <main id="menu">
+        <section class = "xmb-main">
 
-    function playTickSound() {
-      if (!audioCtx) return;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.03);
-      gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.03);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.03);
-    }
+            <div class="xmb-title homeMenu active">
+                <img class="home" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAG4AAABuCAYAAADGWyb7AAAABmJLR0QA/wD/AP+gvaeTAAAJo0lEQVR4nO3dfXAcZR0H8O9v95aS9ECH916Iesk9uyEHRgSZFkqxnXEUhZa+QKuU8iLiIKPgy0jLjFJ1fKnDiDi+gONQwLaWl4a2oMPL2FJbapUihDHJPvusBBsarKLjH2kuvVz25x+3qbWmbZLbvcuW5/PnPbe/53f3ndt9dm9zATRN0zRN0zRN0zRN0zRN0zRN0zRNq3UDUWNm0/O8Gw3DWMDMTETUnsvlVhNRUOveonRcBee67kmGYawDcMVhQ89blnVNNpv9dy36isNxE5zv+7kgCJ4C0AJgGMCPUV59twEwAbiGYVyZy+X8GrYZmeMiOCnlTCJqB3A6gH4iWiqE2AQAvu9/LAiC9QDeBeBfQRBc3dLSsqWW/UbBqHUDlfI87xYi2oJyaG8YhjFDCLGJmYmZKZfLPTM8PHwpgDcAnGIYxjNSys/UtuvKJfYTx8ymUurbAO4MH/p9KpWa39TUtK+np+fEoaGhXwCYkk6nr89kMgPd3d2nmqa5AcBl4fN/vnfv3ttmz55dqsmrqEAig1NKfRvAneFD69Pp9E2NjY0Fx3EyhmFsBPCh8OGvmqY5r7m5eY9SagozPwjghnDsWcuylsRxsSAlccExsymElGKGYQwQ0d6mpqZ9jY2NBdd1M4ZhbAQQnhtGabW+jpM0MdBFqE1NTTVoNhqJC85xnEUApgDoZ+brHMfZCABKqUXM/DCA+iOsMkBEN2ez2W8REUsp24hoM8qf0CIR3SqEeHDMr+Y4kMS/qk8DmAegDgAD6AZwk23bfxhroTiO9SNrbOhBRA/muv7vRHRjHBUzk/dKFwsvUEhKZ3udO+2/W/8H7DfxAgH+B+YAAAAASUVORK5CYII=" alt="">
+                <p class ="titletext">Home</p>
 
-    // --- 2. CANVAS WAVE BACKGROUND ANIMATION ---
-    const canvas = document.getElementById('wave-canvas');
-    const ctx = canvas.getContext('2d');
-    let width, height, step = 0;
+                <div class="xmb-contents">
+                    <div class="submenu one" id="about">
+                        <p id="about">Welcome!</p>
 
-    function resizeCanvas() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+                        <div class="about-bg">
+                            <div class="infowrapper">
+                                <h1>Welcome to WebStation 3!</h1>
+                                <p>Navigate through the XMB using the arrow keys to have a look around.</p>
+                                <p>Made by Pariksith Menon</p>
+                            </div>
+                        </div>
+                    </div>
 
-    function drawWaves() {
-      ctx.clearRect(0, 0, width, height);
-      step += 0.012;
+                    <div class="submenu two" id="two">
+                        <p id="twotext">User 1</p>
+                    </div>
 
-      for (let i = 0; i < 3; i++) {
-        ctx.beginPath();
-        ctx.lineWidth = 1.5;
-        ctx.strokeStyle = `rgba(0, 180, 255, ${0.08 + i * 0.04})`;
+                </div>
+            </div>
 
-        for (let x = 0; x < width; x += 10) {
-          const y = height * 0.5 + 
-                    Math.sin(x * 0.003 + step + i * 0.8) * 90 + 
-                    Math.cos(x * 0.006 - step * 0.5) * 45;
-          if (x === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-      }
-      requestAnimationFrame(drawWaves);
-    }
-    drawWaves();
+            <div class="xmb-title settings">
+                <p class = "titletext">Settings</p>
 
-    // --- 3. XMB NAVIGATION LOGIC ---
-    let catIdx = 0, itemIdx = 0;
-    const catAxis = document.getElementById('category-axis');
+                <div class="xmb-contents">
+                    <div class="submenu one"  id="about">
+                        <div class="context">
+                            <p id="about">System Update</p>
+                            <p class="subtext">Update your firmware</p>
+                        </div>
+                    </div>
+                    <div class="submenu two" id="two">
+                        <div class="context">
+                            <p id="disptext">Display Settings</p>
+                            <p class="subtext">Adjust your display</p>
+                        </div>
+                    </div>
+                    <div class="submenu three" id="three">
+                        <div class="context">
+                            <p id="systext">System Settings</p>
+                            <p class="subtext">Adjust system settings</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    function updateMenu() {
-      const cats = document.querySelectorAll('.category');
-      catAxis.style.transform = `translateX(${-catIdx * 220}px)`;
+             <div class="xmb-title messages">
+                <p class = "titletext">Photos</p>
 
-      cats.forEach((c, cI) => {
-        const isCatActive = (cI === catIdx);
-        c.classList.toggle('active', isCatActive);
-        
-        const col = c.querySelector('.item-axis');
-        if (col) {
-          col.style.transform = `translateY(${-itemIdx * 48}px)`;
-          col.querySelectorAll('.item').forEach((it, iI) => {
-            it.classList.toggle('active', isCatActive && iI === itemIdx);
-          });
-        }
-      });
-    }
+                <div class="xmb-contents">
+                    <div class="submenu one"  id="about">
+                        <p id="about">test</p>
+                    </div>
+                    <div class="submenu two" id="two">
+                        <p id="twotext">test</p>
+                    </div>
+                </div>
+            </div>
 
-    let isBooted = false;
-    function triggerBoot(e) {
-      if (isBooted) return;
-      isBooted = true;
-      playPS3StartupChime();
-      const boot = document.getElementById('boot-screen');
-      boot.classList.add('fade-out');
-      setTimeout(() => boot.remove(), 1500);
-    }
+            <div class="xmb-title music">
+                <p class = "titletext">Music</p>
 
-    document.addEventListener('keydown', (e) => {
-      if (!isBooted) {
-        triggerBoot();
-        return;
-      }
+                <div class="xmb-contents">
+                    <div class="submenu one"  id="about">
+                        <p id="about">2Pac</p>
+                    </div>
+                    <div class="submenu two" id="two">
+                        <p id="twotext">Biggie</p>
+                    </div>
+                </div>
+            </div>
 
-      const cats = document.querySelectorAll('.category');
-      const curCat = cats[catIdx];
-      const items = curCat.querySelectorAll('.item');
-      let moved = false;
+            <div class="xmb-title videos">
+                <p class = "titletext">Video</p>
 
-      if (e.key === 'ArrowRight' && catIdx < cats.length - 1) { catIdx++; itemIdx = 0; moved = true; }
-      else if (e.key === 'ArrowLeft' && catIdx > 0) { catIdx--; itemIdx = 0; moved = true; }
-      else if (e.key === 'ArrowDown' && itemIdx < items.length - 1) { itemIdx++; moved = true; }
-      else if (e.key === 'ArrowUp' && itemIdx > 0) { itemIdx--; moved = true; }
+                <div class="xmb-contents">
+                    <div class="submenu one"  id="about">
+                        <p id="about">YouTube</p>
+                    </div>
+                    <div class="submenu two" id="two">
+                        <p id="twotext">Amazon Prime Video</p>
+                    </div>
+                </div>
+            </div>
 
-      if (moved) {
-        playTickSound();
-        updateMenu();
-      }
-    });
+            <div class="xmb-title games">
+                <p class = "titletext">Games</p>
 
-    document.addEventListener('click', (e) => {
-      if (!isBooted) triggerBoot();
-    });
-  </script>
+                <div class="xmb-contents">
+                    <div class="submenu one">
+                        <p id="about">Uncharted 3</p>
+                    </div>
+                    <div class="submenu two" id="two">
+                        <p id="twotext">God of War 3</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
 </body>
 </html>
