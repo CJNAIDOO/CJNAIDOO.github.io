@@ -16,7 +16,6 @@ const navSound = document.getElementById("nav")
 let sectionNumber = 0
 let subsection = 0
 let multiSection
-startupSound.play()
 
 let checkLoad = () =>{
     return new Promise((resolve) => {
@@ -208,4 +207,22 @@ document.body.addEventListener('keydown', (e) =>{
     }
 })
 
-loadMenu()
+// Create a function to initialize the app
+const startApp = () => {
+    // Now that the user has interacted, the browser allows audio
+    startupSound.play();
+    
+    // Start your loading sequence
+    loadMenu();
+    
+    // Remove these event listeners so the startup sound doesn't play twice
+    document.removeEventListener('click', startApp);
+    document.removeEventListener('keydown', startApp);
+    
+    // Optional: If you created a "Click anywhere to start" HTML overlay, 
+    // you would hide it right here.
+};
+
+// Listen for the user's first click or key press to start the app
+document.addEventListener('click', startApp);
+document.addEventListener('keydown', startApp);
