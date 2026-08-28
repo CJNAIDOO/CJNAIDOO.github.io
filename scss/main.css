@@ -71,7 +71,7 @@ body {
   margin-right: 0;
   color: #dadada;
   transition: margin-right 300ms;
-  z-index: -2;
+  z-index: 5;
 }
 @media screen and (max-width: 1366px) and (max-height: 768px) {
   .xmb-main {
@@ -81,7 +81,7 @@ body {
 
 .xmb-title {
   transition: scale 300ms;
-  z-index: 2;
+  z-index: 10;
 }
 .xmb-title img {
   transition: scale 200ms;
@@ -371,6 +371,8 @@ body {
   align-items: center;
   transition: all 250ms ease, opacity 200ms ease;
   font-size: 1.3rem;
+  position: relative; 
+  z-index: 10;     
 }
 .xmb-contents .submenu.one {
   margin-left: 5px;
