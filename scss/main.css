@@ -116,7 +116,7 @@ body {
   opacity: 1;
 }
 .xmb-title.homeMenu.active .titletext {
-  margin-top: -10px;
+  margin-top: 0px;
 }
 
 .xmb-title.settings {
