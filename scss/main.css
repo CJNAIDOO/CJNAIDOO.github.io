@@ -641,7 +641,7 @@ body {
   inset: 0;
   width: 100vw;
   height: 100vh;
-  z-index: -1; /* Sits behind icons/text, directly over the background video */
+  z-index: 0; /* Sits behind icons/text, directly over the background video */
   opacity: 0;
   pointer-events: none;
   transition: opacity 400ms ease-in-out;
@@ -653,6 +653,13 @@ body {
 /* Assign individual background image files */
 .gta6-bg {
   background-image: url('../images/gta_6_background.jpg');
+}
+
+/* Ensure menu content renders on top of the game background */
+.xmb-contents .submenu img,
+.xmb-contents .submenu p {
+  position: relative;
+  z-index: 2;
 }
 
 /* Fade in the image when both the Games category AND this submenu item are active */
