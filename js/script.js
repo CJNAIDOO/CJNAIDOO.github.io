@@ -19,7 +19,11 @@ let multiSection
 
 let checkLoad = () =>{
     return new Promise((resolve) => {
-        window.onload = resolve
+        if (document.readyState === 'complete') {
+            resolve();
+        } else {
+            window.addEventListener('load', resolve);
+        }
     })
 }
 
