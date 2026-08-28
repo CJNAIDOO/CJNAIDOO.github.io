@@ -1,98 +1,211 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const startupAudio = document.getElementById('startup');
-  const navAudio = document.getElementById('nav');
-  const bootScreen = document.getElementById('boot-screen');
-  const dateEl = document.getElementById('date');
+const video = document.getElementById("vid")
+const titles = document.getElementById("title")
+const warning = document.querySelectorAll(".warning")[0]
+const menu = document.getElementById("menu")
+const clockSection = document.querySelectorAll(".clock")[0]
+const dateTime = document.getElementById("date")
+const xmbMain = document.querySelectorAll(".xmb-main")[0]
+const section = document.querySelectorAll(".xmb-title")
+const submenuOne = document.querySelectorAll(".submenu.one")
+const submenuTwo = document.querySelectorAll(".submenu.two")
+const submenuthree = document.querySelectorAll(".submenu.three")
+const submenu = [submenuOne, submenuTwo, submenuthree]
+const startupSound = document.getElementById("startup")
+const navSound = document.getElementById("nav")
 
-  const categories = Array.from(document.querySelectorAll('.xmb-title'));
-  let catIdx = Math.max(0, categories.findIndex(c => c.classList.contains('active')));
-  let itemIdx = 0;
+let sectionNumber = 0
+let subsection = 0
+let multiSection
+startupSound.play()
 
-  function getItems(cat) {
-    return Array.from(cat.querySelectorAll('.xmb-contents > .submenu'));
-  }
+let checkLoad = () =>{
+    return new Promise((resolve) => {
+        window.onload = resolve
+    })
+}
 
-  function updateClock() {
-    if (!dateEl) return;
-    const now = new Date();
-    dateEl.textContent = now.toLocaleString(undefined, {
-      weekday: 'short', year: 'numeric', month: 'short',
-      day: 'numeric', hour: '2-digit', minute: '2-digit'
-    });
-  }
-  updateClock();
-  setInterval(updateClock, 30000);
-
-  function render() {
-    categories.forEach((cat, cI) => {
-      const isActive = cI === catIdx;
-      cat.classList.toggle('active', isActive);
-
-      getItems(cat).forEach((item, iI) => {
-        item.classList.toggle('active', isActive && iI === itemIdx);
-      });
-    });
-
-    // Slide the row so the active category sits under center
-    const track = document.querySelector('.xmb-main');
-    if (track) {
-      const gap = 140;     // must match .xmb-main gap in CSS
-      const itemWidth = 90; // must match .xmb-title width in CSS
-      const offset = catIdx * (gap + itemWidth);
-      track.style.transform = `translateX(${-offset}px)`;
+let titlesTimeOut = () =>{
+    return new Promise(resolve => {
+        setTimeout(resolve, 10000)
     }
-  }
+    )
+}
 
-  function playNav() {
-    if (!navAudio) return;
-    navAudio.currentTime = 0;
-    navAudio.play().catch(() => {});
-  }
-
-  let booted = false;
-  function boot() {
-    if (booted) return;
-    booted = true;
-
-    if (startupAudio) {
-      startupAudio.currentTime = 0;
-      startupAudio.play().catch(() => {});
+let warningTimeOut = () => {
+    return new Promise(resolve => {
+        setTimeout(resolve, 7000)
     }
-    if (bootScreen) {
-      bootScreen.classList.add('fade-out');
-      setTimeout(() => bootScreen.remove(), 1200);
+    )
+}
+
+let warningDisplay = async () =>{
+    await titlesTimeOut();
+    titles.remove()
+    warning.style.opacity = '1'
+    setTimeout( () =>{
+        warning.style.opacity = '0'
+        warning.remove()
+    }, 6000)
+    await warningTimeOut();
+}
+
+let sideClock = () => {
+    let d  = new Date()
+    let clock = `${d.getDate()}/${d.getMonth()+1} ${d.getHours()}:${d.getMinutes()}`
+    dateTime.innerText = clock
+    setTimeout(sideClock, 1000)
+}
+
+let loadTitles = async () =>{
+    await checkLoad()
+    video.play()
+    video.style.opacity = '1'
+    titles.style.opacity = '1'
+    await warningDisplay();
+}
+
+let loadMenu = async () =>{
+    await loadTitles()
+    menu.style.opacity = '1'
+    sideClock()
+    clockSection.style.opacity = '1'
+}
+
+let moveMenu = (hd, ultraHd, fullHd) =>{
+    let width = document.body.clientWidth
+    if (width < 1400) {
+        xmbMain.style.marginRight = hd
     }
-    render();
-  }
+    else if (width >= 2560 && width <= 3840) {
+        xmbMain.style.marginRight = ultraHd
+    }
+    else {
+        xmbMain.style.marginRight = fullHd
+    }
+}
 
-  document.addEventListener('keydown', (e) => {
-    if (!booted) { boot(); return; }
+let focusSection = (sn, right, left) =>{
+    section[sn].classList.add("active")
+    if(right === true){
+        section[sn-1].classList.remove("active")
+    }
+    else if(left === true){
+        section[sn+1].classList.remove("active")
+    }
+    switchSection()
+}
 
-    const cat = categories[catIdx];
-    const items = getItems(cat);
-    let moved = false;
+let switchSection = () =>{
+    multiSection = false
+    switch (sectionNumber) {
+        case 0:
+            moveMenu('-40%', 0, 0)
+            break
+        case 1:
+            moveMenu('-10%', '18%', '18%')
+            multiSection = true
+            break
+        case 2:
+            moveMenu('22%', '32%', '39%')
+            break
+        case 3:
+            moveMenu('50%', '47%', '60%')
+            break
+        case 4:
+            moveMenu('76%', '62%', '77%')
+            break
+        case 5:
+            moveMenu('100%', '77%', '97%')
+            break
+    }
+}
 
-    if (e.key === 'ArrowRight' && catIdx < categories.length - 1) {
-      catIdx++; itemIdx = 0; moved = true;
-    } else if (e.key === 'ArrowLeft' && catIdx > 0) {
-      catIdx--; itemIdx = 0; moved = true;
-    } else if (e.key === 'ArrowDown' && itemIdx < items.length - 1) {
-      itemIdx++; moved = true;
-    } else if (e.key === 'ArrowUp' && itemIdx > 0) {
-      itemIdx--; moved = true;
+let focusSubMenu = (sn, sub, down, up) =>{
+    switch(sub){
+        case 0:
+            if(up){
+                submenu[sub+1][sn].classList.remove("active")
+                submenu[sub][sn].classList.remove("inactive")
+            }
+            break
+        case 1:
+            if(down){
+                submenu[sub-1][sn].classList.add("inactive")
+                submenu[sub][sn].classList.add("active")
+            }
+            else if(up){
+                if(multiSection){
+                    submenu[sub+1][sn-1].classList.remove("active")
+                    submenu[sub-1][sn].classList.remove("gotop")
+                    submenu[sub][sn].classList.add("active")
+                }
+            }
+        case 2:
+            if(down){
+                if (multiSection) {
+                    submenu[sub-2][sn].classList.add("gotop")
+                    submenu[sub-1][sn].classList.remove("active")
+                    submenu[sub][sn - 1].classList.add("active")
+                }
+            }
+            break
+        default:
+            break
+    }
+}
+
+document.body.addEventListener('keydown', (e) =>{
+    if(e.key === 'ArrowDown'){
+        navSound.play()
+        e.preventDefault()
+        subsection++
+        if(subsection < 0){
+            subsection = 0
+        }
+        else if (subsection > 2){
+            subsection = 2
+        }
+        focusSubMenu(sectionNumber, subsection, true, false)
     }
 
-    if (moved) {
-      playNav();
-      render();
+    else if(e.key === 'ArrowUp'){
+        navSound.play()
+        e.preventDefault()
+        subsection--
+        if (subsection < 0) {
+            subsection = 0
+        }
+        else if (subsection > 2) {
+            subsection = 2
+        }
+        focusSubMenu(sectionNumber, subsection, false, true)
     }
-  });
 
-  document.addEventListener('click', () => {
-    if (!booted) boot();
-  });
+    else if(e.key === 'ArrowRight'){
+        navSound.play()
+        e.preventDefault()
+        sectionNumber++
+        if(sectionNumber<0){
+            sectionNumber = 0
+        }
+        else if(sectionNumber >5){
+            sectionNumber = 5
+        }
+        focusSection(sectionNumber, true, false)
+    }
 
-  // Set initial layout state (categories/items visible before boot too,
-  // in case someone lands here with the boot screen already dismissed)
-  render();
-});
+    else if(e.key === 'ArrowLeft'){
+        navSound.play()
+        e.preventDefault()
+        sectionNumber--
+        if (sectionNumber < 0) {
+            sectionNumber = 0
+        }
+        else if (sectionNumber > 5) {
+            sectionNumber = 5
+        }
+        focusSection(sectionNumber, false, true)
+    }
+})
+
+loadMenu()
