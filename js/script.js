@@ -13,11 +13,10 @@ const submenu = [submenuOne, submenuTwo, submenuthree]
 const startupSound = document.getElementById("startup")
 const navSound = document.getElementById("nav")
 
-const startScreen = document.getElementById("start-screen")
-
 let sectionNumber = 0
 let subsection = 0
 let multiSection
+startupSound.play()
 
 let checkLoad = () =>{
     return new Promise((resolve) => {
@@ -59,7 +58,7 @@ let sideClock = () => {
 
 let loadTitles = async () =>{
     await checkLoad()
-    video.play().catch(() => {})
+    video.play()
     video.style.opacity = '1'
     titles.style.opacity = '1'
     await warningDisplay();
@@ -209,27 +208,4 @@ document.body.addEventListener('keydown', (e) =>{
     }
 })
 
-let started = false
-let beginExperience = () => {
-    if (started) return
-    started = true
-
-    if (startScreen) {
-        startScreen.classList.add("fade-out")
-        setTimeout(() => startScreen.remove(), 800)
-    }
-
-    startupSound.play().catch(() => {})
-    loadMenu()
-}
-
-if (startScreen) {
-    startScreen.addEventListener("click", beginExperience)
-    document.addEventListener("keydown", function gateKey() {
-        beginExperience()
-        document.removeEventListener("keydown", gateKey)
-    })
-} else {
-    // No start screen present in the markup, fall back to old behavior
-    beginExperience()
-}
+loadMenu()
