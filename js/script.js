@@ -207,20 +207,15 @@ document.body.addEventListener('keydown', (e) =>{
     }
 })
 
-// Create a function to initialize the app
 const startApp = () => {
-    // Now that the user has interacted, the browser allows audio
-    startupSound.play();
+    // Hide the start screen
+    document.getElementById("start-screen").style.display = "none";
     
-    // Start your loading sequence
+    startupSound.play();
     loadMenu();
     
-    // Remove these event listeners so the startup sound doesn't play twice
     document.removeEventListener('click', startApp);
     document.removeEventListener('keydown', startApp);
-    
-    // Optional: If you created a "Click anywhere to start" HTML overlay, 
-    // you would hide it right here.
 };
 
 // Listen for the user's first click or key press to start the app
