@@ -635,4 +635,27 @@ body {
   border-bottom: 2px solid white;
   padding: 20px 0px;
   margin-top: -10px;
-}/*# sourceMappingURL=main.css.map */
+}/* Base full-screen overlay for game backgrounds */
+.game-bg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1; /* Sits behind icons/text, directly over the background video */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 400ms ease-in-out;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Assign individual background image files */
+.gta6-bg {
+  background-image: url('images/gta_6_background.jpg');
+}
+
+/* Fade in the image when both the Games category AND this submenu item are active */
+.xmb-title.games.active .submenu.active .game-bg {
+  opacity: 1;
+}
