@@ -566,7 +566,48 @@ body {
 .xmb-title.music .xmb-contents .submenu.one {
   padding-bottom: 20px;
 }
-
+.xmb-title.messages .xmb-contents .submenu.three {
+  margin-top: -10px;
+}
+.xmb-title.messages .xmb-contents .submenu.three .dbimg {
+  scale: 0.7;
+}
+.xmb-title.messages .xmb-contents .submenu.three p {
+  font-size: 1.5rem;
+  position: absolute;
+  margin-left: 120px;
+}
+.xmb-title.messages .xmb-contents .submenu.three.active {
+  margin-top: 190px;
+}
+.xmb-title.messages .xmb-contents .submenu.three.active .dbimg {
+  scale: 1;
+}
+.xmb-title.messages .xmb-contents .submenu.three.active p {
+  animation: glow 1s ease-in-out infinite alternate;
+}
+ 
+.xmb-title.messages .xmb-contents .submenu.four {
+  margin-top: -10px;
+}
+.xmb-title.messages .xmb-contents .submenu.four .devopsimg {
+  scale: 0.7;
+}
+.xmb-title.messages .xmb-contents .submenu.four p {
+  font-size: 1.5rem;
+  position: absolute;
+  margin-left: 120px;
+}
+.xmb-title.messages .xmb-contents .submenu.four.active {
+  margin-top: 200px;
+}
+.xmb-title.messages .xmb-contents .submenu.four.active .devopsimg {
+  scale: 1;
+}
+.xmb-title.messages .xmb-contents .submenu.four.active p {
+  animation: glow 1s ease-in-out infinite alternate;
+}
+ 
 .xmb-title.games .xmb-contents {
   margin-top: 70px;
   margin-left: 10px;
