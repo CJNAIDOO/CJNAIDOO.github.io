@@ -1,3 +1,10 @@
+@font-face {
+  font-family: "PS3Font";
+  src: url("../fonts/TheRaveIsInYourPants-YxxO.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 .clock {
   opacity: 0;
   position: absolute;
@@ -41,7 +48,7 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: 'PS3Font', Arial, Helvetica, sans-serif;
+  font-family: "PS3Font", Arial, Helvetica, sans-serif;
   background-color: black;
   overflow-y: hidden;
   overflow-x: hidden;
@@ -116,14 +123,14 @@ body {
   opacity: 1;
 }
 .xmb-title.homeMenu.active .titletext {
-  margin-top: -2px;
+  margin-top: -10px;
 }
 
-.xmb-title.settings {
-  margin-left: 80px;
-}
 .xmb-title.settings .titletext {
   margin-top: -2px;
+}
+.xmb-title.settings {
+  margin-left: 80px;
 }
 .xmb-title.settings img {
   scale: 0.8;
@@ -150,9 +157,6 @@ body {
   opacity: 1;
 }
 
-.xmb-title.music {
-  margin-left: 38px;
-}
 .xmb-title.music img {
   scale: 0.8;
   opacity: 0.6;
@@ -163,6 +167,9 @@ body {
 .xmb-title.music .xmb-contents {
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
+}
+.xmb-title.music {
+  margin-left: 38px;
 }
 .xmb-title.music.active {
   margin-left: 30px;
@@ -182,9 +189,6 @@ body {
   margin-right: 54px;
 }
 
-.xmb-title.messages {
-  margin-left: 65px;
-}
 .xmb-title.messages img {
   scale: 0.8;
   opacity: 0.6;
@@ -195,6 +199,9 @@ body {
 .xmb-title.messages .xmb-contents {
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
+}
+.xmb-title.messages {
+  margin-left: 65px;
 }
 .xmb-title.messages.active {
   margin-left: 60px;
@@ -214,9 +221,6 @@ body {
   margin-right: 24px;
 }
 
-.xmb-title.videos {
-  margin-left: 55px;
-}
 .xmb-title.videos img {
   scale: 0.8;
   opacity: 0.6;
@@ -227,6 +231,9 @@ body {
 .xmb-title.videos .xmb-contents {
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
+}
+.xmb-title.videos {
+  margin-left: 55px;
 }
 .xmb-title.videos.active {
   transition: all 300ms ease-in-out;
@@ -242,9 +249,6 @@ body {
   opacity: 1;
 }
 
-.xmb-title.games {
-  margin-left: 18px;
-}
 .xmb-title.games img {
   scale: 0.8;
   opacity: 0.6;
@@ -255,6 +259,9 @@ body {
 .xmb-title.games .xmb-contents {
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
+}
+.xmb-title.games {
+  margin-left: 18px;
 }
 .xmb-title.games .abimg {
   margin-left: 0px;
@@ -302,6 +309,7 @@ body {
   letter-spacing: -2px;
   color: #dadada;
   text-shadow: 2px 2px 5px black;
+  font-family: "PS3Font", sans-serif;
 }
 .title p {
   font-size: 32px;
@@ -309,6 +317,7 @@ body {
   letter-spacing: -2px;
   color: #dadada;
   text-shadow: 2px 2px 5px black;
+  font-family: "PS3Font", sans-serif;
 }
 
 .warning {
@@ -321,8 +330,7 @@ body {
   transform: translate(-50%, -50%);
   width: 100%;
   height: 100%;
-  -webkit-backdrop-filter: blur(10px);
-          backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   transition: all 300ms;
 }
 .warning .warninghead {
@@ -357,18 +365,8 @@ body {
 .xmb-contents .submenu.one #about {
   position: absolute;
   margin-left: 115px;
-  -webkit-animation: glow 1s ease-in-out infinite alternate;
-          animation: glow 1s ease-in-out infinite alternate;
   animation: glow 1s ease-in-out infinite alternate;
-  font-size: 1.5rem;
-}
-@-webkit-keyframes glow {
-  from {
-    text-shadow: 0 0 1px #d3d3d3, 0 0 2px #acacac, 0 0 2px #b1afaf, 0 0 5px #9b9b9b;
-  }
-  to {
-    text-shadow: 0 0 5px #dfdfdf, 0 0 8px #c9c9c9, 0 0 15px #b6b6b4, 0 0 20px #b9b9b9;
-  }
+  animation: glow 1s ease-in-out infinite alternate;
 }
 @keyframes glow {
   from {
@@ -378,24 +376,28 @@ body {
     text-shadow: 0 0 5px #dfdfdf, 0 0 8px #c9c9c9, 0 0 15px #b6b6b4, 0 0 20px #b9b9b9;
   }
 }
+.xmb-contents .submenu.one #about {
+  font-size: 1.5rem;
+}
 .xmb-contents .submenu.one img {
   z-index: 2;
 }
 .xmb-contents .submenu.one.inactive {
   margin-top: -250px;
   margin-bottom: 0px;
-  margin-top: -270px;
-  transition: all 250ms ease, opacity 200ms ease;
 }
 .xmb-contents .submenu.one.inactive .subtext {
   opacity: 0;
+}
+.xmb-contents .submenu.one.inactive {
+  margin-top: -270px;
+  transition: all 250ms ease, opacity 200ms ease;
 }
 .xmb-contents .submenu.one.inactive .about-bg {
   opacity: 0;
 }
 .xmb-contents .submenu.one.inactive #about {
-  -webkit-animation: none;
-          animation: none;
+  animation: none;
 }
 .xmb-contents .submenu.one.inactive img {
   transition: scale 300ms;
@@ -416,8 +418,7 @@ body {
   margin-top: 200px;
 }
 .xmb-contents .submenu.two.active #twotext {
-  -webkit-animation: glow 1s ease-in-out infinite alternate;
-          animation: glow 1s ease-in-out infinite alternate;
+  animation: glow 1s ease-in-out infinite alternate;
 }
 @keyframes glow {
   from {
@@ -487,8 +488,7 @@ body {
   padding-bottom: 30px;
 }
 .xmb-title.settings .xmb-contents .submenu.two.active #disptext {
-  -webkit-animation: glow 1s ease-in-out infinite alternate;
-          animation: glow 1s ease-in-out infinite alternate;
+  animation: glow 1s ease-in-out infinite alternate;
 }
 @keyframes glow {
   from {
@@ -529,8 +529,7 @@ body {
   scale: 1;
 }
 .xmb-title.settings .xmb-contents .submenu.three.active #systext {
-  -webkit-animation: glow 1s ease-in-out infinite alternate;
-          animation: glow 1s ease-in-out infinite alternate;
+  animation: glow 1s ease-in-out infinite alternate;
 }
 @keyframes glow {
   from {
@@ -551,6 +550,10 @@ body {
   margin-left: 10px;
   padding-bottom: 20px;
 }
+.xmb-title.music .xmb-contents \.submenu.one {
+  margin-left: 10px;
+  padding-bottom: 20px;
+}
 
 .xmb-title.messages .xmb-contents {
   margin-top: 15px;
@@ -566,48 +569,7 @@ body {
 .xmb-title.music .xmb-contents .submenu.one {
   padding-bottom: 20px;
 }
-.xmb-title.messages .xmb-contents .submenu.three {
-  margin-top: -10px;
-}
-.xmb-title.messages .xmb-contents .submenu.three .dbimg {
-  scale: 0.7;
-}
-.xmb-title.messages .xmb-contents .submenu.three p {
-  font-size: 1.5rem;
-  position: absolute;
-  margin-left: 120px;
-}
-.xmb-title.messages .xmb-contents .submenu.three.active {
-  margin-top: 190px;
-}
-.xmb-title.messages .xmb-contents .submenu.three.active .dbimg {
-  scale: 1;
-}
-.xmb-title.messages .xmb-contents .submenu.three.active p {
-  animation: glow 1s ease-in-out infinite alternate;
-}
- 
-.xmb-title.messages .xmb-contents .submenu.four {
-  margin-top: -10px;
-}
-.xmb-title.messages .xmb-contents .submenu.four .devopsimg {
-  scale: 0.7;
-}
-.xmb-title.messages .xmb-contents .submenu.four p {
-  font-size: 1.5rem;
-  position: absolute;
-  margin-left: 120px;
-}
-.xmb-title.messages .xmb-contents .submenu.four.active {
-  margin-top: 200px;
-}
-.xmb-title.messages .xmb-contents .submenu.four.active .devopsimg {
-  scale: 1;
-}
-.xmb-title.messages .xmb-contents .submenu.four.active p {
-  animation: glow 1s ease-in-out infinite alternate;
-}
- 
+
 .xmb-title.games .xmb-contents {
   margin-top: 70px;
   margin-left: 10px;
@@ -653,27 +615,6 @@ body {
   border-bottom: 2px solid white;
   padding: 20px 0px;
   margin-top: -10px;
-}/* Base full-screen overlay for game backgrounds */
-.game-bg {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1; /* Sits behind icons/text, directly over the background video */
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 400ms ease-in-out;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
 }
 
-/* Assign individual background image files */
-.gta6-bg {
-  background-image: url('../images/gta_6_background.jpg');
-}
-
-/* Fade in the image when both the Games category AND this submenu item are active */
-.xmb-title.games.active .submenu.active .game-bg {
-  opacity: 1;
-}
+/*# sourceMappingURL=main.css.map */
