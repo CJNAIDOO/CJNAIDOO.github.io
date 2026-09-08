@@ -313,7 +313,7 @@ body {
 }
 .title p {
   font-size: 32px;
-  margin-top: -40px;
+  margin-top: 0px;
   letter-spacing: -2px;
   color: #dadada;
   text-shadow: 2px 2px 5px black;
