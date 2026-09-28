@@ -14,13 +14,10 @@
                 .subtext{
                     @include subTextStyling;
                 }
-                
+
                 &.inactive{
                     @include scrollDown;
-
-                    &.gotop{
-                        margin-top: -350px;
-                    }
+                    margin-top: calc(-250px - (var(--pos, 1) - 1) * var(--step, 100px));
                 }
             }
 
@@ -37,17 +34,17 @@
                 &.active{
                         margin-top: 180px;
                         padding-bottom: 30px;
-                        
+
                         #disptext{
-                            @include glowKeyframes;
+                            @include glowText;
                         }
-                       
+
                         .subtext{
                             opacity: 1;
                         }
                 }
             }
-            
+
             &.three{
                 margin-top: -10px;
                 .subtext{
@@ -69,7 +66,7 @@
                         scale: 1.0;
                     }
                     #systext{
-                        @include glowKeyframes;
+                        @include glowText;
                     }
                     .subtext{
                         opacity: 1;

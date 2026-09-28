@@ -1,8 +1,15 @@
 @use "../abstract/" as *;
 
-.xmb-title.music{
+// NOTE: this previously said ".xmb-title.music" by mistake, which meant
+// "Let's Connect" (.videos) got none of its own submenu spacing and
+// "My Projects" (.music) was getting fought over by two files.
+// Values below are a starting point matching the sibling menus'
+// pattern (.photos/.games) — nudge margin-left/padding-bottom to taste.
+.xmb-title.videos{
     .xmb-contents{
-        margin-left: 10px;
+        margin-top: 15px;
+        margin-left: 40px;
+
         .submenu.one{
             padding-bottom: 20px;
         }

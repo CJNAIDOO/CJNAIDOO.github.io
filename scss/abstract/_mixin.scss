@@ -29,6 +29,8 @@
      } 
 }
 
+// Call this ONCE anywhere in the whole build (submenus/_global.scss does this)
+// to define the @keyframes rule a single time.
 @mixin glowKeyframes{
     animation: $glowtext;
     @keyframes glow {
@@ -39,6 +41,12 @@
          text-shadow: 0 0 5px #dfdfdf, 0 0 8px #c9c9c9, 0 0 15px #b6b6b4, 0 0 20px #b9b9b9;
        }
     }
+}
+
+// Use this EVERYWHERE ELSE you want the glow animation — it just references
+// the keyframes defined once above, instead of redeclaring @keyframes glow.
+@mixin glowText{
+    animation: $glowtext;
 }
 
 @mixin bgStyling{
