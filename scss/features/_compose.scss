@@ -1,0 +1,127 @@
+@use "../abstract/" as *;
+
+// PSN-style "Create Message" box for the Email row
+.psn-compose{
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: grid;
+    place-items: center;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(3px);
+    color: $primary-color;
+    text-align: left;
+
+    &[hidden]{
+        display: none;
+    }
+}
+
+.psn-window{
+    width: min(720px, 86vw);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(40, 40, 52, 0.94), rgba(12, 12, 18, 0.96));
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.psn-bar{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04));
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+
+    h2{
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 600;
+        text-shadow: $shadowtext;
+    }
+}
+.psn-icon{
+    font-size: 1.3rem;
+}
+
+.psn-form{
+    padding: 8px 18px 16px;
+}
+
+.psn-row,
+.psn-body{
+    display: grid;
+    grid-template-columns: 7em 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.psn-body{
+    align-items: start;
+    border-bottom: 0;
+}
+.psn-label{
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+.psn-to{
+    font-weight: 600;
+}
+
+.psn-form input,
+.psn-form textarea{
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.35);
+    color: $primary-color;
+    font: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+
+    &:focus{
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.55);
+        box-shadow: 0 0 0 2px rgba(120, 150, 255, 0.25);
+    }
+}
+
+.psn-bot{
+    position: absolute;
+    left: -9999px;
+}
+
+.psn-status{
+    min-height: 1.4em;
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+
+    &.is-error{ color: #ff9d9d; }
+    &.is-ok{ color: #9dffb5; }
+}
+
+.psn-foot{
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+}
+.psn-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: $primary-color;
+    font: inherit;
+    font-size: 0.95rem;
+    cursor: pointer;
+
+    &:hover{ background: rgba(255, 255, 255, 0.14); }
+    &.is-primary{ background: rgba(255, 255, 255, 0.14); }
+}

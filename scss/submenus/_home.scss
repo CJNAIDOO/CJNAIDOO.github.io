@@ -1,18 +1,6 @@
 @use "../abstract/" as *;
 
-.xmb-title.homeMenu.active{
-    .xmb-contents{
-        .submenu.one{
-            &.active{
-                .about-bg{
-                    opacity: 1;
-                }
-            }
-            &.inactive{
-                .about-bg{
-                    opacity: 0;
-                }
-            }
-        }
-    }
+// The Welcome card only shows while its row is the focused one
+.xmb-title.home .xmb-contents .submenu:not(.active) .about-bg{
+    opacity: 0;
 }

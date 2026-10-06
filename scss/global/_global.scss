@@ -3,7 +3,7 @@
 body{
     margin: 0;
     padding: 0;
-    font-family: 'PS3Font', Arial, Helvetica, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     background-color: black;
     overflow-y: hidden;
     overflow-x: hidden;
@@ -40,4 +40,4 @@ body{
     @media screen and (max-width:1366px) and (max-height:768px) {
         margin-right: -40%;
     }
-}
+}

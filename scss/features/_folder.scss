@@ -1,0 +1,138 @@
+@use "../abstract/" as *;
+
+// A project folder opened from My Projects, laid out like opening a folder
+// on the PS3 / PSP XMB: the bar dims, the folder's items list vertically,
+// and the focused item's card sits on the right.
+.xmb-main{
+    transition: opacity 250ms ease;
+}
+body.folder-open .xmb-main{
+    opacity: 0.08;
+}
+// the row overlays belong to the XMB behind the folder
+body.folder-open .xmb-overlay{
+    opacity: 0 !important;
+}
+
+.folder-view{
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    color: $primary-color;
+    text-align: left;
+    animation: folder-in 250ms ease;
+
+    &[hidden]{
+        display: none;
+    }
+}
+@keyframes folder-in{
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.folder-scrim{
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(4, 4, 14, 0.35) 0%, rgba(4, 4, 14, 0.55) 50%, rgba(4, 4, 14, 0.85) 100%);
+}
+
+.folder-head{
+    position: absolute;
+    left: 18%;
+    top: 30%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+
+    img{
+        width: 72px;
+        filter: $shadowimage;
+    }
+    p{
+        margin: 0;
+        font-size: 1.3rem;
+        text-shadow: $shadowtext;
+    }
+}
+
+.folder-list{
+    position: absolute;
+    left: 24%;
+    top: 42%;
+    width: 30%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 6px;
+}
+.folder-item{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 200ms ease;
+
+    img{
+        width: 64px;
+        scale: 0.7;
+        transition: scale 200ms ease;
+        filter: $shadowimage;
+    }
+    p{
+        margin: 0;
+        text-shadow: $shadowtext;
+    }
+    .item-title{
+        font-size: 1.3rem;
+    }
+    .item-meta{
+        font-size: 0.85rem;
+        opacity: 0;
+        transition: opacity 200ms ease;
+    }
+
+    &.active{
+        opacity: 1;
+        img{
+            scale: 1;
+        }
+        .item-title{
+            @include glowText;
+        }
+        .item-meta{
+            opacity: 0.75;
+        }
+    }
+}
+
+.project-card{
+    top: 42%;
+
+    .card-links{
+        display: flex;
+        gap: 10px;
+        margin-top: 18px;
+    }
+    .card-links button{
+        padding: 7px 16px;
+        border: 1px solid rgba(218, 218, 218, 0.4);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        color: $primary-color;
+        font: inherit;
+        font-size: 0.9rem;
+        cursor: pointer;
+
+        &:disabled{
+            opacity: 0.35;
+            cursor: default;
+        }
+        &:not(:disabled):hover{
+            background: rgba(255, 255, 255, 0.16);
+        }
+    }
+}

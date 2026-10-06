@@ -1,0 +1,326 @@
+@use "../abstract/" as *;
+
+// Info overlays shown while a row is focused (My Academics, My Expertise,
+// My Projects, Let's Connect). Same layering as Home's Welcome card: a
+// full-screen layer behind the XMB, with the text in a see-through zone on
+// the right. Styled neutrally for now — restyle once the design references
+// are in.
+.xmb-overlay{
+    @include bgStyling;
+    opacity: 0;
+    pointer-events: none;
+    color: $primary-color;
+    text-align: left;
+}
+.xmb-title .xmb-contents .submenu.active .xmb-overlay{
+    opacity: 1;
+}
+
+// photo of the school / university, faded so the XMB stays readable
+.overlay-photo{
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.45;
+    filter: saturate(0.85);
+
+    &.is-empty{
+        opacity: 1;
+        background: radial-gradient(70% 60% at 30% 40%, rgba(46, 29, 158, 0.35), transparent 70%);
+    }
+}
+
+// darker, see-through zone behind the text
+.overlay-scrim{
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(4, 4, 14, 0) 38%, rgba(4, 4, 14, 0.55) 55%, rgba(4, 4, 14, 0.82) 100%);
+}
+
+.overlay-panel,
+.project-card{
+    position: absolute;
+    left: 56%;
+    width: 36%;
+    top: 42%;           // below the XMB's category bar
+    max-height: 50%;
+    overflow: hidden;
+    padding-left: 22px;
+    border-left: 2px solid rgba(218, 218, 218, 0.35);
+    line-height: 1.5;
+
+    p{
+        text-shadow: $shadowtext;
+    }
+}
+
+.panel-eyebrow{
+    margin: 0 0 6px;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+.panel-title{
+    margin: 0 0 6px;
+    font-size: 2.1rem;
+    line-height: 1.15;
+    text-shadow: $shadowtext;
+}
+.panel-meta{
+    margin: 0 0 14px;
+    font-size: 1rem;
+    opacity: 0.75;
+}
+.panel-summary{
+    margin: 0 0 16px;
+    font-size: 1.05rem;
+    max-width: 52ch;
+}
+.panel-label{
+    margin: 0 0 8px;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+.chip-row{
+    list-style: none;
+    margin: 0 0 16px;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    li{
+        padding: 5px 12px;
+        border: 1px solid rgba(218, 218, 218, 0.35);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        font-size: 0.85rem;
+    }
+
+    // achievement badges (the gold "badge row" style)
+    &.is-gold li{
+        border-color: rgba(216, 166, 86, 0.45);
+        background: rgba(216, 166, 86, 0.13);
+        color: #d8a656;
+    }
+}
+
+.panel-details{
+    margin: 0;
+    display: grid;
+    gap: 6px;
+
+    div{
+        display: grid;
+        grid-template-columns: 9em 1fr;
+        gap: 12px;
+    }
+    dt{
+        opacity: 0.65;
+    }
+    dd{
+        margin: 0;
+    }
+}
+
+// ---- school / university: photo, logo and trophies ------------------------
+.academic-overlay{
+    .overlay-photo{
+        opacity: 0.5;
+        filter: saturate(0.9) blur(1px);   // the photos are small; a touch of blur hides it
+        transform: scale(1.02);
+    }
+    .overlay-panel{
+        left: 52%;
+        width: 42%;
+        top: 40%;
+        max-height: 59%;
+        // if the text runs long it fades out at the bottom instead of being cut mid-line
+        mask-image: linear-gradient(180deg, #000 calc(100% - 28px), transparent);
+        padding-bottom: 28px;   // the fade falls on this empty space when it all fits
+    }
+}
+
+// the logo sits straight on the photo, bottom left of the screen (white
+// versions of the logos so they read on the dark scrim)
+.overlay-logo{
+    position: absolute;
+    left: 3.5%;
+    bottom: 6%;
+
+    img{
+        display: block;
+        height: clamp(56px, 13vh, 110px);
+        width: auto;
+        filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.55));
+    }
+}
+
+// trophies: a simple two-column list, each with a small trophy
+.trophy-list{
+    list-style: none;
+    margin: 0 0 14px;
+    padding: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;  // left column as wide as its names, the right takes the rest
+    gap: 6px 28px;
+}
+.trophy.is-platinum{ grid-column: 1 / -1; }
+// three or fewer and no platinum: all on one line
+.trophy-list.is-one-row{
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    justify-content: start;
+}   // the top achievement gets its own line
+.academic-overlay{
+    .panel-summary{ margin-bottom: 12px; }
+    .panel-label{ margin-bottom: 6px; }
+    .chip-row{ margin-bottom: 12px; gap: 6px; }
+}
+.trophy{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    font-size: 0.95rem;
+    line-height: 1.25;
+    text-shadow: $shadowtext;
+}
+.trophy__icon{
+    flex: none;
+    width: auto;
+    height: 1.35em;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
+}
+.trophy__detail{
+    opacity: 0.7;
+    font-size: 0.85em;
+}
+
+// ---- My Expertise ----------------------------------------------------------
+// Just the tools: an app-style icon tile, the name and a few words on what
+// it's for, in two columns. No box: like My Academics, the screen-wide
+// scrim darkens towards the right and the text sits beside a thin line.
+.skills-overlay .overlay-panel{
+    box-sizing: border-box;
+    left: 53%;
+    width: 45.5%;
+    top: 40%;
+    max-height: 58%;
+}
+.tool-list{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 18px;
+}
+.tool{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+// no tile per icon: the logo sits straight on the panel's shared backdrop
+.tool__icon{
+    flex: none;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+
+    img{
+        width: 36px;
+        height: 36px;
+        object-fit: contain;
+    }
+}
+// #menu so these beat the menu-wide `#menu img` shadow
+#menu .tool__icon img{
+    filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.5));
+
+    // black logos (GitHub, three.js) drawn white
+    &.is-mono{ filter: brightness(0) invert(1) drop-shadow(0 1px 4px rgba(0, 0, 0, 0.5)); }
+}
+// no logo for it yet: first letters on the tile
+.tool__initials{
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1.5px solid rgba(218, 218, 218, 0.7);
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: $primary-color;
+}
+.tool__text{
+    display: grid;
+    min-width: 0;
+    line-height: 1.25;
+    text-shadow: $shadowtext;
+}
+.tool__name{
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    font-size: 1.05rem;
+}
+.tool__note{
+    font-size: 0.82rem;
+    opacity: 0.72;
+}
+// "Learning": a lit pill with a pulsing dot, so it reads as in progress
+$learning: #7cc4ff;
+.tool__tag{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 8px;
+    padding: 1px 8px 1px 7px;
+    border: 1px solid rgba($learning, 0.6);
+    border-radius: 999px;
+    background: rgba($learning, 0.16);
+    color: #b8e0ff;
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-shadow: none;
+    vertical-align: 2px;
+    box-shadow: 0 0 10px rgba($learning, 0.25);
+
+    &::before{
+        content: "";
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: $learning;
+        box-shadow: 0 0 6px $learning;
+        animation: learning-pulse 1.8s ease-in-out infinite;
+    }
+}
+@keyframes learning-pulse{
+    50%{ opacity: 0.35; }
+}
+@media (prefers-reduced-motion: reduce){
+    .tool__tag::before{ animation: none; }
+}
+
+.panel-used{
+    margin: 4px 0 0;
+    font-size: 0.95rem;
+    opacity: 0.85;
+
+    .panel-label{
+        margin-right: 8px;
+    }
+}

@@ -1,18 +1,35 @@
 @use "../abstract/" as *;
 
+// Games — rows use the shared submenu styling; only the wider cover art differs.
 .xmb-title.games{
     .xmb-contents{
+        --icon-w: 200px;
         margin-top: 70px;
         margin-left: 10px;
         margin-right: 0 !important;
-        .submenu.one{
-             padding-bottom: 20px;
-        }
-
-        .submenu.two{
-            &.active{
-                 margin-top: 200px;
-            }
-        }
     }
+}
+
+// Full-screen background for a game, faded in while its row is focused.
+// (Previously this only existed in the compiled main.css.)
+.game-bg{
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1; // behind icons/text, directly over the background video
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 400ms ease-in-out;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.gta6-bg{
+    background-image: url('../images/gta_6_background.jpg');
+}
+
+.xmb-title.games.active .submenu.active .game-bg{
+    opacity: 1;
 }

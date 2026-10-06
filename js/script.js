@@ -5,17 +5,31 @@ const menu = document.getElementById("menu")
 const clockSection = document.querySelectorAll(".clock")[0]
 const dateTime = document.getElementById("date")
 const xmbMain = document.querySelectorAll(".xmb-main")[0]
-const section = document.querySelectorAll(".xmb-title")
-const submenuOne = document.querySelectorAll(".submenu.one")
-const submenuTwo = document.querySelectorAll(".submenu.two")
-const submenuthree = document.querySelectorAll(".submenu.three")
-const submenu = [submenuOne, submenuTwo, submenuthree]
+const sections = Array.from(document.querySelectorAll(".xmb-title"))
 const startupSound = document.getElementById("startup")
 const navSound = document.getElementById("nav")
 
 let sectionNumber = 0
-let subsection = 0
-let multiSection
+let menuReady = false
+
+// Every section remembers its own focused row, so moving through one
+// section's submenu never changes another section's.
+const focusedItem = sections.map(() => 0)
+
+// Space between the last row scrolled past and the category icon, and the
+// breathing room between the focused row and the rows after it.
+const ABOVE_GAP = 20
+const BELOW_GAP = 16
+
+// Where the whole XMB bar slides to for each section: [<1400px, 2560-3840px, everything else]
+const MENU_OFFSETS = [
+    ['-40%', 0, 0],
+    ['-10%', '18%', '18%'],
+    ['22%', '32%', '39%'],
+    ['50%', '47%', '60%'],
+    ['76%', '62%', '77%'],
+    ['100%', '77%', '97%'],
+]
 
 let checkLoad = () =>{
     return new Promise((resolve) => {
@@ -70,6 +84,7 @@ let loadTitles = async () =>{
 let loadMenu = async () =>{
     await loadTitles()
     menu.style.opacity = '1'
+    menuReady = true
     sideClock()
     clockSection.style.opacity = '1'
 }
@@ -87,129 +102,88 @@ let moveMenu = (hd, ultraHd, fullHd) =>{
     }
 }
 
-let focusSection = (sn, right, left) =>{
-    section[sn].classList.add("active")
-    if(right === true){
-        section[sn-1].classList.remove("active")
-    }
-    else if(left === true){
-        section[sn+1].classList.remove("active")
-    }
-    switchSection()
+let submenuItems = (sectionEl) => Array.from(sectionEl.querySelectorAll(":scope > .xmb-contents > .submenu"))
+
+// Puts one section's rows in place. Exactly one row is .active and sits in
+// the first row's slot; rows before it are .above and stack over the category
+// icon; rows after it are .below and follow on underneath. Rows are moved with
+// a transform (--shift), never margins, so every section behaves the same no
+// matter how many rows it has.
+let layoutSubmenu = (sn) =>{
+    const sectionEl = sections[sn]
+    const items = submenuItems(sectionEl)
+    if (items.length === 0) return
+
+    const current = focusedItem[sn]
+    const icon = sectionEl.querySelector(":scope > img")
+    const tops = items.map((item) => item.offsetTop)
+    const toFirstSlot = tops[0] - tops[current]
+
+    const lastAbove = items[current - 1]
+    const aboveShift = lastAbove
+        ? (icon.offsetTop - ABOVE_GAP) - (lastAbove.offsetTop + lastAbove.offsetHeight)
+        : 0
+
+    items.forEach((item, i) =>{
+        item.classList.toggle("active", i === current)
+        item.classList.toggle("above", i < current)
+        item.classList.toggle("below", i > current)
+
+        let shift = toFirstSlot
+        if (i < current) shift = aboveShift
+        else if (i > current) shift = toFirstSlot + BELOW_GAP
+        item.style.setProperty("--shift", `${shift}px`)
+    })
+
+    // let the extra features (overlays, prompts) know which row is focused
+    document.dispatchEvent(new CustomEvent("xmb:focus", { detail: { section: sn, item: current } }))
 }
 
-let switchSection = () =>{
-    multiSection = false
-    switch (sectionNumber) {
-        case 0:
-            moveMenu('-40%', 0, 0)
-            break
-        case 1:
-            moveMenu('-10%', '18%', '18%')
-            multiSection = true
-            break
-        case 2:
-            moveMenu('22%', '32%', '39%')
-            break
-        case 3:
-            moveMenu('50%', '47%', '60%')
-            break
-        case 4:
-            moveMenu('76%', '62%', '77%')
-            break
-        case 5:
-            moveMenu('100%', '77%', '97%')
-            break
-    }
+let focusSection = (next) =>{
+    if (next < 0 || next >= sections.length || next === sectionNumber) return false
+    sections[sectionNumber].classList.remove("active")
+    sectionNumber = next
+    sections[sectionNumber].classList.add("active")
+
+    const offsets = MENU_OFFSETS[Math.min(sectionNumber, MENU_OFFSETS.length - 1)]
+    moveMenu(...offsets)
+    layoutSubmenu(sectionNumber)
+    return true
 }
 
-let focusSubMenu = (sn, sub, down, up) =>{
-    switch(sub){
-        case 0:
-            if(up){
-                submenu[sub+1][sn].classList.remove("active")
-                submenu[sub][sn].classList.remove("inactive")
-            }
-            break
-        case 1:
-            if(down){
-                submenu[sub-1][sn].classList.add("inactive")
-                submenu[sub][sn].classList.add("active")
-            }
-            else if(up){
-                if(multiSection){
-                    submenu[sub+1][sn-1].classList.remove("active")
-                    submenu[sub-1][sn].classList.remove("gotop")
-                    submenu[sub][sn].classList.add("active")
-                }
-            }
-        case 2:
-            if(down){
-                if (multiSection) {
-                    submenu[sub-2][sn].classList.add("gotop")
-                    submenu[sub-1][sn].classList.remove("active")
-                    submenu[sub][sn - 1].classList.add("active")
-                }
-            }
-            break
-        default:
-            break
-    }
+let focusSubMenu = (step) =>{
+    const count = submenuItems(sections[sectionNumber]).length
+    const next = focusedItem[sectionNumber] + step
+    if (next < 0 || next >= count) return false
+    focusedItem[sectionNumber] = next
+    layoutSubmenu(sectionNumber)
+    return true
+}
+
+const NAV_KEYS = {
+    ArrowDown: () => focusSubMenu(1),
+    ArrowUp: () => focusSubMenu(-1),
+    ArrowRight: () => focusSection(sectionNumber + 1),
+    ArrowLeft: () => focusSection(sectionNumber - 1),
 }
 
 document.body.addEventListener('keydown', (e) =>{
-    if(e.key === 'ArrowDown'){
+    const action = NAV_KEYS[e.key]
+    if (!action) return
+    e.preventDefault()
+    if (!menuReady) return
+    if (action()) {
+        navSound.currentTime = 0
         navSound.play()
-        e.preventDefault()
-        subsection++
-        if(subsection < 0){
-            subsection = 0
-        }
-        else if (subsection > 2){
-            subsection = 2
-        }
-        focusSubMenu(sectionNumber, subsection, true, false)
-    }
-
-    else if(e.key === 'ArrowUp'){
-        navSound.play()
-        e.preventDefault()
-        subsection--
-        if (subsection < 0) {
-            subsection = 0
-        }
-        else if (subsection > 2) {
-            subsection = 2
-        }
-        focusSubMenu(sectionNumber, subsection, false, true)
-    }
-
-    else if(e.key === 'ArrowRight'){
-        navSound.play()
-        e.preventDefault()
-        sectionNumber++
-        if(sectionNumber<0){
-            sectionNumber = 0
-        }
-        else if(sectionNumber >5){
-            sectionNumber = 5
-        }
-        focusSection(sectionNumber, true, false)
-    }
-
-    else if(e.key === 'ArrowLeft'){
-        navSound.play()
-        e.preventDefault()
-        sectionNumber--
-        if (sectionNumber < 0) {
-            sectionNumber = 0
-        }
-        else if (sectionNumber > 5) {
-            sectionNumber = 5
-        }
-        focusSection(sectionNumber, false, true)
     }
 })
+
+// Rows are measured, so lay everything out once images have their size, and
+// again whenever the window changes size.
+let layoutAll = () => sections.forEach((_, sn) => layoutSubmenu(sn))
+layoutAll()
+window.addEventListener('load', layoutAll)
+window.addEventListener('resize', () => layoutSubmenu(sectionNumber))
 
 const startApp = () => {
     // Hide the start screen
@@ -224,4 +198,4 @@ const startApp = () => {
 
 // Listen for the user's first click or key press to start the app
 document.addEventListener('click', startApp);
-document.addEventListener('keydown', startApp);
+document.addEventListener('keydown', startApp);

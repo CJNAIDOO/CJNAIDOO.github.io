@@ -1,7 +1,7 @@
 @use "../abstract/" as *;
 
 .xmb-title{ 
-  &.videos{
+  &.connect{
         @include displayInactive;
         margin-left: 55px;
         &.active{

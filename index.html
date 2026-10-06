@@ -2,173 +2,93 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAMERON J. NAIDOO PS3 XMB STYLE PORTFOLIO</title>
-    <link rel="stylesheet" href="scss/main.css">
-    <script defer src="js/script.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Cameron J. Naidoo · Portfolio</title>
+    <meta name="description" content="Cameron J. Naidoo, aspiring fullstack developer: a PS3/PSP XMB style portfolio running on a 3D PSP.">
+    <meta name="theme-color" content="#08080a">
+    <link rel="preload" as="font" type="font/woff2" href="fonts/Geist-Variable.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="fonts/InstrumentSerif-Italic.woff2" crossorigin>
+    <link rel="stylesheet" href="shell/css/shell.css">
+    <!-- three.js from a CDN so GitHub Pages needs no build step -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+    }
+    </script>
+    <!-- act 1 runs on its own, straight away; main.js (three.js) follows -->
+    <script defer src="shell/js/mark.js"></script>
+    <script type="module" src="shell/js/main.js"></script>
 </head>
+<body data-stage="mark">
+    <!-- act 2/3: the PSP (3D), with the XMB (xmb.html) on its screen -->
+    <!-- the studio behind the PSP: backdrop, spotlight, pool of light (shell/js/studio.js) -->
+    <div class="studio" id="studio" aria-hidden="true"><div class="studio__spot"></div><div class="studio__pool"></div></div>
+    <main class="stage" id="stage" aria-label="3D PSP running the XMB portfolio"></main>
 
-<body>
-    <div id="start-screen" style="position: absolute; inset: 0; background: black; color: white; display: flex; align-items: center; justify-content: center; z-index: 9999; cursor: pointer;">
-        <section class="start-screen" id="start-screen">       
-            <h1>Click anywhere to start</h1>
-        </section>
-    </div>
+    <!-- lens vignette: rides the intro, lifts once you're in -->
+    <div class="vig" id="vig" aria-hidden="true"></div>
 
-    <audio id="startup" src="audio/startup.mp3" type="audio/mpeg"></audio>
-    <audio id="nav" src="audio/nav.mp3" type="audio/mpeg"></audio>
-    <video autoplay loop muted plays-inline class="back-vid" id="vid" src="images/vid.mp4" type="video/mp4"></video>
+    <!-- act 1: the mark -->
+    <section class="mark" id="mark">
+        <h1 class="mark__name" id="mark-name">Cameron J. Naidoo</h1>
+        <p class="mark__role" id="mark-role">Aspiring Fullstack Developer</p>
+        <div class="mark__load" aria-hidden="true"><span id="mark-bar"></span></div>
+        <!-- the full stop after "J.": it orbits, bursts, then opens into the stage -->
+        <svg class="mark__fx" aria-hidden="true">
+            <g id="mark-trail"></g>
+            <g id="mark-sparks"></g>
+            <circle class="mark__dot" id="mark-dot" r="4"/>
+        </svg>
+    </section>
 
-    <header>
-        <section class="title" id="title">
-            <h1>Cameron J. Naidoo</h1>
-            <p>Aspiring Fullstack Developer</p>
-        </section>
+    <!-- act 1 -> 2: the j's dot opens up into the dark stage -->
+    <div class="iris" id="iris" aria-hidden="true" hidden></div>
+
+    <p class="hint" id="hint">drag to turn</p>
+    <button class="skip" id="skip" type="button">skip intro</button>
+
+    <!-- the top menu: the XMB's main headings, outside the PSP -->
+    <header class="sitenav" id="sitenav" hidden>
+        <button class="sitenav__brand" id="brand" type="button" aria-label="Cameron J. Naidoo: back to Home">
+            <span class="sitenav__name">Cameron J. Naidoo</span>
+        </button>
+        <nav class="sitenav__links" aria-label="XMB sections">
+            <ul id="sitenav-list"></ul>
+            <span class="sitenav__dot" id="sitenav-dot" aria-hidden="true"></span>
+        </nav>
     </header>
 
-    <section class = "warning">
-        <p class="warninghead">DISCLAIMER:</p>
-        <p>This is a recreation of the PS3's XMB Menu. This project is not intended for commercial gain and the design and its rights belong to Sony.</p>
-    </section>
+    <div class="studio-toggle" id="studio-toggle" role="group" aria-label="Studio lighting" hidden>
+        <button type="button" data-theme="dark" aria-pressed="true">Dark</button>
+        <button type="button" data-theme="light" aria-pressed="false">Light</button>
+    </div>
 
-    <section class = "clock">
-        <div class="clock-container">
-            <p id="date"></p>
-        </div>
-    </section>
+    <nav class="toolbar" id="toolbar" hidden aria-label="View controls">
+        <button id="reset" type="button" title="Put the PSP back in front of you">reset view</button>
+        <button id="reboot" type="button" title="Restart the XMB and replay its intro">power cycle</button>
+        <button id="credits-open" type="button">credits</button>
+    </nav>
 
-    <main id="menu">
-        <section class = "xmb-main">
+    <dialog class="credits" id="credits">
+        <h2>credits</h2>
+        <p>XMB portfolio designed and built by Cameron J. Naidoo.</p>
+        <p>3D model: <a href="https://sketchfab.com/3d-models/sony-psp-dca89d10ec304d0cab76837750df7761" target="_blank" rel="noopener">&ldquo;Sony PSP&rdquo;</a>
+            by <a href="https://sketchfab.com/strov" target="_blank" rel="noopener">Ilya Ostrovsky</a>, licensed under
+            <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.
+            Changes: textures resized and the screen replaced with a live page.</p>
+        <p>Type: Geist and Instrument Serif (both SIL Open Font License).</p>
+        <p>PSP, PlayStation and Sony are trademarks of Sony Interactive Entertainment. This is a non-commercial fan recreation.</p>
+        <form method="dialog"><button>close</button></form>
+    </dialog>
 
-            <div class="xmb-title homeMenu active">
-                <img class="home" src="images/home.png">
-                <p class ="titletext">Home</p>
+    <div class="rotate-hint" aria-hidden="true">
+        <div class="phone"></div>
+        <p>turn your phone sideways</p>
+    </div>
 
-                <div class="xmb-contents">
-                    <div class="submenu one" id="about">
-                        <img class="welcome-info" src="images/info.png" alt="">
-                        <p id="about">Welcome</p>
-
-                        <div class="about-bg">
-                            <div class="infowrapper">
-                                <h1>Welcome to CamStation 3!</h1>
-                                <p>Navigate through the XMB using the arrow keys to have a look around.</p>
-                                <p>Made by Cameron J. Naidoo</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="submenu two" id="two">
-                        <img class="resimg" src="images/user.png" alt="">
-                        <p id="twotext">About me</p>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="xmb-title settings">
-                <img class="settings" src="images/my_academics.png" alt="">
-                <p class = "titletext">My Academics</p>
-
-                <div class="xmb-contents">
-                    <div class="submenu one"  id="about">
-                        <img id="aboutimage" class="abimg" src="images/high_school.png" alt="">
-                        <div class="context">
-                            <p id="about">High School</p>
-                            <p class="subtext">2014-2019</p>
-                        </div>
-                    </div>
-                    <div class="submenu two" id="two">
-                        <img class="resimg" src="images/university.png" alt="">
-                        <div class="context">
-                            <p id="disptext">University</p>
-                            <p class="subtext">2024-2026</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-             <div class="xmb-title messages">
-                <img class="messages" src="images/my_skills.png" alt="">
-                <p class = "titletext">My Expertise</p>
-
-                <div class="xmb-contents">
-                    <div class="submenu one"  id="about">
-                        <img id="aboutimage" class="abimg" src="images/frontend.png" alt="">
-                        <p id="about">Frontend</p>
-                    </div>
-                    <div class="submenu two" id="two">
-                        <img class="twoimg" src="images/backend.png" alt="">
-                        <p id="twotext">Backend</p>
-                    </div>
-                    <div class="submenu three" id="three">
-                        <img class="twoimg" src="images/db.png" alt="">
-                        <p id="twotext">Databases</p>
-                    </div>
-                    <div class="submenu four" id="four">
-                        <img class="twoimg" src="images/devops.png" alt="">
-                        <p id="twotext">Devops</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="xmb-title music">
-                <img class="messages" src="images/my_projects.png" alt="">
-                <p class = "titletext">My Projects</p>
-
-                <div class="xmb-contents">
-                    <div class="submenu one"  id="about">
-                        <img id="aboutimage" class="abimg" src="images/file.png" alt="">
-                        <p id="about">Academic</p>
-                    </div>
-                    <div class="submenu two" id="two">
-                        <img class="twoimg" src="images/file.png" alt="">
-                        <p id="twotext">Personal</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="xmb-title videos">
-                <img class="messages" src="images/lets_connect.png" alt="">
-                <p class = "titletext">Let's Connect</p>
-
-                <div class="xmb-contents">
-                    <div class="submenu one"  id="about">
-                        <img id="aboutimage" class="abimg" src="images/linkedin.png" alt="">
-                        <p id="about">LinkedIn</p>
-                    </div>
-                    <div class="submenu two" id="two">
-                        <img class="twoimg" src="images/contact_form.png" alt="">
-                        <p id="twotext">Email</p>
-                    </div>
-                    <div class="submenu three" id="three">
-                        <img class="threimg" src="images/github.png" alt="">
-                        <p id="twotext">GitHub</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="xmb-title games">
-                <img class="messages" src="images/games.png" alt="">
-                <p class = "titletext">Games</p>
-
-                <div class="xmb-contents">
-                    <div class="submenu one">
-                        <img id="aboutimage" class="abimg" src="images/gow_laufey.png" alt="">
-                        <p id="about">God of War Laufey</p>
-                    </div>
-                    <div class="submenu two" id="two">
-                        <img class="twoimg" src="images/gta_vi.png" alt="">
-                        <p id="twotext">Grand Theft Auto VI</p>
-                        <!-- Dedicated background overlay -->
-                        <div class="game-bg gta6-bg"></div>
-                    </div>
-                </div>
-            </div>
-
-        </section>
-    </main>
-
+    <noscript><p class="noscript">This portfolio needs JavaScript. You can also open the <a href="xmb.html">XMB on its own</a>.</p></noscript>
 </body>
 </html>

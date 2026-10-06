@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAMERON J. NAIDOO PS3 XMB STYLE PORTFOLIO</title>
+    <link rel="stylesheet" href="scss/main.css">
+    <script defer src="js/script.js"></script>
+    <!-- portfolio content + the extra XMB features (overlays, folders, messages) -->
+    <script defer src="js/content.js"></script>
+    <script defer src="js/features.js"></script>
+    <!-- lets the 3D PSP shell (index.html) drive this page when it's shown on the PSP's screen -->
+    <script defer src="js/shell-bridge.js"></script>
+</head>
+
+<body>
+    <div id="start-screen" style="position: absolute; inset: 0; background: black; color: white; display: flex; align-items: center; justify-content: center; z-index: 9999; cursor: pointer;">
+        <section class="start-screen">
+            <h1>Click anywhere to start</h1>
+        </section>
+    </div>
+
+    <audio id="startup" src="audio/startup.mp3" type="audio/mpeg"></audio>
+    <audio id="nav" src="audio/nav.mp3" type="audio/mpeg"></audio>
+    <video autoplay loop muted plays-inline class="back-vid" id="vid" src="images/vid.mp4" type="video/mp4"></video>
+
+    <header>
+        <section class="title" id="title">
+            <h1>Cameron J. Naidoo</h1>
+            <p>Aspiring Fullstack Developer</p>
+        </section>
+    </header>
+
+    <section class = "warning">
+        <p class="warninghead">DISCLAIMER:</p>
+        <p>This is a recreation of the PS3's XMB Menu. This project is not intended for commercial gain and the design and its rights belong to Sony.</p>
+    </section>
+
+    <section class = "clock">
+        <div class="clock-container">
+            <p id="date"></p>
+        </div>
+    </section>
+
+    <main id="menu">
+        <section class = "xmb-main">
+
+            <div class="xmb-title home active">
+                <img class="category-icon" src="images/home.png" alt="">
+                <p class ="titletext">Home</p>
+
+                <div class="xmb-contents">
+                    <div class="submenu one">
+                        <img class="welcome-info" src="images/info.png" alt="">
+                        <p class="submenu-title">Welcome</p>
+
+                        <div class="about-bg welcome-overlay">
+                            <div class="overlay-scrim"></div>
+                            <div class="infowrapper has-controls">
+                                <p class="controls-intro">Getting around on the PSP or on your keyboard</p>
+                                <table class="controls">
+                                    <thead><tr><th scope="col">PSP</th><th scope="col">Keyboard</th><th scope="col"><span class="visually-hidden">What it does</span></th></tr></thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <span class="psp-dpad" role="img" aria-label="D-pad">
+                                                    <svg viewBox="0 0 48 48" aria-hidden="true">
+                                                        <defs>
+                                                            <linearGradient id="dpad-key" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3a41"/><stop offset="1" stop-color="#101013"/></linearGradient>
+                                                            <g id="dpad-arm">
+                                                                <path d="M16 1.5h16a2 2 0 0 1 2 2v12.2L24 22.5 14 15.7V3.5a2 2 0 0 1 2-2z" fill="url(#dpad-key)" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+                                                                <path d="M24 5.6l4.6 6.6h-9.2z" fill="none" stroke="#e4e4ea" stroke-width="1.4" stroke-linejoin="round"/>
+                                                            </g>
+                                                        </defs>
+                                                        <use href="#dpad-arm"/>
+                                                        <use href="#dpad-arm" transform="rotate(90 24 24)"/>
+                                                        <use href="#dpad-arm" transform="rotate(180 24 24)"/>
+                                                        <use href="#dpad-arm" transform="rotate(270 24 24)"/>
+                                                    </svg>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="kbd-arrows" role="img" aria-label="Arrow keys">
+                                                    <kbd>&larr;</kbd>
+                                                    <span class="kbd-stack"><kbd>&uarr;</kbd><kbd>&darr;</kbd></span>
+                                                    <kbd>&rarr;</kbd>
+                                                </span>
+                                            </td>
+                                            <td>Move around the menu</td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="glyph glyph-x" role="img" aria-label="Cross"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 6l8 8M14 6l-8 8"/></svg></i></td>
+                                            <td><kbd>Enter</kbd></td>
+                                            <td>Open / select</td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="glyph glyph-o" role="img" aria-label="Circle"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="4.6"/></svg></i></td>
+                                            <td><kbd>Esc</kbd> or <kbd>Backspace</kbd></td>
+                                            <td>Back / close</td>
+                                        </tr>
+                                        <tr class="shell-only">
+                                            <td><span class="psp-home">HOME</span></td>
+                                            <td><span class="controls-none">&ndash;</span></td>
+                                            <td>Jump back to Home</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="controls-word">Tap</span></td>
+                                            <td><span class="controls-word">Click</span></td>
+                                            <td>Pick an icon or row, again to open</td>
+                                        </tr>
+                                        <tr class="shell-only">
+                                            <td><span class="controls-word">Drag</span></td>
+                                            <td><span class="controls-word">Drag</span></td>
+                                            <td>Turn the PSP around</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="submenu two" data-id="about">
+                        <img class="resimg" src="images/user.png" alt="">
+                        <p class="submenu-title">About me</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="xmb-title academics">
+                <img class="category-icon" src="images/my_academics.png" alt="">
+                <p class = "titletext">My Academics</p>
+
+                <div class="xmb-contents">
+                    <div class="submenu one" data-id="highschool">
+                        <img class="abimg" src="images/high_school.png" alt="">
+                        <div class="context">
+                            <p class="submenu-title">High School</p>
+                        </div>
+                    </div>
+                    <div class="submenu two" data-id="university">
+                        <img class="resimg" src="images/university.png" alt="">
+                        <div class="context">
+                            <p class="submenu-title">University</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+             <div class="xmb-title expertise">
+                <img class="category-icon" src="images/my_expertise.png" alt="">
+                <p class = "titletext">My Expertise</p>
+
+                <div class="xmb-contents">
+                    <div class="submenu one" data-id="frontend">
+                        <img class="abimg" src="images/frontend.png" alt="">
+                        <p class="submenu-title">Frontend &amp; Mobile</p>
+                    </div>
+                    <div class="submenu two" data-id="backend">
+                        <img class="twoimg" src="images/backend.png" alt="">
+                        <p class="submenu-title">Backend</p>
+                    </div>
+                    <div class="submenu three" data-id="databases">
+                        <img class="twoimg" src="images/db.png" alt="">
+                        <p class="submenu-title">Databases</p>
+                    </div>
+                    <div class="submenu four" data-id="ai">
+                        <img class="twoimg" src="images/display.png" alt="">
+                        <p class="submenu-title">Data &amp; AI</p>
+                    </div>
+                    <div class="submenu five" data-id="devops">
+                        <img class="twoimg" src="images/devops.png" alt="">
+                        <p class="submenu-title">Cloud &amp; DevOps</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="xmb-title projects">
+                <img class="category-icon" src="images/my_projects.png" alt="">
+                <p class = "titletext">My Projects</p>
+
+                <div class="xmb-contents">
+                    <div class="submenu one" data-id="academic">
+                        <img class="abimg" src="images/file.png" alt="">
+                        <p class="submenu-title">Academic</p>
+                    </div>
+                    <div class="submenu two" data-id="personal">
+                        <img class="twoimg" src="images/file.png" alt="">
+                        <p class="submenu-title">Personal</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="xmb-title connect">
+                <img class="category-icon" src="images/lets_connect.png" alt="">
+                <p class = "titletext">Let's Connect</p>
+
+                <div class="xmb-contents">
+                    <div class="submenu one" data-id="linkedin">
+                        <img class="abimg" src="images/linkedin.png" alt="">
+                        <p class="submenu-title">LinkedIn</p>
+                    </div>
+                    <div class="submenu two" data-id="email">
+                        <img class="twoimg" src="images/contact_form.png" alt="">
+                        <p class="submenu-title">Email</p>
+                    </div>
+                    <div class="submenu three" data-id="github">
+                        <img class="threimg" src="images/github.png" alt="">
+                        <p class="submenu-title">GitHub</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="xmb-title games">
+                <img class="category-icon" src="images/games.png" alt="">
+                <p class = "titletext">Games</p>
+
+                <div class="xmb-contents">
+                    <div class="submenu one">
+                        <img class="abimg" src="images/gow_laufey.png" alt="">
+                        <p class="submenu-title">God of War Laufey</p>
+                    </div>
+                    <div class="submenu two">
+                        <img class="twoimg" src="images/gta_vi.png" alt="">
+                        <p class="submenu-title">Grand Theft Auto VI</p>
+                        <!-- Dedicated background overlay -->
+                        <div class="game-bg gta6-bg"></div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+</body>
+</html>

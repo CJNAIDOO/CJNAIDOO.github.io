@@ -1,13 +1,9 @@
 @use "../abstract/" as *;
 
-.xmb-title.music{
+// My Projects
+.xmb-title.projects{
     .xmb-contents{
         margin-right: 25px !important;
         margin-left: 10px;
-
-        .submenu.one{
-            margin-left: 10px;
-            padding-bottom: 20px;
-        }
     }
 }

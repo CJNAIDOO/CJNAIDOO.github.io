@@ -1,0 +1,15 @@
+{
+  "name": "cjnaidoo-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "description": "PS3/PSP XMB style portfolio running on a 3D PSP",
+  "scripts": {
+    "start": "serve .",
+    "build": "sass scss/main.scss scss/main.css",
+    "watch": "sass --watch scss/main.scss scss/main.css"
+  },
+  "devDependencies": {
+    "sass": "^1.93.0",
+    "serve": "^14.2.6"
+  }
+}

@@ -1,7 +1,8 @@
 @use "variables" as *;
 
+// Category icon + title look for a section that isn't focused
 @mixin displayInactive{
-     img{
+     > img{
          scale: 0.8;
          opacity: 0.6;
      }
@@ -15,8 +16,9 @@
      } 
 }
 
+// ...and for the focused section
 @mixin displayActive{
-    img{
+    > img{
          scale: 1.0;
          opacity: 0.85;
      }
@@ -59,29 +61,4 @@
      width: 100%;
      height: 100%;
      transition: opacity 300ms;
-}
-
-@mixin scrollDown{
-    margin-top: -250px;
-    margin-bottom: 0px;
-    .subtext{
-        opacity: 0;
-    }
-
-}
-
-@mixin subTextStyling{
-     position: absolute;
-     margin-left: 10px;
-     margin-top: 10px;
-     font-size: 14px;
-     letter-spacing: .3px;
-     color: #dadada;
-}
-
-@mixin subTitleStyling{
-    position: absolute;
-    margin-left: 10px;
-    margin-top: -20px;
-    font-size: 1.5rem;
 }

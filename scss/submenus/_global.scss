@@ -1,7 +1,14 @@
 @use "../abstract/" as *;
 
+// One set of rules for every submenu row in every section.
+// script.js gives each row exactly one of .above / .active / .below and a
+// --shift (px) that slides it into place, so a section's rows never depend on
+// how many rows it has or on anything another section has done.
 .xmb-contents{
+    --icon-w: 96px;     // submenu icon width (games override this for cover art)
+    --label-gap: 24px;  // space between an icon and its label
     transition: opacity 300ms ease-in-out;
+
     p{
         font-size: 1.2rem;
     }
@@ -9,69 +16,63 @@
     .submenu{
         display: flex;
         align-items: center;
-        transition: all 250ms ease, opacity 200ms ease;
         font-size: 1.3rem;
 
         &.one{
-            margin-left: 5px;
             margin-top: 50px;
-            transition: all 250ms ease, opacity 200ms ease;
-
-            #about{
-                position: absolute;
-                margin-left: 115px;
-                @include glowKeyframes; // defines @keyframes glow once, globally
-                font-size: 1.5rem;
-            }
-
-            img{
-                z-index: 2;
-            }
-
-            &.inactive{
-                @include scrollDown;
-                // --pos is set per menu by script.js; each extra item scrolled past
-                // pushes the first item up one more --step (replaces the old .gotop).
-                margin-top: calc(-270px - (var(--pos, 1) - 1) * var(--step, 100px));
-                transition: all 250ms ease, opacity 200ms ease;
-                .about-bg{
-                    opacity: 0;
-                }
-
-                #about{
-                    animation: none;
-                }
-
-                img{
-                    transition: scale 300ms;
-                    scale: 0.7;
-                }
-            }
         }
 
-        // Every item after the first (two, three, four...) gets identical styling
-        &.two, &.three, &.four{
-            transition: all 250ms ease, opacity 200ms ease;
+        // Only the visible pieces move. The row itself stays put so the
+        // full-screen overlays inside it (.about-bg, .game-bg) keep covering
+        // the whole screen.
+        > img,
+        > .submenu-title,
+        > .context{
+            translate: 0 var(--shift, 0px);
+            transition: translate 250ms ease, scale 200ms ease, opacity 200ms ease;
+        }
 
-            #twotext{
-                font-size: 1.5rem;
-                position: absolute;
-                margin-left: 120px;
+        > img{
+            width: var(--icon-w);
+            height: auto;
+            scale: 0.7;
+            opacity: 0.85;
+            z-index: 2;
+        }
+
+        // Labels sit out of flow so they don't widen the column
+        > .submenu-title,
+        > .context{
+            position: absolute;
+            margin-left: calc(var(--icon-w) + var(--label-gap));
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .submenu-title{
+            margin-block: 0;
+            font-size: 1.5rem;
+        }
+
+        // Second line under a label (e.g. the years on My Academics)
+        .subtext{
+            margin-block: 4px 0;
+            font-size: 14px;
+            letter-spacing: .3px;
+            color: $primary-color;
+            opacity: 0;
+            transition: opacity 200ms ease;
+        }
+
+        &.active{
+            > img{
+                scale: 1;
             }
-
-            img{
-                scale: 0.7;
+            .submenu-title{
+                @include glowKeyframes; // defines @keyframes glow once, globally
             }
-
-            &.active{
-                margin-top: 200px;
-                #twotext{
-                    @include glowText;
-                }
-                img{
-                    transition: scale 100ms ease-in-out;
-                    scale: 1.0;
-                }
+            .subtext{
+                opacity: 1;
             }
         }
     }

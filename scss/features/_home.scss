@@ -1,0 +1,163 @@
+@use "../abstract/" as *;
+
+// ---- Home · Welcome: the controls -----------------------------------------
+// Same see-through treatment as the other rows' overlays: the XMB background
+// shows through a dark scrim, and the text sits in a panel on the right.
+.about-bg.welcome-overlay{
+    background: none;
+}
+.about-bg .infowrapper.has-controls{
+    top: 42%;
+    left: 52%;
+    width: 42%;
+    padding: 0 0 0 22px;
+    border: 0;
+    border-left: 2px solid rgba(218, 218, 218, 0.35);
+    border-radius: 0;
+    background: none;
+    line-height: 1.35;
+    z-index: auto;
+
+    p{
+        margin: 0 0 12px;
+    }
+}
+
+.controls-intro{
+    font-size: 1.05rem;
+    text-shadow: $shadowtext;
+}
+
+.controls{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+
+    th{
+        padding: 0 10px 6px 0;
+        font-size: 0.72rem;
+        font-weight: normal;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        text-align: left;
+        opacity: 0.6;
+    }
+    td{
+        padding: 6px 12px 6px 0;
+        border-top: 1px solid rgba(218, 218, 218, 0.14);
+        vertical-align: middle;
+        white-space: nowrap;
+        text-shadow: $shadowtext;
+
+        &:last-child{
+            white-space: normal;
+            padding-right: 0;
+        }
+    }
+    th:first-child, td:first-child{ width: 4.2em; }
+
+    kbd{
+        display: inline-block;
+        min-width: 1.75em;
+        padding: 2px 6px;
+        border: 1px solid rgba(218, 218, 218, 0.45);
+        border-bottom-width: 2px;
+        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.06);
+        font-family: inherit;
+        font-size: 0.8rem;
+        line-height: 1.2;
+        text-align: center;
+        text-shadow: none;
+    }
+}
+
+// the arrow keys laid out like a keyboard: left, up over down, right
+.kbd-arrows{
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 3px;
+
+    kbd{ margin: 0; }
+}
+.kbd-stack{
+    display: inline-flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+// the PSP's own D-pad: four separate arrow keys round a centre
+.psp-dpad{
+    display: inline-block;
+    width: 3.1em;
+    height: 3.1em;
+    vertical-align: middle;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+
+    svg{
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+}
+
+// the HOME key, as it looks on the PSP: a black key with bold white type
+.psp-home{
+    display: inline-block;
+    padding: 3px 9px 2px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 7px;
+    background: linear-gradient(180deg, #34343a, #0e0e11);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.6);
+    color: #ececf0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-shadow: none;
+}
+.controls-word{
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+.controls-none{
+    opacity: 0.45;
+}
+// HOME and dragging only exist on the 3D PSP
+html:not(.in-shell) .controls .shell-only{
+    display: none;
+}
+
+// ---- Home · About me ------------------------------------------------------
+.about-overlay{
+    .overlay-photo{
+        opacity: 0.55;
+        filter: saturate(0.9);
+        background-position: center 70%;
+    }
+    .overlay-scrim{
+        background:
+            linear-gradient(90deg, rgba(4, 4, 14, 0.15) 30%, rgba(4, 4, 14, 0.6) 52%, rgba(4, 4, 14, 0.86) 100%),
+            linear-gradient(180deg, rgba(4, 4, 14, 0.35), rgba(4, 4, 14, 0) 30%);
+    }
+    .overlay-panel{
+        left: 52%;
+        width: 42%;
+        max-height: 60%;
+    }
+    .panel-summary{
+        margin-bottom: 14px;
+    }
+    .panel-lead{
+        font-size: 1.3rem;
+        line-height: 1.45;
+    }
+}
+
+.visually-hidden{
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}

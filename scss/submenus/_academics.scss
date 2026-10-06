@@ -1,0 +1,5 @@
+@use "../abstract/" as *;
+
+// My Academics — rows use the shared submenu styling (submenus/_global.scss);
+// their labels carry a second line (.subtext) inside a .context wrapper.
+// (Nothing section-specific needed right now.)
