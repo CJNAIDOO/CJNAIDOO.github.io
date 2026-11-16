@@ -8,7 +8,7 @@
 import * as THREE from 'three';
 
 const KEY = 'psp-studio';
-const load = () => { try { return localStorage.getItem(KEY) === 'light' ? 'light' : 'dark'; } catch { return 'dark'; } };
+const load = () => 'dark';                                // (the room's light follows the time of day now; the studio stays dark)
 const save = (v) => { try { localStorage.setItem(KEY, v); } catch { /* private mode etc. */ } };
 
 export function createStudio(el, toggle) {

@@ -1,0 +1,50 @@
+@use "../abstract/" as *;
+
+// My Projects: one row per project, laid out like My Academics (photo
+// background, white logo bottom left, write-up on the right).
+.project-overlay{
+    .overlay-photo{
+        opacity: 0.6;
+        filter: saturate(0.9) blur(1.5px);
+        transform: scale(1.02);
+    }
+    .overlay-panel{
+        left: 52%;
+        width: 42%;
+        top: 40%;
+        max-height: 59%;
+        mask-image: linear-gradient(180deg, #000 calc(100% - 28px), transparent);
+        padding-bottom: 28px;
+    }
+    .panel-summary{ margin-bottom: 12px; }
+    .chip-row{ margin-bottom: 12px; gap: 6px; }
+}
+
+// project logos (in colour) in the XMB rows: a little smaller than the
+// line-art icons in other sections
+.xmb-contents .submenu > img.project-icon{
+    width: 72px;
+    max-height: 80px;
+    object-fit: contain;
+    margin-inline: 12px;
+}
+
+// wide wordmarks (The Loop) stay a sensible size bottom left
+.project-overlay .overlay-logo img{
+    max-width: 30vw;
+    object-fit: contain;
+}
+
+// long project names wrap onto a second line instead of running into the panel
+.xmb-title.projects .xmb-contents .submenu > .submenu-title{
+    white-space: normal;
+    width: 230px;
+    line-height: 1.15;
+}
+
+// logos with a tagline (Peak) get the full icon column so the words stay legible
+.xmb-contents .submenu > img.project-icon.is-wide{
+    width: 96px;
+    max-height: none;
+    margin-inline: 0;
+}

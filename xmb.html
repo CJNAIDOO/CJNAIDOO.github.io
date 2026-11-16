@@ -6,10 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAMERON J. NAIDOO PS3 XMB STYLE PORTFOLIO</title>
     <link rel="stylesheet" href="scss/main.css">
+    <link rel="stylesheet" href="scss/controls-mode.css?v=93">
     <script defer src="js/script.js"></script>
     <!-- portfolio content + the extra XMB features (overlays, folders, messages) -->
     <script defer src="js/content.js"></script>
-    <script defer src="js/features.js"></script>
+    <script defer src="js/tetris.js"></script>
+    <script defer src="js/ilifa.js"></script>
+    <script defer src="js/album.js"></script>
+    <script defer src="js/features.js?v=93"></script>
     <!-- lets the 3D PSP shell (index.html) drive this page when it's shown on the PSP's screen -->
     <script defer src="js/shell-bridge.js"></script>
 </head>
@@ -58,7 +62,7 @@
                         <div class="about-bg welcome-overlay">
                             <div class="overlay-scrim"></div>
                             <div class="infowrapper has-controls">
-                                <p class="controls-intro">Getting around on the PSP or on your keyboard</p>
+                                <p class="controls-intro"><span class="ctl-for-psp">Getting around on the PSP</span><span class="ctl-for-desktop">Getting around with your keyboard and mouse</span></p>
                                 <table class="controls">
                                     <thead><tr><th scope="col">PSP</th><th scope="col">Keyboard</th><th scope="col"><span class="visually-hidden">What it does</span></th></tr></thead>
                                     <tbody>
@@ -181,13 +185,21 @@
                 <p class = "titletext">My Projects</p>
 
                 <div class="xmb-contents">
-                    <div class="submenu one" data-id="academic">
-                        <img class="abimg" src="images/file.png" alt="">
-                        <p class="submenu-title">Academic</p>
+                    <div class="submenu one" data-id="sekuriti">
+                        <img class="project-icon" src="images/projects/sekuriti_logo.png" alt="">
+                        <p class="submenu-title">Sekuriti</p>
                     </div>
-                    <div class="submenu two" data-id="personal">
-                        <img class="twoimg" src="images/file.png" alt="">
-                        <p class="submenu-title">Personal</p>
+                    <div class="submenu two" data-id="betterbudget">
+                        <img class="project-icon" src="images/projects/betterbudget_logo.png" alt="">
+                        <p class="submenu-title">BetterBudget</p>
+                    </div>
+                    <div class="submenu three" data-id="theloop">
+                        <img class="project-icon" src="images/projects/theloop_icon.png" alt="">
+                        <p class="submenu-title">SAID Mobile Outreach App</p>
+                    </div>
+                    <div class="submenu four" data-id="peak">
+                        <img class="project-icon is-wide" src="images/projects/peak_logo.png" alt="">
+                        <p class="submenu-title">Peak</p>
                     </div>
                 </div>
             </div>
@@ -217,11 +229,23 @@
                 <p class = "titletext">Games</p>
 
                 <div class="xmb-contents">
-                    <div class="submenu one">
+                    <div class="submenu one" data-id="tetris">
+                        <img class="game-icon" src="images/tetris/icon_v3.png" alt="">
+                        <p class="submenu-title">Tetris</p>
+                        <div class="game-bg tetris-bg"></div>
+                    </div>
+                    <div class="submenu two" data-id="ilifa">
+                        <img class="game-icon" src="images/ilifa/icon.webp" alt="">
+                        <p class="submenu-title">Ilifa</p>
+                        <div class="game-bg ilifa-bg"></div>
+                    </div>
+                    <div class="submenu three">
                         <img class="abimg" src="images/gow_laufey.png" alt="">
                         <p class="submenu-title">God of War Laufey</p>
+                        <!-- gameplay clip, plays muted while the row is focused (add the file to use it) -->
+                        <video class="game-bg game-video" data-src="images/games/gow_laufey.mp4" muted loop playsinline preload="none"></video>
                     </div>
-                    <div class="submenu two">
+                    <div class="submenu four">
                         <img class="twoimg" src="images/gta_vi.png" alt="">
                         <p class="submenu-title">Grand Theft Auto VI</p>
                         <!-- Dedicated background overlay -->

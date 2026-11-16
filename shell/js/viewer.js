@@ -30,7 +30,7 @@ class InlineTextures {
   }
 }
 
-export async function createHandheld({ container, glb, screenEl, screenUV, onKey, screenWidthPx = 1280, topInset = 0 }) {
+export async function createHandheld({ container, glb, screenEl, screenUV, onKey, onKeyUp, onPspClick, onHover, room = false, screenWidthPx = 1280, topInset = 0 }) {
   const W = () => container.clientWidth, H = () => container.clientHeight;
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: false });
@@ -187,6 +187,45 @@ export async function createHandheld({ container, glb, screenEl, screenUV, onKey
   cssObj.position.set((full.x0 + full.x1) / 2, (full.y0 + full.y1) / 2, disp.z);
   pivot.add(cssObj);
 
+  // ---- which screen the live page is on ----
+  // There's one page (the XMB), so it can be on one screen at a time: the
+  // PSP's, or another one (in the room, the monitor the PS3 plays on). Its 3D
+  // object always stays a child of the PSP (taking a CSS3DObject off its
+  // parent removes its element from the page, which would reload the XMB);
+  // on another screen it's just placed there every frame. The screen it's
+  // not on shows a standby look.
+  const holeMat = screenMesh.material;
+  const pspStandby = new THREE.MeshStandardMaterial({ color: 0x050507, roughness: 0.12, metalness: 0.2 });
+  const pspSpec = {
+    parent: pivot, position: cssObj.position.clone(), quaternion: new THREE.Quaternion(), scale: unitsPerPx,
+    holderW: fullWpx, holderH: fullHpx,
+    el: { left: (disp.x0 - full.x0) / unitsPerPx, top: (full.y1 - disp.y1) / unitsPerPx, width: PX, height: dispHpx },
+    activate: (on) => { screenMesh.material = on ? holeMat : pspStandby; },
+  };
+  let screenNow = pspSpec;
+  const _inv = new THREE.Matrix4(), _m = new THREE.Matrix4();
+  // another screen gives worldMatrix(): its centre, facing +z, scaled to 1 px
+  const followScreen = () => {
+    if (screenNow === pspSpec) return;
+    pivot.updateMatrixWorld();
+    _m.multiplyMatrices(_inv.copy(pivot.matrixWorld).invert(), screenNow.worldMatrix());
+    _m.decompose(cssObj.position, cssObj.quaternion, cssObj.scale);
+  };
+  const useScreen = (spec) => {
+    const s = !spec || spec === 'psp' ? pspSpec : spec;
+    if (s === screenNow) return;
+    screenNow.activate?.(false);
+    screenNow = s;
+    if (s === pspSpec) {
+      cssObj.position.copy(s.position);
+      cssObj.quaternion.identity();
+      cssObj.scale.setScalar(s.scale);
+    } else followScreen();
+    Object.assign(holder.style, { width: s.holderW + 'px', height: s.holderH + 'px' });
+    Object.assign(screenEl.style, { left: s.el.left + 'px', top: s.el.top + 'px', width: s.el.width + 'px', height: s.el.height + 'px' });
+    s.activate?.(true);
+  };
+
   // ---- the studio: a glossy floor just under the PSP ----
   // The floor itself is the page behind (shell/css: .studio). Here: the PSP's
   // reflection in it (a mirrored copy that fades with depth) and a soft
@@ -195,7 +234,7 @@ export async function createHandheld({ container, glb, screenEl, screenUV, onKey
   const mirror = new THREE.Matrix4().makeTranslation(0, floorY, 0)
     .multiply(new THREE.Matrix4().makeScale(1, -1, 1))
     .multiply(new THREE.Matrix4().makeTranslation(0, -floorY, 0));
-  const studio = { strength: 0.28, shadow: 0.7, uniforms: { uFloorY: { value: floorY }, uFade: { value: size.y * 0.5 }, uStrength: { value: 0 } } };
+  const studio = { strength: room ? 0 : 0.28, shadow: room ? 0 : 0.7, uniforms: { uFloorY: { value: floorY }, uFade: { value: size.y * 0.5 }, uStrength: { value: 0 } } };
   const reflection = new THREE.Group();
   reflection.matrixAutoUpdate = false;
   const mirrored = model.clone(true);                // shares the geometry, not the materials
@@ -231,6 +270,7 @@ export async function createHandheld({ container, glb, screenEl, screenUV, onKey
   });
   reflection.add(mirroredDepth, mirrored);
   scene.add(reflection);
+  if (room) { reflection.visible = false; }          // no studio floor in the room (the depth copy would cut holes in the desk)
 
   const shadowTex = (() => {
     const c = document.createElement('canvas'); c.width = 256; c.height = 64;
@@ -248,6 +288,7 @@ export async function createHandheld({ container, glb, screenEl, screenUV, onKey
   contact.position.y = floorY + size.y * 0.002;
   contact.renderOrder = -1;
   scene.add(contact);
+  if (room) contact.visible = false;
 
   const updateStudio = (t) => {
     pivot.updateMatrixWorld();
@@ -283,17 +324,32 @@ export async function createHandheld({ container, glb, screenEl, screenUV, onKey
     return Math.max(h, w) + size.z * 0.5;
   };
   const angleFor = (m) => ({ phi: Math.PI / 2 - (m === 'immersive' ? 0.03 : 0.02), theta: 0 });
+  // other framings (the room's): name -> () => ({ pos, target, limits })
+  const views = {};
+  const ORIGIN = new THREE.Vector3();
+  const viewOf = (m) => {
+    if (views[m]) return views[m]();
+    const a = angleFor(m);
+    return { pos: new THREE.Vector3().setFromSphericalCoords(distanceFor(m), a.phi, a.theta), target: ORIGIN.clone(), orbit: true };
+  };
   const applyLimits = () => {
     const near = distanceFor('immersive'), far = distanceFor('overview');
-    controls.minDistance = near * 0.6;
-    controls.maxDistance = far * 1.4;
-    camera.near = near / 20; camera.far = far * 6;
+    const L = views[mode]?.().limits;
+    controls.minDistance = L?.minDistance ?? near * 0.6;
+    controls.maxDistance = L?.maxDistance ?? (room ? far * 0.9 : far * 1.4);
+    // in the room you can look around the PSP, not go behind it (or the room)
+    controls.minAzimuthAngle = L?.minAzimuth ?? (room ? -1.05 : -Infinity);
+    controls.maxAzimuthAngle = L?.maxAzimuth ?? (room ? 1.05 : Infinity);
+    controls.minPolarAngle = L?.minPolar ?? (room ? 0.75 : 0.02);
+    controls.maxPolarAngle = L?.maxPolar ?? (room ? 1.95 : Math.PI - 0.02);
+    camera.near = L?.near ?? near / 20; camera.far = room ? 4000 : (L?.far ?? far * 6);
     camera.updateProjectionMatrix();
   };
   const place = () => {
-    const d = distanceFor(mode), a = angleFor(mode);
-    camera.position.setFromSphericalCoords(d, a.phi, a.theta);
-    camera.lookAt(0, 0, 0);
+    const v = viewOf(mode);
+    camera.position.copy(v.pos);
+    controls.target.copy(v.target);
+    camera.lookAt(v.target);
     applyLimits();
   };
   const resize = () => {
@@ -350,36 +406,72 @@ export async function createHandheld({ container, glb, screenEl, screenUV, onKey
     [buttons[dpad.left], 'ArrowLeft'], [buttons[dpad.right], 'ArrowRight'],
     [buttons[bottomRow[0]], 'Home'],
     [buttons[face.down], 'Enter'], [buttons[face.right], 'Escape'],
+    [buttons[face.up], 'c'], [buttons[face.left], 'z'],          // △ hold, □ rotate left (Tetris)
+    [buttons[bottomRow[bottomRow.length - 1]], 'p'],             // START: pause (Tetris)
   ]);
   const keyToMesh = {
     ArrowUp: buttons[dpad.up], ArrowDown: buttons[dpad.down], ArrowLeft: buttons[dpad.left], ArrowRight: buttons[dpad.right],
     Enter: buttons[face.down], Escape: buttons[face.right],
+    c: buttons[face.up], z: buttons[face.left], p: buttons[bottomRow[bottomRow.length - 1]],
   };
 
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
-  const pick = (e) => {
+  const clickables = [];       // { root, label, onClick }
+  let pspLabel = null;
+  const owner = (o) => { for (let p = o; p; p = p.parent) { const c = clickables.find((k) => k.root === p); if (c) return c; } return null; };
+  const inPivot = (o) => { for (let p = o; p; p = p.parent) if (p === pivot) return true; return false; };
+  // nearest thing under the pointer: { psp: mesh } or { item }
+  const pickAny = (e) => {
     const r = container.getBoundingClientRect();
     ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     ray.setFromCamera(ndc, camera);
-    const hit = ray.intersectObject(pivot, true).find((h) => h.object.visible && h.object !== sheen);
-    return hit ? hit.object : null;
+    const inRoom = mode === 'room' || mode === 'focus';
+    const targets = [pivot, ...(inRoom || !room ? clickables.map((c) => c.root) : [])];
+    const hit = ray.intersectObjects(targets, true).find((h) => h.object.visible && h.object !== sheen && !h.object.userData.noPick);
+    if (!hit) return null;
+    if (inPivot(hit.object)) return { psp: hit.object };
+    const item = owner(hit.object);
+    return item ? { item } : null;
   };
+  const pick = (e) => pickAny(e)?.psp ?? null;
+  // a click (not a drag) on something in the room
+  let downAt = null;
+  container.addEventListener('pointerdown', (e) => { downAt = { x: e.clientX, y: e.clientY }; });
+  container.addEventListener('pointerup', (e) => {
+    if (!downAt) return;
+    const moved = Math.abs(e.clientX - downAt.x) + Math.abs(e.clientY - downAt.y);
+    downAt = null;
+    if (moved > 6 || flight || (room ? !(mode === 'room' || mode === 'focus') : mode === 'immersive')) return;
+    const h = pickAny(e);
+    if (h?.psp) onPspClick?.();
+    else h?.item?.onClick?.();
+  });
   container.addEventListener('pointerdown', (e) => {
+    if (mode !== 'immersive') return;           // up close: the PSP's buttons work
     const obj = pick(e);
     if (obj && pressable.includes(obj)) {
       controls.enabled = false;
       press(obj);
       const action = actions.get(obj);
       if (action) onKey(action);
-      const done = () => { controls.enabled = true; window.removeEventListener('pointerup', done); };
+      const done = () => { controls.enabled = true; window.removeEventListener('pointerup', done); if (action) onKeyUp?.(action); };
       window.addEventListener('pointerup', done);
     }
   });
   container.addEventListener('pointermove', (e) => {
     if (e.buttons) return;
+    if (room ? (mode === 'room' || mode === 'focus') : mode !== 'immersive' && clickables.length) {
+      const h = flight ? null : pickAny(e);
+      const label = h?.psp ? pspLabel : h?.item?.label ?? null;
+      container.style.cursor = h ? 'pointer' : '';
+      onHover?.(h ? (label || '') : null, e);
+      return;
+    }
+    onHover?.(null, e);
     const obj = pick(e);
     container.style.cursor = obj && actions.has(obj) ? 'pointer' : obj ? 'grab' : '';
   });
+  container.addEventListener('pointerleave', () => onHover?.(null));
 
   // ---- motion: the entrance, and smooth flights between framings ----
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -413,17 +505,24 @@ export async function createHandheld({ container, glb, screenEl, screenUV, onKey
     if (p >= 1) { sweep.intensity = 0; glint = null; }
   };
   const flyTo = (m, ms = 1600) => {
+    const wasOrbit = !views[mode];
     mode = m;
-    const from = new THREE.Spherical().setFromVector3(camera.position);
-    const a = angleFor(m);
-    let dTheta = a.theta - from.theta;
-    dTheta = ((dTheta + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
-    flight = { from, to: { radius: distanceFor(m), phi: a.phi, theta: from.theta + dTheta }, t0: performance.now(), ms: reduce ? 1 : ms };
+    const v = viewOf(m);
     controls.enabled = false;
+    if (v.orbit && wasOrbit && controls.target.lengthSq() < 1e-6) {
+      const from = new THREE.Spherical().setFromVector3(camera.position);
+      const a = angleFor(m);
+      let dTheta = a.theta - from.theta;
+      dTheta = ((dTheta + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+      flight = { from, to: { radius: distanceFor(m), phi: a.phi, theta: from.theta + dTheta }, t0: performance.now(), ms: reduce ? 1 : ms };
+    } else {
+      flight = { glide: true, p0: camera.position.clone(), t0p: controls.target.clone(), p1: v.pos, t1p: v.target, t0: performance.now(), ms: reduce ? 1 : ms };
+    }
     return new Promise((res) => { flight.done = res; });
   };
   const jumpTo = (m) => {
     mode = m; flight = null;
+    if (flight === null && views[m]) controls.target.copy(views[m]().target);
     pivot.position.set(0, 0, 0); pivot.rotation.set(0, 0, 0); pivot.scale.setScalar(1);
     edgeL.intensity = 4.2; edgeR.intensity = 3.6;
     entrance = null;
@@ -475,29 +574,42 @@ export async function createHandheld({ container, glb, screenEl, screenUV, onKey
   new ResizeObserver(() => {
     if (firstResize) { firstResize = false; return; }
     resize();
-    if (!flight) camera.position.setLength(distanceFor(mode));
+    if (flight) return;
+    if (views[mode]) place();
+    else camera.position.setLength(distanceFor(mode));
   }).observe(container);
 
   // Rendering can be paused while the PSP isn't on screen (during the mark),
   // so the page's own animation gets the whole frame. It always renders once,
   // which puts the XMB iframe into the page so it starts loading.
-  let active = true, renderedOnce = false;
+  let active = true, renderedOnce = false, lastT = 0;
+  const frameHooks = [], themeHooks = [];
   const tick = (t) => {
     if (!active && renderedOnce) { requestAnimationFrame(tick); return; }
     renderedOnce = true;
+    const dt = Math.min(100, lastT ? t - lastT : 16); lastT = t;
+    for (const f of frameHooks) f(t, dt);
+    followScreen();
     if (entrance) tickEntrance(t);
     if (glint) tickGlint(t);
     if (flight) {
       const k = Math.min(1, (t - flight.t0) / flight.ms), e = ease(k);
-      const { from, to } = flight;
-      camera.position.setFromSphericalCoords(
-        from.radius + (to.radius - from.radius) * e,
-        from.phi + (to.phi - from.phi) * e,
-        from.theta + (to.theta - from.theta) * e);
-      camera.lookAt(0, 0, 0);
+      if (flight.glide) {
+        camera.position.lerpVectors(flight.p0, flight.p1, e);
+        controls.target.lerpVectors(flight.t0p, flight.t1p, e);
+        camera.lookAt(controls.target);
+      } else {
+        const { from, to } = flight;
+        camera.position.setFromSphericalCoords(
+          from.radius + (to.radius - from.radius) * e,
+          from.phi + (to.phi - from.phi) * e,
+          from.theta + (to.theta - from.theta) * e);
+        camera.lookAt(0, 0, 0);
+      }
       if (k >= 1) {
         const done = flight.done;
         flight = null;
+        applyLimits();
         controls.enabled = true;
         controls.update();
         controls.saveState();
@@ -515,15 +627,45 @@ export async function createHandheld({ container, glb, screenEl, screenUV, onKey
 
   return {
     press: (keyName) => press(keyToMesh[keyName]),
-    setMode: (m) => flyTo(m),
+    setMode: (m, ms) => flyTo(m, ms),
     jumpTo,
     enter,
     glint: startGlint,
     setActive: (on) => { active = on; },
     resetView: () => flyTo(mode, 900),
     get mode() { return mode; },
+    // get a framing ready to show without a hitch: shaders compiled, every
+    // texture uploaded, one frame drawn (while it's still hidden)
+    prepare: async (m) => {
+      jumpTo(m);
+      try { await renderer.compileAsync(scene, camera); } catch { renderer.compile(scene, camera); }
+      // the textures go up a few at a time (about 6 ms a frame), not all in one long block:
+      // the loading screen's animation shares the GPU with this
+      const textures = new Set();
+      scene.traverse((o) => {
+        if (!o.material) return;
+        for (const mat of [].concat(o.material)) for (const v of Object.values(mat)) if (v && v.isTexture) textures.add(v);
+      });
+      const queue = [...textures];
+      while (queue.length) {
+        const until = performance.now() + 6;
+        while (queue.length && performance.now() < until) renderer.initTexture(queue.pop());
+        if (queue.length) await new Promise((r) => requestAnimationFrame(r));
+      }
+      renderer.render(scene, camera);
+      css.render(scene, camera);
+    },
+    scene,
+    useScreen,
+    get screen() { return screenNow === pspSpec ? 'psp' : 'other'; },
+    addView: (name, fn) => { views[name] = fn; },
+    addClickable: (root, opts) => { clickables.push({ root, ...opts }); },
+    setPspLabel: (l) => { pspLabel = l; },
+    onFrame: (fn) => { frameHooks.push(fn); },
+    onTheme: (fn) => { themeHooks.push(fn); },     // the room's day / night
     // studio lighting: 'dark' or 'light' (reflection and shadow strength, room light)
     setStudioTheme: (theme) => {
+      if (room) { themeHooks.forEach((fn) => fn(theme)); return; }
       const light = theme === 'light';
       studio.strength = light ? 0.16 : 0.28;
       studio.shadow = light ? 0.35 : 0.7;

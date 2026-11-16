@@ -7,10 +7,13 @@
 //                                    title sequence is skipped (the shell has its intro);
 //                                    the disclaimer shows, then the menu
 //     { type: 'xmb-key', key }       a button press (arrows, Enter, Escape, ...)
+//     { type: 'xmb-keyup', key }     that button let go (games use it for held keys)
 //     { type: 'xmb-home' }           jump back to the first section
 //     { type: 'xmb-arm' }            show a pulsing "press start" on the dark screen
 //     { type: 'xmb-skip' }           skip the intro and go straight to the menu
 //     { type: 'xmb-go', index }      open a main section (the shell's top menu)
+//     { type: 'xmb-device', device } 'psp' or 'desktop': which controls to show
+//     { type: 'xmb-link', url, label } show a link on the screen (GitHub, YouTube, ... from the room)
 //   messages to the shell:
 //     { type: 'xmb-ready', sections } loaded; the main section titles, in order
 //     { type: 'xmb-at', index }      the section now open
@@ -20,6 +23,12 @@
     const inShell = window.parent !== window
     // controls that only exist on the 3D PSP (HOME button, dragging it round)
     document.documentElement.classList.toggle('in-shell', inShell)
+    // which controls to show: the PSP's buttons on the PSP, the keyboard on the monitor or on its own
+    const setControls = (dev) => {
+        document.documentElement.classList.toggle('ctl-psp', dev === 'psp')
+        document.documentElement.classList.toggle('ctl-desktop', dev !== 'psp')
+    }
+    setControls(inShell ? 'psp' : 'desktop')
     const boot = new URLSearchParams(location.search).get('boot')
     const press = (key) => document.body.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }))
     let started = false
@@ -91,9 +100,12 @@
             start()
         }
         if (d.type === 'xmb-key') { if (!started) start(); else press(d.key) }
+        if (d.type === 'xmb-keyup' && started) document.body.dispatchEvent(new KeyboardEvent('keyup', { key: d.key, bubbles: true }))
         if (d.type === 'xmb-home') for (let i = 0; i < sections.length; i++) press('ArrowLeft')
         if (d.type === 'xmb-skip' && !menuReady) skipIntro()
         if (d.type === 'xmb-go') goSection(Number(d.index))
+        if (d.type === 'xmb-device') setControls(d.device)
+        if (d.type === 'xmb-link' && /^https?:\/\//.test(d.url)) window.XMB_OPEN_LINK?.(d.url, d.label || '')
         if (d.type === 'xmb-arm') {
             const prompt = document.querySelector('#start-screen h1')
             if (prompt) { prompt.textContent = 'press start'; prompt.classList.add('press-start') }

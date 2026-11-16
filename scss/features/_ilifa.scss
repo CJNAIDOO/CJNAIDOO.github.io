@@ -1,0 +1,65 @@
+@use "../abstract/" as *;
+
+// Ilifa (js/ilifa.js): the Phaser game fills the screen over the XMB,
+// letterboxed to 16:9 on the game's own deep purple.
+.ilifa{
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: #0a0118;
+    color: $primary-color;
+    animation: ilifa-in 250ms ease;
+
+    &[hidden]{ display: none; }
+}
+@keyframes ilifa-in{
+    from{ opacity: 0; }
+}
+.ilifa__stage{
+    position: absolute;
+    inset: 0;
+
+    canvas{ display: block; }
+}
+.ilifa__loading{
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 300;
+    text-shadow: $shadowtext;
+
+    &[hidden]{ display: none; }
+}
+.ilifa__paused{
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    background: rgba(0, 0, 0, 0.5);
+
+    &[hidden]{ display: none; }
+    p{
+        margin: 0;
+        font-size: 3rem;
+        font-weight: 300;
+        text-shadow: $shadowtext;
+    }
+}
+.ilifa__prompts{
+    position: absolute;
+    right: 4%;
+    bottom: 3.5%;
+    display: flex;
+    gap: 18px;
+    font-size: 0.95rem;
+    pointer-events: none;
+    opacity: 0.85;
+}
+
+// while it's open, the XMB's own prompts and clock step aside
+body.ilifa-open{
+    .xmb-prompts, .clock{ visibility: hidden; }
+}

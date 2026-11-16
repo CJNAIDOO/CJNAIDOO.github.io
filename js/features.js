@@ -1,7 +1,7 @@
 // ============================================================================
 // Extra XMB features, layered on top of script.js without changing it:
 //   - info overlays for My Academics, My Expertise, My Projects, Let's Connect
-//   - project folders (open like a PS3/PSP folder) with a project card
+//   - My Projects: one row per project, styled like My Academics
 //   - a PSN-style "Create Message" box for email
 //   - ✕ / Enter to open, ○ / Esc / Backspace to go back, mouse + touch support
 //   - on-screen button prompts
@@ -19,7 +19,7 @@
     // Overlays: a full-screen layer inside a row, shown while that row is focused
     // (same idea as Home's Welcome card).
     // ------------------------------------------------------------------------
-    const PHOTO_KINDS = new Set(['academic', 'about'])
+    const PHOTO_KINDS = new Set(['academic', 'about', 'project'])
     const addOverlay = (id, kind, panelHtml, photo, logo) => {
         const row = rowById(id)
         if (!row) return
@@ -28,7 +28,7 @@
         const photoLayer = PHOTO_KINDS.has(kind)
             ? `<div class="overlay-photo${photo ? '' : ' is-empty'}"${photo ? ` style="background-image:url('${esc(photo)}')"` : ''}></div>`
             : ''
-        // the school's / university's logo, bottom left of the screen
+        // the school's / university's / project's logo, bottom left of the screen
         const logoLayer = logo ? `<div class="overlay-logo"><img src="${esc(logo)}" alt=""></div>` : ''
         el.innerHTML = `${photoLayer}<div class="overlay-scrim"></div>${logoLayer}<div class="overlay-panel">${panelHtml}</div>`
         row.appendChild(el)
@@ -91,14 +91,16 @@
         `)
     }
 
-    for (const [id, f] of Object.entries(C.projects)) {
-        const n = f.items.length
-        addOverlay(id, 'folder', `
-            <p class="panel-eyebrow">My Projects</p>
-            <h2 class="panel-title">${esc(f.label)}</h2>
-            <p class="panel-meta">${n} project${n === 1 ? '' : 's'}</p>
-            <p class="panel-summary">Open the folder to browse them.</p>
-        `)
+    // My Projects: one row per project, laid out like My Academics: the
+    // project's own background photo, its logo bottom left, and the write-up
+    // on the right. ✕ opens the live site, or the code if there isn't one.
+    for (const [id, p] of Object.entries(C.projects)) {
+        addOverlay(id, 'project', `
+            <h2 class="panel-title">${esc(p.title)}</h2>
+            <p class="panel-meta">${[p.year, p.status].filter(Boolean).map(esc).join(' &middot; ')}</p>
+            <p class="panel-summary">${esc(p.summary)}</p>
+            ${p.stack?.length ? chips(p.stack) : ''}
+        `, p.photo, p.logo)
     }
 
     const connectCopy = {
@@ -129,15 +131,22 @@
         toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2600)
     }
 
-    const openLink = (url) => {
+    // Links open on the PSP's screen itself (shell/js/link-viewer.js, loaded the first time): GitHub,
+    // LinkedIn, YouTube... with ○ to go back to the menu. Only a live app (a project's running
+    // site) pops up over the whole site, in the shell's viewer; on its own the XMB opens it in a tab.
+    let screenViewer = null
+    const screenLinks = () => screenViewer ||= import(new URL('shell/js/link-viewer.js?v=93', document.baseURI).href)
+        .then((m) => { const v = m.createLinkViewer({ screen: true }); window.XMB_LINKS = v; return v })
+    const openLink = (url, { live = false, label = '' } = {}) => {
         if (!url) { showToast('Link coming soon'); return }
-        const inShell = window.parent !== window
-        // A click inside the screen can open the tab here; a key pressed on the
-        // PSP shell only counts as a click out there, so let the shell open it.
-        const canOpenHere = !inShell || (navigator.userActivation ? navigator.userActivation.isActive : true)
-        if (canOpenHere) window.open(url, '_blank', 'noopener')
-        else window.parent.postMessage({ type: 'open-url', url }, '*')
+        if (live) {
+            if (window.parent !== window) window.parent.postMessage({ type: 'open-url', url }, '*')
+            else window.open(url, '_blank', 'noopener')
+            return
+        }
+        screenLinks().then((v) => v.show(url, label)).catch(() => window.open(url, '_blank', 'noopener'))
     }
+    window.XMB_OPEN_LINK = (url, label) => openLink(url, { label })
 
     // ------------------------------------------------------------------------
     // Button prompts (bottom right)
@@ -151,92 +160,14 @@
     }
     const prompt = (btn, text) => `<span class="prompt"><i class="glyph glyph-${btn}" aria-hidden="true">${GLYPH_SVG[btn]}</i>${esc(text)}</span>`
 
-    const actionLabels = { academic: 'Open folder', personal: 'Open folder', linkedin: 'Open LinkedIn', github: 'Open GitHub', email: 'Write a message' }
+    const actionLabels = { linkedin: 'Open LinkedIn', github: 'Open GitHub', email: 'Write a message' }
     const updatePrompts = () => {
         if (compose.open) { prompts.innerHTML = prompt('o', 'Cancel'); return }
-        if (folder.open) { prompts.innerHTML = prompt('x', 'Open') + prompt('o', 'Back'); return }
         const id = currentRow()?.dataset.id
-        prompts.innerHTML = id && actionLabels[id] ? prompt('x', actionLabels[id]) : ''
+        const p = C.projects[id]
+        const label = C.games?.[id]?.play ? 'Play' : p ? (p.live ? 'Open live site' : p.repo ? 'View code' : '') : actionLabels[id]
+        prompts.innerHTML = label ? prompt('x', label) : ''
     }
-
-    // ------------------------------------------------------------------------
-    // Project folders
-    // ------------------------------------------------------------------------
-    const folder = { open: false, kind: null, index: 0 }
-    const folderEl = document.createElement('div')
-    folderEl.className = 'folder-view'
-    folderEl.hidden = true
-    document.body.appendChild(folderEl)
-
-    const projectCard = (p, kindLabel) => `
-        <p class="panel-eyebrow">Project &middot; ${esc(kindLabel)}</p>
-        <h2 class="panel-title">${esc(p.title)}</h2>
-        <p class="panel-summary">${esc(p.summary)}</p>
-        <p class="panel-label">Built with</p>
-        ${chips(p.stack)}
-        <dl class="panel-details">
-            <div><dt>Role</dt><dd>${esc(p.role)}</dd></div>
-            <div><dt>Year</dt><dd>${esc(p.year)}</dd></div>
-            <div><dt>Status</dt><dd>${esc(p.status)}</dd></div>
-        </dl>
-        <div class="card-links">
-            <button type="button" data-link="live" ${p.live ? '' : 'disabled'}>Open live</button>
-            <button type="button" data-link="repo" ${p.repo ? '' : 'disabled'}>View code</button>
-        </div>`
-
-    const renderFolder = () => {
-        const f = C.projects[folder.kind]
-        const p = f.items[folder.index]
-        folderEl.innerHTML = `
-            <div class="folder-scrim"></div>
-            <div class="folder-head"><img src="images/file.png" alt=""><p>${esc(f.label)}</p></div>
-            <ul class="folder-list">
-                ${f.items.map((it, i) => `
-                    <li class="folder-item${i === folder.index ? ' active' : ''}" data-index="${i}">
-                        <img src="images/file.png" alt="">
-                        <div><p class="item-title">${esc(it.title)}</p><p class="item-meta">${esc(it.year)}${it.status ? ` &middot; ${esc(it.status)}` : ''}</p></div>
-                    </li>`).join('')}
-            </ul>
-            <aside class="project-card">${p ? projectCard(p, f.label) : '<p class="panel-summary">This folder is empty.</p>'}</aside>`
-    }
-    const openFolder = (kind) => {
-        folder.open = true; folder.kind = kind; folder.index = 0
-        renderFolder()
-        folderEl.hidden = false
-        document.body.classList.add('folder-open')
-        updatePrompts()
-    }
-    const closeFolder = () => {
-        folder.open = false
-        folderEl.hidden = true
-        document.body.classList.remove('folder-open')
-        updatePrompts()
-    }
-    const moveFolder = (step) => {
-        const n = C.projects[folder.kind].items.length
-        const next = folder.index + step
-        if (next < 0 || next >= n) return
-        folder.index = next
-        playNav()
-        renderFolder()
-    }
-    const openProject = (which) => {
-        const p = C.projects[folder.kind].items[folder.index]
-        if (!p) return
-        openLink(which === 'repo' ? p.repo : which === 'live' ? p.live : (p.live || p.repo))
-    }
-    folderEl.addEventListener('click', (e) => {
-        const link = e.target.closest('[data-link]')
-        if (link) { openProject(link.dataset.link); return }
-        const item = e.target.closest('.folder-item')
-        if (item) {
-            const i = Number(item.dataset.index)
-            if (i === folder.index) openProject()
-            else { folder.index = i; playNav(); renderFolder() }
-            return
-        }
-        if (e.target.closest('.folder-head')) closeFolder()
-    })
 
     // ------------------------------------------------------------------------
     // PSN-style "Create Message" box
@@ -332,20 +263,26 @@
 
     // ------------------------------------------------------------------------
     // ✕ / ○ and keys. Runs before script.js's listener (capture phase) so an
-    // open folder or message box gets the keys instead of the XMB behind it.
+    // open message box gets the keys instead of the XMB behind it.
     // ------------------------------------------------------------------------
     const CONFIRM = new Set(['Enter'])
     const BACK = new Set(['Escape', 'Backspace'])
+    const openProject = (p) => {
+        if (!p.live && !p.repo) { showToast('Link coming soon'); return }
+        if (p.live) openLink(p.live, { live: true, label: p.title || '' })
+        else openLink(p.repo, { label: p.title || '' })
+    }
     const actions = {
-        academic: () => openFolder('academic'),
-        personal: () => openFolder('personal'),
+        ...Object.fromEntries(Object.entries(C.projects).map(([id, p]) => [id, () => openProject(p)])),
+        tetris: () => window.XMB_TETRIS?.open(),
+        ilifa: () => window.XMB_ILIFA?.open(),
         linkedin: () => openLink(C.connect.linkedin),
         github: () => openLink(C.connect.github),
         email: () => openCompose(),
     }
 
     window.addEventListener('keydown', (e) => {
-        if (!menuReady) return
+        if (!menuReady || window.XMB_LINKS?.open) return
         const typing = e.target instanceof Element && e.target.closest('input, textarea')
 
         if (compose.open) {
@@ -355,15 +292,6 @@
             return
         }
         if (typing) return
-
-        if (folder.open) {
-            e.stopImmediatePropagation()
-            if (e.key === 'ArrowDown') { e.preventDefault(); moveFolder(1) }
-            else if (e.key === 'ArrowUp') { e.preventDefault(); moveFolder(-1) }
-            else if (CONFIRM.has(e.key)) { e.preventDefault(); openProject() }
-            else if (BACK.has(e.key)) { e.preventDefault(); closeFolder() }
-            return
-        }
 
         if (CONFIRM.has(e.key)) {
             const action = actions[currentRow()?.dataset.id]
@@ -378,12 +306,12 @@
     sections.forEach((sectionEl, sn) => {
         const icon = sectionEl.querySelector(':scope > img')
         icon?.addEventListener('click', () => {
-            if (!menuReady || folder.open || compose.open) return
+            if (!menuReady || compose.open) return
             if (focusSection(sn)) playNav()
         })
         submenuItems(sectionEl).forEach((row, i) => {
             row.addEventListener('click', (e) => {
-                if (!menuReady || folder.open || compose.open || sn !== sectionNumber) return
+                if (!menuReady || compose.open || sn !== sectionNumber) return
                 if (e.target.closest('.xmb-overlay')) return
                 if (focusedItem[sn] === i) {
                     actions[row.dataset.id]?.()
@@ -397,8 +325,59 @@
     })
 
     document.addEventListener('xmb:focus', updatePrompts)
+
+    // Line the right-hand lists (My Expertise, My Projects) up with the
+    // focused row's label. The focused row always ends up in the same slot, so
+    // measure it once it has slid there, and again on resize.
+    let alignTimer
+    const alignToRow = () => {
+        clearTimeout(alignTimer)
+        alignTimer = setTimeout(() => {
+            const label = currentRow()?.querySelector(':scope > .submenu-title, :scope > .context')
+            if (!label) return
+            const r = label.getBoundingClientRect()
+            document.documentElement.style.setProperty('--row-y', `${Math.round(r.top + r.height / 2)}px`)
+        }, 300)
+    }
+    document.addEventListener('xmb:focus', alignToRow)
+
+    // Game rows can have a muted gameplay clip as their background. It only
+    // loads the first time its row is focused, plays while focused, and stays
+    // hidden if the file isn't there.
+    document.querySelectorAll('video.game-video').forEach((v) => {
+        v.addEventListener('error', () => { v.dataset.missing = '1' }, true)
+    })
+    const syncGameVideos = () => {
+        const row = currentRow()
+        document.querySelectorAll('video.game-video').forEach((v) => {
+            const on = row && row.contains(v) && !v.dataset.missing
+            if (on) {
+                if (!v.src) { v.src = v.dataset.src; v.load() }
+                v.play().catch(() => {})
+            } else if (!v.paused) v.pause()
+        })
+    }
+    document.addEventListener('xmb:focus', syncGameVideos)
+    addEventListener('resize', alignToRow)
     updatePrompts()
 
     // for the PSP shell and for debugging
-    window.XMB_FEATURES = { openFolder, closeFolder, openCompose, closeCompose, showToast }
+    window.XMB_FEATURES = { openCompose, closeCompose, showToast }
+})()
+
+// The detail panels sit under the row of category icons, whatever the screen's shape: on the
+// desk's wide, short monitor 42% from the top ran into the icons. The icons' bottom edge goes in
+// --row-bottom (px), and the panels start below it (scss/controls-mode.css).
+;(() => {
+    const measure = () => {
+        let bottom = 0
+        document.querySelectorAll('.xmb-title > img.category-icon').forEach((img) => {
+            const r = img.getBoundingClientRect()
+            if (r.width) bottom = Math.max(bottom, r.bottom)
+        })
+        if (bottom) document.documentElement.style.setProperty('--row-bottom', `${Math.round(bottom)}px`)
+    }
+    addEventListener('resize', measure)
+    addEventListener('load', () => { measure(); setTimeout(measure, 600); setTimeout(measure, 2500) })
+    new MutationObserver(() => requestAnimationFrame(measure)).observe(document.getElementById('menu') || document.body, { attributes: true, subtree: false })
 })()

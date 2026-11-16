@@ -23,12 +23,16 @@ const BELOW_GAP = 16
 
 // Where the whole XMB bar slides to for each section: [<1400px, 2560-3840px, everything else]
 const MENU_OFFSETS = [
+    // Home, Academics, Expertise, Projects, Connect, Photos, Games
+    // (<1400px values measured so each section's icon lands where it did
+    // before Photos was added; the PSP's screen is 1280px wide)
     ['-40%', 0, 0],
-    ['-10%', '18%', '18%'],
-    ['22%', '32%', '39%'],
-    ['50%', '47%', '60%'],
-    ['76%', '62%', '77%'],
-    ['100%', '77%', '97%'],
+    ['-21%', '18%', '18%'],
+    ['11%', '32%', '39%'],
+    ['39%', '47%', '60%'],
+    ['65%', '62%', '77%'],
+    ['93%', '77%', '97%'],
+    ['124%', '92%', '117%'],
 ]
 
 let checkLoad = () =>{
@@ -89,16 +93,25 @@ let loadMenu = async () =>{
     clockSection.style.opacity = '1'
 }
 
+// margin-right stops moving the bar once it reaches 100% (the bar has no
+// width left to give up), so anything past 100% becomes a negative margin-left
+// instead: half as much, because margin-right only moves the centred bar by half.
+let setMenuOffset = (value) =>{
+    const pct = parseFloat(value) || 0
+    xmbMain.style.marginRight = `${Math.min(pct, 100)}%`
+    xmbMain.style.marginLeft = pct > 100 ? `${-(pct - 100) / 2}%` : '0%'
+}
+
 let moveMenu = (hd, ultraHd, fullHd) =>{
     let width = document.body.clientWidth
     if (width < 1400) {
-        xmbMain.style.marginRight = hd
+        setMenuOffset(hd)
     }
     else if (width >= 2560 && width <= 3840) {
-        xmbMain.style.marginRight = ultraHd
+        setMenuOffset(ultraHd)
     }
     else {
-        xmbMain.style.marginRight = fullHd
+        setMenuOffset(fullHd)
     }
 }
 
@@ -198,4 +211,4 @@ const startApp = () => {
 
 // Listen for the user's first click or key press to start the app
 document.addEventListener('click', startApp);
-document.addEventListener('keydown', startApp);
+document.addEventListener('keydown', startApp);

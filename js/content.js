@@ -137,60 +137,74 @@ const PORTFOLIO = {
         },
     },
 
-    // ---- My Projects (opened like a PS3/PSP folder) ------------------------
-    // live: URL of the running project (optional)   repo: GitHub URL (optional)
-    // Pressing ✕ / Enter opens live if there is one, otherwise repo.
+    // ---- My Projects -------------------------------------------------------
+    // One XMB row per project (the rows are in xmb.html, matched by data-id).
+    // Laid out like My Academics: photo background, the project's logo bottom left.
+    // ✕ / Enter opens live if there is one, otherwise repo.
     projects: {
-        academic: {
-            label: "Academic",
-            items: [
-                {
-                    title: "TODO: Academic project",
-                    summary: "TODO: what it is, what problem it solves, what you built.",
-                    stack: ["TODO"],
-                    role: "TODO",
-                    year: "2025",
-                    status: "TODO",
-                    live: null,
-                    repo: null,
-                },
-                {
-                    title: "TODO: Another academic project",
-                    summary: "TODO",
-                    stack: ["TODO"],
-                    role: "TODO",
-                    year: "2024",
-                    status: "TODO",
-                    live: null,
-                    repo: null,
-                },
-            ],
+        sekuriti: {
+            title: "Sekuriti",
+            year: "2026",
+            status: "Cybersecurity assistant · C# / WPF",
+            summary: "A cybersecurity assistant for everyday South Africans. Ask about scams, phishing, passwords and 2FA, paste a suspicious SMS or WhatsApp for a verdict, manage security to-dos in plain English and test yourself with a quiz. It uses Google Gemini with function calling and falls back to a built-in rule engine offline. Version 2 of my PROG6221 project, which scored 90%.",
+            stack: ["C#", ".NET 9", "WPF", "MVVM", "Gemini API"],
+            photo: "images/projects/sekuriti_bg.jpg", // placeholder: swap for a real screenshot or photo
+            logo: "images/projects/sekuriti_logo.png",
+            live: null,
+            repo: null, // TODO: GitHub URL
         },
-        personal: {
-            label: "Personal",
-            items: [
-                {
-                    title: "XMB Portfolio",
-                    summary: "This site: a PS3 XMB style portfolio running on a 3D PSP you can pick up and turn around.",
-                    stack: ["HTML", "SCSS", "JavaScript", "three.js"],
-                    role: "Solo",
-                    year: "2026",
-                    status: "Live",
-                    live: "https://cjnaidoo.github.io/",
-                    repo: "https://github.com/CJNAIDOO/CJNAIDOO.github.io",
-                },
-                {
-                    title: "TODO: Personal project",
-                    summary: "TODO",
-                    stack: ["TODO"],
-                    role: "TODO",
-                    year: "2025",
-                    status: "TODO",
-                    live: null,
-                    repo: null,
-                },
-            ],
+        betterbudget: {
+            title: "BetterBudget",
+            year: "2026",
+            status: "Budget tracker · Android",
+            summary: "An Android budget tracker: log expenses with receipt photos, group them into categories, set monthly goals, automate recurring payments and see where your money goes, all synced to Firebase. It started as a team-of-four PROG7313 project; I migrated it to my own account, rebuilt the data layer and fixed its bugs.",
+            stack: ["Kotlin", "Coroutines & Flow", "MVVM", "Firebase", "WorkManager", "JUnit"],
+            photo: "images/projects/betterbudget_bg.jpg", // placeholder: swap for a real screenshot or photo
+            logo: "images/projects/betterbudget_logo.png",
+            live: null,
+            repo: "https://github.com/CJNAIDOO/better-budget",
         },
+        theloop: {
+            title: "SAID Mobile Outreach App",
+            year: "2026",
+            status: "The Loop · team of five",
+            summary: "A platform for The Society for Animals in Distress that connects pet owners in underserved communities with SAID's Mobile Treatment Unit. Owners request visits, admins plan outreach days per area, and Animal Health Technicians record treatments in the field, even with no signal. I built the back end: the Express REST API, the MongoDB data model and transactions, JWT security and role-based access, CI/CD and Azure hosting.",
+            stack: ["Node.js", "Express", "MongoDB", "JWT", "Azure App Service", "GitHub Actions", "React PWA"],
+            photo: "images/projects/theloop_bg.jpg",
+            logo: "images/projects/theloop_icon.png", // SAID badge (THE LOOP wordmark: theloop_logo.png)
+            live: "https://theloopweb7315.z1.web.core.windows.net",
+            repo: null, // github.com/EMGPMD/insy7315-2026-task-2-group-9 (university org: public?)
+        },
+        peak: {
+            title: "Peak",
+            year: "2026",
+            status: "Hiking app · Android + API · team project",
+            summary: "An Android hiking companion: explore trails on Google Maps, bookmark favourites and track a hike live with GPS in a background service that logs distance and elevation gain, ending with a trip summary and photos. It runs on a Node.js / Express REST API with JWT auth, rate limiting and Firebase.", // TODO: add what you built
+            stack: ["Kotlin", "Google Maps", "Room", "Retrofit", "Firebase Auth", "Node.js", "Express"],
+            photo: "images/projects/peak_bg.jpg", // placeholder: swap for a real screenshot or photo
+            logo: "images/projects/peak_logo.png",
+            live: null,
+            repo: null, // github.com/EMGPMD/prog7314-2026-part-2-group-15 (university org: public?)
+        },
+    },
+
+    // ---- Photos --------------------------------------------------------------
+    // Landing on Photos opens a three.js space with these floating in it.
+    // Each one: a path ("images/photos/01.jpg"), { src, caption }, or null for
+    // an empty numbered frame until you add the picture.
+    photos: {
+        title: "Photos",
+        items: Array(16).fill(null), // TODO: add photos
+    },
+
+    // ---- Games ---------------------------------------------------------------
+    // play: ✕ starts the game. Tetris is my C# / WPF Tetris ported to
+    // JavaScript (js/tetris.js). TODO: repo URL github.com/CJNAIDOO/Tetris?
+    games: {
+        tetris: { title: "Tetris", play: true },
+        // Ilifa: Phaser 3 action game (in development), games/ilifa/.
+        // Started as the Syntax Sorcerers' IAT Fusion Hackathon entry (Mzanzi Chronicles).
+        ilifa: { title: "Ilifa", play: true },
     },
 
     // ---- Let's Connect -----------------------------------------------------

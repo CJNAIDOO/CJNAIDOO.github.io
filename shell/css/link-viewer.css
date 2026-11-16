@@ -1,0 +1,73 @@
+/* ── the link viewer (shell/js/link-viewer.js): outside links open here ── */
+.lv { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; }
+.lv[hidden] { display: none; }
+.lv__scrim { position: absolute; inset: 0; background: rgba(4, 5, 9, 0.72); backdrop-filter: blur(6px); opacity: 0; transition: opacity 200ms; }
+.lv__box {
+    position: relative; width: min(1100px, calc(100vw - 32px)); height: min(760px, calc(100dvh - 48px));
+    display: flex; flex-direction: column; overflow: hidden;
+    border-radius: 18px; border: 1px solid rgba(176, 196, 228, 0.22); background: #0b0d14;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6);
+    opacity: 0; transform: translateY(14px) scale(0.985); transition: opacity 200ms, transform 260ms cubic-bezier(.2, .8, .2, 1);
+}
+.lv.is-in .lv__scrim, .lv.is-in .lv__box { opacity: 1; transform: none; }
+.lv[data-kind="card"] .lv__box { height: auto; width: min(520px, calc(100vw - 32px)); }
+.lv[data-kind="video"] .lv__box { height: auto; aspect-ratio: 16 / 10; }
+.lv__bar { display: flex; align-items: center; gap: 14px; padding: 10px 10px 10px 18px; border-bottom: 1px solid rgba(176, 196, 228, 0.14); color: #e6e9f0; font: 500 13px/1.2 Geist, Arial, sans-serif; }
+.lv__where { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lv__host { color: #fff; font-weight: 600; }
+.lv__title { color: #9aa4b6; }
+.lv__out { flex: none; color: #dfe6f2; text-decoration: none; font-size: 12px; letter-spacing: 0.06em; padding: 9px 14px; border: 1px solid rgba(176, 196, 228, 0.28); border-radius: 999px; }
+.lv__out:hover, .lv__out:focus-visible { background: rgba(176, 196, 228, 0.12); }
+.lv__close { flex: none; width: 38px; height: 38px; border: 0; border-radius: 50%; background: rgba(176, 196, 228, 0.1); color: #fff; font: 400 24px/1 Geist, Arial, sans-serif; cursor: pointer; }
+.lv__close:hover { background: rgba(176, 196, 228, 0.22); }
+.lv__body { position: relative; flex: 1; min-height: 0; overflow: auto; color: #e6e9f0; font: 400 15px/1.6 Geist, Arial, sans-serif; }
+.lv__frame, .lv__readme { display: block; width: 100%; height: 100%; border: 0; background: #fff; }
+.lv[data-kind="video"] .lv__frame { background: #000; }
+.lv__readme { flex: 1; min-height: 0; background: #0d1117; }
+.lv__note { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 8px 18px; background: rgba(11, 13, 20, 0.88); color: #9aa4b6; font-size: 12px; pointer-events: none; }
+.lv__loading { padding: 40px; color: #9aa4b6; }
+.lv__card { padding: 28px; display: grid; gap: 12px; }
+.lv__card h2, .lv__repo h2, .lv__profile h2 { margin: 0; font: 600 22px/1.25 Geist, Arial, sans-serif; color: #fff; }
+.lv__card p { margin: 0; color: #b9c1cf; }
+.lv__go { justify-self: start; margin-top: 6px; padding: 11px 18px; border-radius: 999px; background: linear-gradient(150deg, #f6f8fb, #b9c1cc 40%, #eef1f5 60%, #8a94a2); color: #0b0e14; font-weight: 600; text-decoration: none; }
+.lv__repo { display: flex; flex-direction: column; height: 100%; }
+.lv__repo-head { padding: 20px 24px 14px; border-bottom: 1px solid rgba(176, 196, 228, 0.12); }
+.lv__repo-head p { margin: 6px 0 0; color: #b9c1cf; }
+.lv__meta { color: #8f9ab0 !important; font-size: 13px; }
+.lv__profile { display: flex; gap: 20px; align-items: center; padding: 24px; }
+.lv__avatar { width: 84px; height: 84px; border-radius: 50%; }
+.lv__repos { list-style: none; margin: 0; padding: 0 24px 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.lv__repos button { width: 100%; height: 100%; text-align: left; display: grid; gap: 4px; padding: 14px; border-radius: 12px; border: 1px solid rgba(176, 196, 228, 0.16); background: rgba(176, 196, 228, 0.05); color: #e6e9f0; font: inherit; cursor: pointer; }
+.lv__repos button:hover { background: rgba(176, 196, 228, 0.12); }
+.lv__repos span { color: #b9c1cf; font-size: 13px; }
+.lv__repos small { color: #8f9ab0; }
+@media (max-width: 560px) { .lv__out { padding: 8px 10px; font-size: 11px; } .lv__box { height: calc(100dvh - 24px); width: calc(100vw - 16px); } }
+.lv__repos b { overflow-wrap: anywhere; }
+
+/* on the PSP's screen (the XMB's own page): the page fills the screen, a slim bar on top */
+.lv--screen .lv__scrim { background: #05070c; backdrop-filter: none; }
+.lv--screen .lv__box, .lv--screen[data-kind="card"] .lv__box, .lv--screen[data-kind="video"] .lv__box {
+    width: 100%; height: 100%; aspect-ratio: auto; border: 0; border-radius: 0; box-shadow: none; transform: none;
+}
+.lv--screen .lv__box { transition: opacity 180ms; }
+.lv--screen .lv__bar { padding: 14px 20px 14px 16px; gap: 22px; font-size: 26px; background: linear-gradient(180deg, #1a1d26, #0d0f15); }
+.lv--screen .lv__out { font-size: 22px; padding: 14px 24px; }
+.lv--screen .lv__body { font-size: 24px; }
+.lv--screen .lv__card h2, .lv--screen .lv__repo h2, .lv--screen .lv__profile h2 { font-size: 40px; }
+.lv--screen .lv__repos { grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); }
+.lv--screen .lv__repos span, .lv--screen .lv__meta { font-size: 20px; }
+.lv--screen .lv__avatar { width: 130px; height: 130px; }
+.lv--screen .lv__close { width: auto; height: 60px; padding: 0 26px 0 14px; display: inline-flex; align-items: center; gap: 14px; border-radius: 999px; font: 600 24px/1 Geist, Arial, sans-serif; letter-spacing: 0.04em; order: -1;
+    background: linear-gradient(160deg, #f4f6f9 0%, #b5bdc8 42%, #e9edf2 60%, #858f9d 100%); color: #0b0e14; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 2px 8px rgba(0, 0, 0, 0.4); }
+.lv--screen .lv__close i { width: 32px; height: 32px; border-radius: 50%; border: 4px solid #c8344a; box-sizing: border-box; }
+.lv--screen .lv__close:hover { filter: brightness(1.08); }
+.lv--screen[data-kind="card"] .lv__body { display: grid; place-items: center; }
+.lv--screen[data-kind="card"] .lv__card { max-width: 560px; }
+
+/* the viewer's buttons in the site's dark glass */
+.lv__out, .lv__close, .lv--screen .lv__close, .lv__go, .lv__repos button {
+    background: rgba(12, 14, 20, 0.62) !important; color: #eef1f6 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 6px 18px rgba(0, 0, 0, 0.35) !important;
+    backdrop-filter: blur(12px); text-decoration: none;
+}
+.lv__out:hover, .lv__close:hover, .lv__go:hover, .lv__repos button:hover { background: rgba(30, 34, 46, 0.74) !important; border-color: rgba(255, 255, 255, 0.2) !important; filter: none; }

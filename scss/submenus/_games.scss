@@ -27,9 +27,28 @@
 }
 
 .gta6-bg{
-    background-image: url('../images/gta_6_background.jpg');
+    background-image: url('../images/gta_6_background.webp');
 }
 
 .xmb-title.games.active .submenu.active .game-bg{
     opacity: 1;
+}
+
+.tetris-bg{
+    background-image: url('../images/tetris/background_v3.jpg');
+}
+
+.ilifa-bg{
+    background-image: url('../games/ilifa/assets/menu_background.webp');
+}
+
+// square game icons (Tetris) sit centred in the cover-art column
+.xmb-title.games .xmb-contents .submenu > img.game-icon{
+    width: 110px;
+    margin-inline: 45px;
+}
+
+// gameplay clips fill the screen like the stills
+video.game-bg{
+    object-fit: cover;
 }

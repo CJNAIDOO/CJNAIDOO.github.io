@@ -146,6 +146,25 @@ body.is-dark { background: var(--night); color: var(--night-ink); }
     transition: transform 260ms var(--ease-out);
 }
 
+/* the loading screen: once the intro has played, if the room is still on
+   its way, a line says what's happening and the full stop breathes */
+.mark__status {
+    min-height: 1.2em;
+    margin: 12px 0 0;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-2);
+    opacity: 0;
+    transition: opacity 600ms var(--ease-out);
+}
+.mark__status.is-in { opacity: 1; }
+.mark__dot.is-waiting { animation: mark-breathe 1.6s var(--ease-in-out) infinite; }
+@keyframes mark-breathe { 50% { opacity: 0.3; } }
+@media (prefers-reduced-motion: reduce) { .mark__dot.is-waiting { animation: none; } }
+
 /* the j's dot opens up until it is the whole (dark) stage */
 .iris {
     position: fixed;

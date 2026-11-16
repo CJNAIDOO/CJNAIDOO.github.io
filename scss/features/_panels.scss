@@ -204,14 +204,16 @@
 
 // ---- My Expertise ----------------------------------------------------------
 // Just the tools: an app-style icon tile, the name and a few words on what
-// it's for, in two columns. No box: like My Academics, the screen-wide
-// scrim darkens towards the right and the text sits beside a thin line.
+// it's for, in two columns, level with the focused row. No box and no
+// divider: the screen-wide scrim darkens towards the right behind it.
 .skills-overlay .overlay-panel{
     box-sizing: border-box;
-    left: 53%;
-    width: 45.5%;
-    top: 40%;
-    max-height: 58%;
+    left: 54%;
+    width: 44%;
+    top: calc(var(--row-y, 55%) - 26px);   // first row of icons level with the focused row (features.js sets --row-y)
+    max-height: none;
+    padding-left: 0;
+    border-left: none;
 }
 .tool-list{
     list-style: none;
@@ -219,7 +221,7 @@
     padding: 0;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px 18px;
+    gap: 12px 18px;
 }
 .tool{
     display: flex;
@@ -230,14 +232,14 @@
 // no tile per icon: the logo sits straight on the panel's shared backdrop
 .tool__icon{
     flex: none;
-    width: 40px;
-    height: 40px;
+    width: 52px;
+    height: 52px;
     display: grid;
     place-items: center;
 
     img{
-        width: 36px;
-        height: 36px;
+        width: 48px;
+        height: 48px;
         object-fit: contain;
     }
 }
@@ -252,8 +254,8 @@
 .tool__initials{
     display: grid;
     place-items: center;
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
     border: 1.5px solid rgba(218, 218, 218, 0.7);
     border-radius: 50%;
     font-size: 0.8rem;
@@ -272,7 +274,7 @@
     align-items: center;
     flex-wrap: nowrap;
     white-space: nowrap;
-    font-size: 1.05rem;
+    font-size: 1.12rem;
 }
 .tool__note{
     font-size: 0.82rem;

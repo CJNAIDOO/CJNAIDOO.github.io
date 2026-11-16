@@ -22,11 +22,15 @@ const nameText = markName.textContent.trim();
 markName.setAttribute('aria-label', nameText);
 const stopAt = nameText.indexOf('.');
 markName.innerHTML = [...nameText].map((c, i) => {
+    if (c === ' ' && i === stopAt + 1) return '<br>';               // two lines: CAMERON J. / NAIDOO
     const ch = c === ' ' ? '&nbsp;' : c;
     if (i === stopAt) return `<span class="ch-probe" aria-hidden="true"></span><span class="ch ch--stop" aria-hidden="true" style="--i:${i}">${ch}</span>`;
     return `<span class="ch" aria-hidden="true" style="--i:${i}">${ch}</span>`;
 }).join('');
 markName.classList.add('is-split');
+// the painted name (intro-name.js) takes over when it can; if it hasn't by 5 s (no WebGL2, or the script
+// didn't load), the 2D name shows instead
+setTimeout(() => { const m = document.getElementById('mark'); if (m && !m.classList.contains('has-3d')) m.classList.add('no-3d'); }, 5000);
 const stopEl = markName.querySelector('.ch--stop');
 const probe = markName.querySelector('.ch-probe');
 
@@ -149,5 +153,7 @@ const markDone = new Promise((resolve) => {
     });
 });
 
-window.MARK = { done: markDone, dot };
+// main.js: while the room is still loading after the intro, the dot breathes
+const waiting = (on) => { dot.classList.toggle('is-waiting', on); };
+window.MARK = { done: markDone, dot, waiting };
 })();

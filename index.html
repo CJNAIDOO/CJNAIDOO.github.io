@@ -9,6 +9,10 @@
     <link rel="preload" as="font" type="font/woff2" href="fonts/Geist-Variable.woff2" crossorigin>
     <link rel="preload" as="font" type="font/woff2" href="fonts/InstrumentSerif-Italic.woff2" crossorigin>
     <link rel="stylesheet" href="shell/css/shell.css">
+    <link rel="stylesheet" href="shell/css/room.css?v=93">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <!-- Satoshi (a few labels in the room): loaded without holding up the first paint -->
+    <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&amp;display=swap" media="print" onload="this.media='all'">
     <!-- three.js from a CDN so GitHub Pages needs no build step -->
     <script type="importmap">
     {
@@ -18,9 +22,14 @@
         }
     }
     </script>
+    <!-- start fetching three.js and the room's code straight away, in parallel (otherwise each is
+         only discovered once the one before it has loaded and been parsed) -->
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js">
+    <link rel="modulepreload" href="shell/js/viewer.js?v=93">
+    <link rel="modulepreload" href="shell/js/room.js?v=93">
     <!-- act 1 runs on its own, straight away; main.js (three.js) follows -->
-    <script defer src="shell/js/mark.js"></script>
-    <script type="module" src="shell/js/main.js"></script>
+    <script defer src="shell/js/mark.js?v=93"></script>
+    <script type="module" src="shell/js/main.js?v=93"></script>
 </head>
 <body data-stage="mark">
     <!-- act 2/3: the PSP (3D), with the XMB (xmb.html) on its screen -->
@@ -36,6 +45,8 @@
         <h1 class="mark__name" id="mark-name">Cameron J. Naidoo</h1>
         <p class="mark__role" id="mark-role">Aspiring Fullstack Developer</p>
         <div class="mark__load" aria-hidden="true"><span id="mark-bar"></span></div>
+        <!-- while the room is still loading after the intro: what it is doing -->
+        <p class="mark__status" id="mark-status" aria-live="polite"></p>
         <!-- the full stop after "J.": it orbits, bursts, then opens into the stage -->
         <svg class="mark__fx" aria-hidden="true">
             <g id="mark-trail"></g>
@@ -48,7 +59,7 @@
     <div class="iris" id="iris" aria-hidden="true" hidden></div>
 
     <p class="hint" id="hint">drag to turn</p>
-    <button class="skip" id="skip" type="button">skip intro</button>
+    <button class="skip" id="skip" type="button" hidden>skip intro</button>
 
     <!-- the top menu: the XMB's main headings, outside the PSP -->
     <header class="sitenav" id="sitenav" hidden>
@@ -61,10 +72,23 @@
         </nav>
     </header>
 
+    <!-- the room (shell/js/room.js): step out of the PSP and back; hover labels -->
+    <button class="room-btn" id="room-btn" type="button" hidden>room</button>
+    <div class="view-switch" id="view-switch" role="group" aria-label="Look at the portfolio on" hidden>
+        <button type="button" data-view="psp" aria-pressed="false">PSP</button>
+        <button type="button" data-view="ps3" aria-pressed="false">Desktop</button>
+    </div>
+    <div class="room-tip" id="room-tip" aria-hidden="true"></div>
+    <!-- the room's corners: who, where, when -->
+    <aside class="room-chrome" id="room-chrome" aria-label="About">
+    </aside>
+
     <div class="studio-toggle" id="studio-toggle" role="group" aria-label="Studio lighting" hidden>
         <button type="button" data-theme="dark" aria-pressed="true">Dark</button>
         <button type="button" data-theme="light" aria-pressed="false">Light</button>
     </div>
+    <div class="vol" id="vol" role="slider" tabindex="0" aria-label="Volume" aria-valuemin="0" aria-valuemax="5" aria-valuenow="4" hidden></div>
+    <button class="sound-btn" id="sound-btn" type="button" aria-pressed="true" hidden>sound on</button>
 
     <nav class="toolbar" id="toolbar" hidden aria-label="View controls">
         <button id="reset" type="button" title="Put the PSP back in front of you">reset view</button>
@@ -79,7 +103,23 @@
             by <a href="https://sketchfab.com/strov" target="_blank" rel="noopener">Ilya Ostrovsky</a>, licensed under
             <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.
             Changes: textures resized and the screen replaced with a live page.</p>
-        <p>Type: Geist and Instrument Serif (both SIL Open Font License).</p>
+        <p>The room: <a href="https://sketchfab.com/3d-models/bookshelf-cc0-71af93b1d15f4f48ad836d36110626f7" target="_blank" rel="noopener">&ldquo;Bookshelf [CC0]&rdquo;</a> by <a href="https://sketchfab.com/crufro" target="_blank" rel="noopener">Crew Froebel</a>;
+            <a href="https://sketchfab.com/3d-models/ps3-slim-2341abe39eb74249b6e5869d0f740f84" target="_blank" rel="noopener">&ldquo;PS3 Slim&rdquo;</a> by <a href="https://sketchfab.com/3D-Models-Geek" target="_blank" rel="noopener">Vasily</a>;
+            <a href="https://sketchfab.com/3d-models/gamepad-sony-dualshock-3-a7c82b41d2524ffeba28798b357daebd" target="_blank" rel="noopener">&ldquo;Gamepad Sony DualShock 3&rdquo;</a> by <a href="https://sketchfab.com/NPCxBot" target="_blank" rel="noopener">NPC</a>;
+            <a href="https://sketchfab.com/3d-models/yamaha-tt-300-record-player-3577a2a1a0c24218bd5d768beccf218e" target="_blank" rel="noopener">&ldquo;Yamaha TT-300 Record Player&rdquo;</a> by <a href="https://sketchfab.com/AleixoAlonso" target="_blank" rel="noopener">AleixoAlonso</a>;
+            <a href="https://sketchfab.com/3d-models/cyclops-marvel-rivals-a8db528516ed4a27b9c7382540fa7042" target="_blank" rel="noopener">&ldquo;Cyclops - Marvel Rivals&rdquo;</a> by <a href="https://sketchfab.com/YEEZY_YE" target="_blank" rel="noopener">YE YE</a>;
+            <a href="https://sketchfab.com/3d-models/the-hood-marvel-rivals-5a7f8e89a46848779f1f8d0a126a404e" target="_blank" rel="noopener">&ldquo;The Hood - Marvel Rivals&rdquo;</a> by <a href="https://sketchfab.com/YEEZY_YE" target="_blank" rel="noopener">YE YE</a>; <a href="https://sketchfab.com/3d-models/jubilee-marvel-rivals-aafbfebc57474892951a37dad42ac4d9" target="_blank" rel="noopener">&ldquo;Jubilee&rdquo;</a> and <a href="https://sketchfab.com/3d-models/the-thing-marvel-rivals-24d62974529e468a8955e031bac5d2e7" target="_blank" rel="noopener">&ldquo;The Thing - Marvel Rivals&rdquo;</a> by <a href="https://sketchfab.com/YEEZY_YE" target="_blank" rel="noopener">YE YE</a>; <a href="https://sketchfab.com/3d-models/daredevil-marvel-rivals-16e00071d31b45b2b970cb08aaf8941a" target="_blank" rel="noopener">&ldquo;Daredevil - Marvel Rivals&rdquo;</a> by <a href="https://sketchfab.com/Mr.Iguana" target="_blank" rel="noopener">WW3</a>; <a href="https://sketchfab.com/3d-models/jeff-marvel-rivals-54b164c0b4694800bf2edcd43ab8aee6" target="_blank" rel="noopener">&ldquo;Jeff - Marvel Rivals&rdquo;</a> by <a href="https://sketchfab.com/YEEZY_YE" target="_blank" rel="noopener">YE YE</a>;Jeff The Land Shark&rdquo;</a> by <a href="https://sketchfab.com/darkatek7" target="_blank" rel="noopener">darkatek7</a>;
+            <a href="https://sketchfab.com/3d-models/cute-robot-6aadb75f596742ada2814ad4593f0032" target="_blank" rel="noopener">&ldquo;cute robot&rdquo;</a> by <a href="https://sketchfab.com/victory_mirosya" target="_blank" rel="noopener">victory_mirosya</a> (recoloured); <a href="https://sketchfab.com/3d-models/gaming-bedroom-239cfcf9c0774a62a36060492f19526d" target="_blank" rel="noopener">&ldquo;Gaming Bedroom&rdquo;</a> by <a href="https://sketchfab.com/Nachoap" target="_blank" rel="noopener">Nachoap</a>; <a href="https://sketchfab.com/3d-models/ultrawide-monitor-f84d24b6df3648d884fd9be9c8007dd4" target="_blank" rel="noopener">&ldquo;Ultrawide Monitor&rdquo;</a> by <a href="https://sketchfab.com/dylanheyes" target="_blank" rel="noopener">dylanheyes</a>; <a href="https://sketchfab.com/3d-models/black-gaming-chair-5c0c434517e4472faf0dc598703c5395" target="_blank" rel="noopener">&ldquo;Black Gaming Chair&rdquo;</a> by <a href="https://sketchfab.com/kanesk06" target="_blank" rel="noopener">kanesk06</a>; <a href="https://sketchfab.com/3d-models/lenovo-legion-xyz-8797df9d2c854f0b86bf3475956b972b" target="_blank" rel="noopener">&ldquo;Lenovo Legion&rdquo;</a> by <a href="https://sketchfab.com/famas30" target="_blank" rel="noopener">famas30</a>.
+            All licensed under <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.
+            Changes: simplified, textures resized, split into parts and rearranged; the bedroom&rsquo;s TV wall, desk set-up and picture frames removed and the room recoloured. The desk is new.</p>
+        <p><a href="https://sketchfab.com/3d-models/keyboard-razer-huntsman-v2-tenkeyless-9d8710e7ef3e4fc9b031197470eabbba" target="_blank" rel="noopener">&ldquo;Keyboard - Razer Huntsman V2 Tenkeyless&rdquo;</a> and <a href="https://sketchfab.com/3d-models/mouse-razer-deathadder-783913c7b9df441ab99ec666eee4e052" target="_blank" rel="noopener">&ldquo;Mouse - Razer DeathAdder&rdquo;</a> by <a href="https://sketchfab.com/gimora" target="_blank" rel="noopener">gimora</a>, licensed under <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a> (non-commercial; shared alike). Changes: resized and placed in the room. <a href="https://sketchfab.com/3d-models/wood-laptop-stand-b59d3694f91f4e71825e7d9b34d03cb6" target="_blank" rel="noopener">&ldquo;wood Laptop stand&rdquo;</a> by <a href="https://sketchfab.com/nurlumustafa" target="_blank" rel="noopener">nurlumustafa</a>, licensed under <a href="http://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a> (non-commercial). Changes: painted black.</p>
+        <p><a href="https://sketchfab.com/3d-models/vinyl-record-7afce8845d9c4331ba3ac96a3d51694f" target="_blank" rel="noopener">&ldquo;Vinyl Record&rdquo;</a> by <a href="https://sketchfab.com/liamo123" target="_blank" rel="noopener">liamo123</a>, under the Sketchfab Standard licence. <a href="https://sketchfab.com/3d-models/vinyls-1-159fbaa320324c98af849a49eeae2461" target="_blank" rel="noopener">&ldquo;VINYLS 1&rdquo;</a> by <a href="https://sketchfab.com/mfb64" target="_blank" rel="noopener">mfb64</a> (<a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>); <a href="https://sketchfab.com/3d-models/jabulani-7ae489b78e114ac290ffbd989729f4a4" target="_blank" rel="noopener">&ldquo;Jabulani&rdquo;</a> by <a href="https://sketchfab.com/rondinellimorais" target="_blank" rel="noopener">rondinellimorais</a> (<a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>); <a href="https://sketchfab.com/3d-models/playstation-4-original-78935136cd424a3ab7c2da1cf75a9ad1" target="_blank" rel="noopener">&ldquo;PlayStation 4 Original&rdquo;</a> by <a href="https://sketchfab.com/JME.3D" target="_blank" rel="noopener">Laxity</a> (<a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>); <a href="https://sketchfab.com/3d-models/playstation-4-controller-16a3c27778264334a40aa3f9faabe98a" target="_blank" rel="noopener">&ldquo;Playstation 4 Controller&rdquo;</a> by <a href="https://sketchfab.com/harrythe1st" target="_blank" rel="noopener">harrythe1st</a> (<a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>); <a href="https://sketchfab.com/3d-models/ps4-games-collection-ef258b9e904d4d3a9b300bd180b18088" target="_blank" rel="noopener">&ldquo;PS4 Games Collection&rdquo;</a> by <a href="https://sketchfab.com/nathan.d1563" target="_blank" rel="noopener">Paul</a> (<a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>); <a href="https://sketchfab.com/3d-models/bonsai-tree-garden-1f81be426d4248429e0b13acc7c8d8ce" target="_blank" rel="noopener">&ldquo;Bonsai Tree - garden&rdquo;</a> by <a href="https://sketchfab.com/CMBC" target="_blank" rel="noopener">Brian Trepanier</a> (<a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>); <a href="https://sketchfab.com/3d-models/master-blackwhite-bedroom-4a2ea32c65dd48fe991f17473c92ede4" target="_blank" rel="noopener">&ldquo;Master Black&amp;White Bedroom&rdquo;</a> by <a href="https://sketchfab.com/renviros" target="_blank" rel="noopener">Ren Viro Store</a> (<a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>) (its floor and wall textures, and the curtain); <a href="https://sketchfab.com/3d-models/lava-lamp-a03b4dfd12614a13ba354b7fe5f813c8" target="_blank" rel="noopener">&ldquo;Lava lamp&rdquo;</a> by <a href="https://sketchfab.com/BenAld" target="_blank" rel="noopener">BenAld</a> (<a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>), the glass made clearer and the base chrome; <a href="https://sketchfab.com/3d-models/corkboard-3ceda8ed02af45d1a8b36570076193e1" target="_blank" rel="noopener">&ldquo;Corkboard&rdquo;</a> by <a href="https://sketchfab.com/2F_XIN" target="_blank" rel="noopener">XIN</a> (<a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>), its pins and papers removed and enlarged; <a href="https://sketchfab.com/3d-models/forest-in-a-jar-terrarium-4dca1b2513394d0fa0ed12041ff30ddc" target="_blank" rel="noopener">&ldquo;Forest In a Jar - Terrarium&rdquo;</a> by <a href="https://sketchfab.com/hectopod" target="_blank" rel="noopener">hectopod</a> (<a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>), textures resized; <a href="https://sketchfab.com/3d-models/roselle-composition-book-639955874f824bc381702faf7684d779" target="_blank" rel="noopener">&ldquo;Roselle Composition Book&rdquo;</a> by <a href="https://sketchfab.com/paulyanez" target="_blank" rel="noopener">Anthony Yanez</a> (<a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>), with tape added; <a href="https://sketchfab.com/3d-models/boitier-dvd-de-14-mm-dcf043918a354680ad4ad86a5d2af4ae" target="_blank" rel="noopener">&ldquo;Boitier DVD de 14 mm&rdquo;</a> by <a href="https://sketchfab.com/Wazahole" target="_blank" rel="noopener">Wazahole</a> (<a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>); <a href="https://sketchfab.com/3d-models/persian-rug-fe13eecfc9b8405dab1fe76c5dd28a4c" target="_blank" rel="noopener">&ldquo;Persian Rug&rdquo;</a> by <a href="https://sketchfab.com/nrecord" target="_blank" rel="noopener">Nicholas Record</a> (<a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>). Type: Nafta by Krisjanis Mezulis (<a href="https://wildpicks.design/product/nafta-free-font/" target="_blank" rel="noopener">Wildpicks</a>) and Lincoln/MITRE digitised by David Bennewith (SIL Open Font License). Book covers from Penguin Random House and Open Library, film posters from TMDB, album covers from Spotify, comic covers from the Marvel Database. Music: Cameron&rsquo;s playlists on Spotify. The figures&rsquo; voice lines are Marvel Rivals ultimate lines.</p>
+        <p>Posters on the main wall: a Spider-Man photo, a photo of Nelson Mandela and a St&uuml;ssy 8 Ball print, and Supreme&rsquo;s Kermit skate decks; all rights stay with their owners. Cyclops, The Hood, Jubilee, Daredevil, Jeff the Land Shark, The Thing and Marvel Rivals belong to Marvel and NetEase; PS3 and DualShock are trademarks of Sony Interactive Entertainment.</p>
+        <p>2017 SAIIA Young Leaders&rsquo; Conference photo: <a href="https://x.com/DIRCO_ZA/status/885457414669168640" target="_blank" rel="noopener">DIRCO South Africa</a>.</p>
+        <p>The name&rsquo;s liquid metal: MetallicPaint from <a href="https://reactbits.dev" target="_blank" rel="noopener">React Bits</a> by David Haz (MIT + Commons Clause), ported to plain JavaScript. Game covers and the textbooks&rsquo; covers: Wikipedia and Open Library.</p>
+        <p>The loading screen<p>Type: Geistrsquo;s liquid chrome is React Bits<p>Type: Geistrsquo; LiquidChrome (reactbits.dev), ported to plain JavaScript.</p>
+        <p>Type: Geist, Instrument Serif, Lato and DM Mono, and on the game cases Cinzel, Bebas Neue, Montserrat, Barlow Condensed and Oswald (SIL Open Font License), Homemade Apple (Apache License 2.0), Satoshi (Fontshare / ITF Free Font License). Prince Valiant (freeware, <a href="https://www.fontspace.com/prince-valiant-font-f171055" target="_blank" rel="noopener">FontSpace</a>) for Cameron&rsquo;s name. The Overcook (freeware for personal use, <a href="https://www.fontspace.com/the-overcook-font-f61655" target="_blank" rel="noopener">FontSpace</a>) for the line under it on the loading screen.</p>
+        <p>The PS4 band on the game cases is cropped from a photo of a real Star Wars Jedi: Fallen Order case; trophy icons from the PS3 XMB; trophy lists from Exophase.</p>
         <p>PSP, PlayStation and Sony are trademarks of Sony Interactive Entertainment. This is a non-commercial fan recreation.</p>
         <form method="dialog"><button>close</button></form>
     </dialog>

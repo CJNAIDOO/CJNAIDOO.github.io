@@ -1,0 +1,47 @@
+/* Which controls the XMB shows (js/shell-bridge.js sets the class on <html>):
+   ctl-psp      on the PSP's screen: the PSP's buttons only
+   ctl-desktop  on the desk's monitor, or the XMB on its own: the keyboard and mouse only */
+.ctl-for-psp, .ctl-for-desktop { display: none; }
+.ctl-psp .ctl-for-psp, .ctl-desktop .ctl-for-desktop { display: inline; }
+
+/* the controls table: one column of buttons, not two */
+.ctl-psp .controls th:nth-child(2), .ctl-psp .controls td:nth-child(2) { display: none; }
+.ctl-desktop .controls th:nth-child(1), .ctl-desktop .controls td:nth-child(1) { display: none; }
+.ctl-desktop .controls tr.shell-only { display: none; }
+
+/* the prompts along the bottom (and in the games): keys instead of the PSP's buttons */
+.ctl-desktop .prompt > .glyph, .ctl-desktop .prompt > .glyph-start { display: none; }
+.ctl-desktop .prompt::before {
+    display: inline-block; min-width: 1.6em; padding: 2px 7px; box-sizing: border-box;
+    border: 1px solid rgba(218, 218, 218, 0.5); border-bottom-width: 2px; border-radius: 5px;
+    background: rgba(255, 255, 255, 0.08); font-size: 0.78em; line-height: 1.25; text-align: center; text-shadow: none;
+}
+.ctl-desktop .prompt:has(> .glyph-x)::before { content: 'Enter'; }
+.ctl-desktop .prompt:has(> .glyph-o)::before { content: 'Esc'; }
+.ctl-desktop .prompt:has(> .glyph-t)::before { content: 'C'; }
+.ctl-desktop .prompt:has(> .glyph-s)::before { content: 'Z'; }
+.ctl-desktop .prompt:has(> .glyph-start)::before { content: 'P'; }
+.ctl-desktop .prompt:not(:has(> .glyph, > .glyph-start))::before { display: none; }
+/* buttons in the message box */
+.ctl-desktop .psn-btn > .glyph { display: none; }
+/* the link viewer's Back: the red circle is the PSP's button */
+.ctl-desktop .lv--screen .lv__close i { display: none; }
+.ctl-desktop .lv--screen .lv__close::after { content: 'Esc'; margin-left: 4px; padding: 3px 9px; border: 1px solid rgba(255, 255, 255, 0.35); border-bottom-width: 3px; border-radius: 8px; font-size: 0.8em; }
+
+/* the detail panels: below the category icons (js/features.js measures --row-bottom), and only as tall as what's left */
+.overlay-panel, .project-card, .about-bg .infowrapper.has-controls {
+    top: max(42%, calc(var(--row-bottom, 0px) + 26px)) !important;
+    max-height: calc(100% - max(42%, calc(var(--row-bottom, 0px) + 26px)) - 64px) !important;
+}
+/* the skills grid lines up with the row you're on, as before, but never above the icons */
+.skills-overlay .overlay-panel {
+    top: max(calc(var(--row-y, 55%) - 26px), calc(var(--row-bottom, 0px) + 26px)) !important;
+    max-height: none !important;
+}
+/* a wide, short screen (the desk's monitor): the skills in three columns and a little tighter, so they fit */
+@media (min-aspect-ratio: 2/1) {
+    .skills-overlay .overlay-panel { left: 50% !important; width: 48% !important; }
+    .skills-overlay .tool-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 14px; }
+    .skills-overlay .tool__icon { width: 42px; height: 42px; }
+    .skills-overlay .tool__icon img { width: 38px; height: 38px; }
+}

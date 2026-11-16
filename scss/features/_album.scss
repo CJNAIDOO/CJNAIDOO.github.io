@@ -1,0 +1,174 @@
+@use "../abstract/" as *;
+
+// Photos: the three.js space (js/photos-space.js) and the full-screen viewer (js/album.js).
+
+// ---- Photos space (js/photos-space.js) -------------------------------------
+// The three.js scene sits behind the XMB like a game background, fading in
+// while Photos is the open section.
+.photo-space{
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 600ms ease;
+
+    canvas{ display: block; width: 100%; height: 100%; }
+}
+.xmb-title.photos.active .photo-space{
+    opacity: 1;
+    pointer-events: auto;
+}
+.photo-space__hud{
+    position: fixed;
+    left: 4%;
+    bottom: 5%;
+    opacity: 0;
+    transition: opacity 400ms ease;
+    text-align: left;
+    pointer-events: none;
+
+    p{ margin: 0; text-shadow: $shadowtext; }
+}
+.xmb-title.photos.active .photo-space__hud{ opacity: 1; }
+.photo-space__count{
+    font-size: 1.05rem;
+    letter-spacing: 0.18em;
+    opacity: 0.85;
+}
+.photo-space__caption{
+    margin-top: 4px !important;
+    font-size: 1rem;
+    opacity: 0.75;
+}
+.photo-space__keys{ opacity: 0.8; }
+
+// ---- the album, full screen -----------------------------------------------
+.album{
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 2.2vh;
+    padding: 4vh 5vw 3.5vh;
+    background: #08080c;
+    color: $primary-color;
+    animation: album-in 280ms ease;
+
+    &[hidden]{ display: none; }
+}
+@keyframes album-in{
+    from{ opacity: 0; transform: scale(1.02); }
+}
+// the current photo, blurred, fills the edges
+.album__backdrop{
+    position: absolute;
+    inset: -40px;
+    z-index: -1;
+    background: center / cover no-repeat;
+    filter: blur(40px) saturate(1.2) brightness(0.35);
+    transition: background-image 300ms ease;
+}
+.album__head{
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+
+    p{ margin: 0; text-shadow: $shadowtext; }
+}
+.album__title{ font-size: 1.6rem; }
+.album__count{ font-size: 1rem; opacity: 0.7; letter-spacing: 0.06em; }
+
+.album__stage{
+    margin: 0;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    justify-items: center;
+    gap: 1vh;
+}
+.album__photo{
+    min-height: 0;
+    height: 100%;
+    aspect-ratio: 3 / 2;
+    max-width: 100%;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+
+    img{ width: 100%; height: 100%; object-fit: contain; display: block; background: #000; }
+    &.is-empty{
+        background: linear-gradient(145deg, #23232b, #15151a);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+}
+.album__caption{
+    font-size: 0.95rem;
+    opacity: 0.8;
+    min-height: 1.2em;
+}
+// empty frame: a faint picture icon and the photo's number
+.album__empty{
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    font-size: 0.95rem;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.35);
+
+    svg{
+        width: 64px;
+        height: 64px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.6;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+    }
+}
+
+.album__strip{
+    list-style: none;
+    margin: 0;
+    padding: 4px 2px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    li{
+        flex: none;
+        width: 92px;
+        aspect-ratio: 3 / 2;
+        border-radius: 5px;
+        overflow: hidden;
+        cursor: pointer;
+        opacity: 0.45;
+        background: #1c1c22;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: opacity 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+    }
+    li.is-current{
+        opacity: 1;
+        transform: translateY(-3px);
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85);
+    }
+    img{ width: 100%; height: 100%; object-fit: cover; display: block; }
+    .album__empty{ height: 100%; place-content: center; font-size: 0.75rem; svg{ width: 26px; height: 26px; } }
+}
+.album__prompts{
+    position: absolute;
+    top: 4vh;
+    right: 5vw;
+    display: flex;
+    font-size: 0.95rem;
+    margin-top: 4px;
+}
+.album__count{ margin-right: 150px; }   // room for ○ Back beside it
+body.album-open{
+    .xmb-prompts, .clock{ visibility: hidden; }
+}

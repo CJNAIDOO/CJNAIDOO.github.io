@@ -4,6 +4,12 @@
     transition: scale 300ms;
     z-index:2;
 
+    // The open section sits under the others, so its full-screen backgrounds
+    // (game art, project photos) never paint over the category icons to its left.
+    &.active{
+        z-index: 1;
+    }
+
     img{
         transition: scale 200ms;
     }
