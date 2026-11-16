@@ -547,7 +547,7 @@ const workerFor = (canvas, s, onReady, onFail) => {
     // screen (intro-worker.js), messages tagged with who they're for
     const shared = s.sharedWorker || null, tag = s.workerTag || 'paint';
     let w = shared;
-    if (!w) { try { w = new Worker(new URL('./metallic-worker.js?v=93', import.meta.url), { type: 'module' }); } catch { return null; } }
+    if (!w) { try { w = new Worker(new URL('./metallic-worker.js?v=94', import.meta.url), { type: 'module' }); } catch { return null; } }
     const off = canvas.transferControlToOffscreen();
     const { tiltTarget, shape, sharedWorker, workerTag, ...plain } = s;
     const post = (m, t) => w.postMessage(shared ? { ...m, to: tag } : m, t || []);

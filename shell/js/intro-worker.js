@@ -2,9 +2,9 @@
 // metallic paint, the liquid chrome behind it and the handwritten line under it each draw on their
 // own OffscreenCanvas here, so the page building the room can't stall any of them. Messages carry
 // `to` (paint | chrome | hand); replies carry `from`.
-import { createPaintCore, DEFAULTS as PAINT_DEFAULTS } from './metallic-paint.js?v=93';
-import { createChromeCore } from './liquid-chrome.js?v=93';
-import { createHandwriting } from './handwriting-core.js?v=93';
+import { createPaintCore, DEFAULTS as PAINT_DEFAULTS } from './metallic-paint.js?v=94';
+import { createChromeCore } from './liquid-chrome.js?v=94';
+import { createHandwriting } from './handwriting-core.js?v=94';
 
 const reply = (from, m) => self.postMessage({ ...m, from });
 let paint = null, chrome = null, hand = null;

@@ -14,7 +14,7 @@
 const NO_FRAME = /(^|\.)(linkedin\.com|letterboxd\.com|goodreads\.com|github\.com|google\.com|instagram\.com|x\.com|twitter\.com|facebook\.com|psnprofiles\.com|playstation\.com)$/i;
 const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-const CSS = new URL('../css/link-viewer.css?v=93', import.meta.url).href;
+const CSS = new URL('../css/link-viewer.css?v=94', import.meta.url).href;
 
 export function createLinkViewer({ screen = false, route = null } = {}) {
     if (!document.querySelector('link[data-lv]')) {

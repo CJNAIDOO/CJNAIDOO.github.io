@@ -1,6 +1,6 @@
 // The loading screen's liquid chrome, drawn in a worker (liquid-chrome.js, opts.worker): the page
 // hands over its canvas, then only its size and the pointer.
-import { createChromeCore } from './liquid-chrome.js?v=93';
+import { createChromeCore } from './liquid-chrome.js?v=94';
 
 let core = null;
 self.onmessage = (e) => {

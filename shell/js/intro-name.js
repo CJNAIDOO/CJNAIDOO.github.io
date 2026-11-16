@@ -4,8 +4,8 @@
 // on the page can't stall them. The name turns slightly as the room loads, then drifts towards you
 // and fades into the room. Without WebGL2, createIntroName returns null and main.js shows the 2D
 // name on the plain dark screen instead.
-import { createMetallicPaint } from './metallic-paint.js?v=93';
-import { createLiquidChrome } from './liquid-chrome.js?v=93';
+import { createMetallicPaint } from './metallic-paint.js?v=94';
+import { createLiquidChrome } from './liquid-chrome.js?v=94';
 
 export function createIntroName(host, { reduced = false } = {}) {
     const wrap = document.createElement('div');
@@ -20,7 +20,7 @@ export function createIntroName(host, { reduced = false } = {}) {
     let shared = null;
     try {
         if (typeof OffscreenCanvas !== 'undefined' && 'transferControlToOffscreen' in HTMLCanvasElement.prototype) {
-            shared = new Worker(new URL('./intro-worker.js?v=93', import.meta.url), { type: 'module' });
+            shared = new Worker(new URL('./intro-worker.js?v=94', import.meta.url), { type: 'module' });
         }
     } catch { shared = null; }
     const paint = createMetallicPaint(wrap, {
@@ -51,7 +51,7 @@ export function createIntroName(host, { reduced = false } = {}) {
     host.appendChild(graf);
     host.classList.add('has-graf');
     let hw = null;                                    // the worker that draws it, when there is one
-    const svgReady = fetch('images/room/role-handwriting.svg?v=93').then((r) => r.text()).then((svg) => {
+    const svgReady = fetch('images/room/role-handwriting.svg?v=94').then((r) => r.text()).then((svg) => {
         graf.innerHTML = svg;
         const pens = [...graf.querySelectorAll('.pen')];
         const lens = pens.map((p) => Math.ceil(p.getTotalLength()));
@@ -85,7 +85,7 @@ export function createIntroName(host, { reduced = false } = {}) {
             canvas.className = 'graf__canvas';
             const off = canvas.transferControlToOffscreen();
             const own = !shared;
-            const worker = shared || new Worker(new URL('./handwriting-worker.js?v=93', import.meta.url), { type: 'module' });
+            const worker = shared || new Worker(new URL('./handwriting-worker.js?v=94', import.meta.url), { type: 'module' });
             const send = (m, t) => worker.postMessage(own ? m : { ...m, to: 'hand' }, t || []);
             const pen = Number(pens[0]?.getAttribute('stroke-width')) || 300;
             return new Promise((res) => {
@@ -101,7 +101,7 @@ export function createIntroName(host, { reduced = false } = {}) {
                 if (own) worker.onerror = fail;
                 setTimeout(() => { if (!hw) fail(); }, 3000);
                 // the ink: the line as a white paint marker (tools/role-ink.py), laid out like the SVG
-                fetch('images/room/role-ink.png?v=93').then((r) => (r.ok ? r.blob() : null)).then((b) => (b ? createImageBitmap(b) : null)).catch(() => null).then((tex) => {
+                fetch('images/room/role-ink.png?v=94').then((r) => (r.ok ? r.blob() : null)).then((b) => (b ? createImageBitmap(b) : null)).catch(() => null).then((tex) => {
                     send({ type: 'init', canvas: off, w, h, W, asc, pen, color: '#f6f7fb', glyphs, tex }, tex ? [off, tex] : [off]);
                 });
             });

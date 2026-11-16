@@ -23,12 +23,12 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { ROOM, GUIDE } from './room-config.js?v=93';
-import { sfx } from './sfx.js?v=93';
+import { ROOM, GUIDE } from './room-config.js?v=94';
+import { sfx } from './sfx.js?v=94';
 import { createInspector } from './inspect.js';
-import { BOOKS, FILMS, GAMES, LINKS, TEXTBOOKS } from './shelf-data.js?v=93';
-import { countsHTML, trophyListHTML } from './trophy-list.js?v=93';
-import { DISCS } from './records-data.js?v=93';
+import { BOOKS, FILMS, GAMES, LINKS, TEXTBOOKS } from './shelf-data.js?v=94';
+import { countsHTML, trophyListHTML } from './trophy-list.js?v=94';
+import { DISCS } from './records-data.js?v=94';
 
 const MODELS = {
     bedroom: 'models/room/bedroom.glb',         // the room itself (its TV wall and desk set-up removed)

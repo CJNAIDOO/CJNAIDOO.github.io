@@ -491,7 +491,7 @@ export function createLiquidChrome(container, opts = {}) {
         // its own worker, or (opts.sharedWorker) the loading screen's shared one (intro-worker.js)
         try {
             const shared = o.sharedWorker || null, tag = o.workerTag || 'chrome';
-            worker = shared || new Worker(new URL('./liquid-chrome-worker.js?v=93', import.meta.url), { type: 'module' });
+            worker = shared || new Worker(new URL('./liquid-chrome-worker.js?v=94', import.meta.url), { type: 'module' });
             const off = canvas.transferControlToOffscreen();
             const { worker: _w, sharedWorker: _s, workerTag: _t, ...plain } = o;
             const post = (m, t) => worker.postMessage(shared ? { ...m, to: tag } : m, t || []);

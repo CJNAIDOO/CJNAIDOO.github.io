@@ -135,7 +135,7 @@
     // LinkedIn, YouTube... with ○ to go back to the menu. Only a live app (a project's running
     // site) pops up over the whole site, in the shell's viewer; on its own the XMB opens it in a tab.
     let screenViewer = null
-    const screenLinks = () => screenViewer ||= import(new URL('shell/js/link-viewer.js?v=93', document.baseURI).href)
+    const screenLinks = () => screenViewer ||= import(new URL('shell/js/link-viewer.js?v=94', document.baseURI).href)
         .then((m) => { const v = m.createLinkViewer({ screen: true }); window.XMB_LINKS = v; return v })
     const openLink = (url, { live = false, label = '' } = {}) => {
         if (!url) { showToast('Link coming soon'); return }

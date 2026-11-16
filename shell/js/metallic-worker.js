@@ -1,7 +1,7 @@
 // The liquid-metal name drawn in a worker (metallic-paint.js, opts.worker): the page hands over
 // its canvas and the name's pixels; the shading (a Poisson solve) and every frame happen here,
 // so the loading screen keeps moving while the page is busy building the room.
-import { createPaintCore, DEFAULTS } from './metallic-paint.js?v=93';
+import { createPaintCore, DEFAULTS } from './metallic-paint.js?v=94';
 
 let core = null;
 self.onmessage = (e) => {

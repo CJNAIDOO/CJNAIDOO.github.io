@@ -15,12 +15,12 @@
 // wall shelf, or sit down at the PS3 and play it on the monitor. The "room"
 // button (bottom left) takes you back. If the room can't load, the PSP
 // floats in the dark studio as before.
-import { createHandheld } from './viewer.js?v=93';
-import { createStudio } from './studio.js?v=93';
-import { loadRoomAssets, buildRoom } from './room.js?v=93';
-import { createIntroName, paintNavName } from './intro-name.js?v=93';
-import { sfx } from './sfx.js?v=93';
-import { createLinkViewer } from './link-viewer.js?v=93';
+import { createHandheld } from './viewer.js?v=94';
+import { createStudio } from './studio.js?v=94';
+import { loadRoomAssets, buildRoom } from './room.js?v=94';
+import { createIntroName, paintNavName } from './intro-name.js?v=94';
+import { sfx } from './sfx.js?v=94';
+import { createLinkViewer } from './link-viewer.js?v=94';
 
 const params = new URLSearchParams(location.search);
 const autoSkip = params.has('skipintro');
@@ -62,11 +62,18 @@ const showStatus = () => {
 };
 const setStatus = (text) => { status = text; showStatus(); };
 markDone.then(() => { introOver = true; showStatus(); });
+// Phones get the PSP on its own, in the studio: the room (36 models, about half a gigabyte of
+// textures, 2 million triangles) is more than a phone's browser will hold, and the tab is killed
+// before it loads. ?room in the address forces the room, ?lite forces the PSP alone (to test).
+const query = new URLSearchParams(location.search);
+const LITE = !query.has('room') && (query.has('lite')
+    || (matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 820)
+    || (navigator.deviceMemory && navigator.deviceMemory <= 2));
 const loaded = { psp: 0, room: 0 };
 const showLoaded = () => {
-    const p = loaded.psp * 0.2 + loaded.room * 0.6;
+    const p = LITE ? loaded.psp * 0.8 : loaded.psp * 0.2 + loaded.room * 0.6;
     setProgress(p);
-    if (p < 0.8) setStatus(`loading the room · ${Math.round(p / 0.8 * 100)}%`);
+    if (p < 0.8) setStatus(`${LITE ? 'loading the PSP' : 'loading the room'} · ${Math.round(p / 0.8 * 100)}%`);
 };
 
 // ---- the XMB on the screen ---------------------------------------------------
@@ -238,7 +245,7 @@ const showSite = () => {
 // neither starts until the mark has finished moving: it holds still, the
 // loading bar finishes, and only then does the stage open.
 const glbPromise = fetchWithProgress('models/psp.glb', (p) => { loaded.psp = p; showLoaded(); });
-const roomAssets = loadRoomAssets((p) => { loaded.room = p; showLoaded(); })
+const roomAssets = (LITE ? Promise.resolve(null) : loadRoomAssets((p) => { loaded.room = p; showLoaded(); }))
     .catch((err) => { console.warn('the room could not load; the PSP goes in the studio', err); return null; });
 let room = null;               // the room's API once it's built (null: no room)
 const roomBtn = $('room-btn');
@@ -365,7 +372,7 @@ const ensureHandheld = () => handheldPromise ||= (async () => {
         await frames(2);
         try { await handheld.prepare('roomFar'); } catch (err) { console.warn('warm-up skipped', err); }
     }
-    setStatus('switching on the PS3');
+    setStatus(LITE ? 'switching on the PSP' : 'switching on the PS3');
     intro?.pause?.(false);
     setProgress(0.94);
     await Promise.race([xmbReady, sleep(7000)]);
