@@ -51,6 +51,8 @@ export function createIntroName(host, { reduced = false } = {}) {
         vid.className = 'mark__chrome-video';
         vid.muted = true; vid.loop = true; vid.playsInline = true; vid.autoplay = true; vid.preload = 'auto';
         vid.setAttribute('aria-hidden', 'true');
+        for (const a of ['playsinline', 'webkit-playsinline', 'disablepictureinpicture', 'disableremoteplayback']) vid.setAttribute(a, '');   // iOS: stay inline, never the full-screen player
+        vid.tabIndex = -1;
         vid.poster = 'images/room/chrome-loop.jpg?v=105';
         vid.innerHTML = '<source src="images/room/chrome-loop.mp4?v=105" type="video/mp4">';
         vid.addEventListener('error', () => { vid?.remove(); vid = null; live(); }, true);
