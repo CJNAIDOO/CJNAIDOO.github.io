@@ -66,6 +66,7 @@ markDone.then(() => { introOver = true; showStatus(); });
 // textures, 2 million triangles) is more than a phone's browser will hold, and the tab is killed
 // before it loads. ?room in the address forces the room, ?lite forces the PSP alone (to test).
 const query = new URLSearchParams(location.search);
+const PHONE_LOADING_MS = 8500;               // the least a phone shows the loading screen (since the page opened)
 const LITE = !query.has('room') && (query.has('lite')
     || (matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 820)
     || (navigator.deviceMemory && navigator.deviceMemory <= 2));
@@ -547,6 +548,9 @@ try {
         await Promise.all([markDone, glbPromise]);
         if (!skipWanted) {
             await ensureHandheld();
+            // phones load the PSP alone, so this would be over almost as soon as the name is: hold the loading
+            // screen until it has been up for PHONE_LOADING_MS in all, so the name, the role and the bar get seen
+            if (LITE) await sleep(PHONE_LOADING_MS - performance.now());
             await sleep(250);                       // a beat on the full bar before the stage opens
             if (!skipWanted) toPsp();
         }
