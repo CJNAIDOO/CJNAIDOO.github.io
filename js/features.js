@@ -361,21 +361,40 @@
     // Ilifa's menu music plays while its row is focused (a demo, so a taste of it), fading in
     // and out, and stops when the game itself opens (it has its own music).
     {
-        let tune = null, fade = 0
+        let tune = null, fade = 0, stopT = 0, ac = null, gain = null, level = 0
+        // iPhones and iPads ignore audio.volume (it is read-only there), so the fade runs on a Web Audio
+        // gain instead; and the pause never waits on the fade finishing, or the music would play on forever
+        const setLevel = (v) => { level = v; if (gain) gain.gain.value = v; else tune.volume = v }
         const ramp = (to, done) => {
             clearInterval(fade)
             fade = setInterval(() => {
                 if (!tune) return clearInterval(fade)
-                const v = tune.volume, d = to - v
-                if (Math.abs(d) < 0.03) { tune.volume = to; clearInterval(fade); done?.() } else tune.volume = Math.max(0, Math.min(1, v + Math.sign(d) * 0.03))
+                const d = to - level
+                if (Math.abs(d) < 0.03) { setLevel(to); clearInterval(fade); done?.() } else setLevel(Math.max(0, Math.min(1, level + Math.sign(d) * 0.03)))
             }, 40)
         }
         const syncIlifaTune = () => {
             const on = currentRow()?.dataset.id === 'ilifa' && !window.XMB_ILIFA?.isOpen
+            clearTimeout(stopT)
             if (on) {
-                if (!tune) { tune = new Audio('games/ilifa/assets/menu_music.mp3'); tune.loop = true; tune.volume = 0; tune.preload = 'auto' }
+                if (!tune) {
+                    tune = new Audio('games/ilifa/assets/menu_music.mp3'); tune.loop = true; tune.preload = 'auto'
+                    tune.volume = 0.5
+                    if (tune.volume !== 0.5) {                      // volume can't be set here (iOS): use a gain node
+                        try {
+                            const AC = window.AudioContext || window.webkitAudioContext
+                            ac = new AC(); gain = ac.createGain(); gain.gain.value = 0
+                            ac.createMediaElementSource(tune).connect(gain); gain.connect(ac.destination)
+                        } catch { ac = gain = null }
+                    }
+                    setLevel(0)
+                }
+                ac?.resume?.()
                 tune.play().then(() => ramp(0.35)).catch(() => {})
-            } else if (tune && !tune.paused) ramp(0, () => tune.pause())
+            } else if (tune && !tune.paused) {
+                ramp(0, () => tune.pause())
+                stopT = setTimeout(() => { clearInterval(fade); setLevel(0); tune.pause() }, 1200)   // (whatever the fade did)
+            }
         }
         document.addEventListener('xmb:focus', syncIlifaTune)
         document.addEventListener('ilifa:close', syncIlifaTune)
