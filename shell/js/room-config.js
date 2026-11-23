@@ -17,38 +17,39 @@ export const ROOM = {
     // (cropped to fit): 'cuadro' is the wide one over the desk, 'cuadro2' the
     // small one over the bookshelf, 'cuadro3' the tall one next to it. Frames
     // with no poster are taken down.
+    // `fm` hangs it in a real picture frame (from models/room/frames.glb, the nearest shape) with a white mount.
     // `tape` pins it up with two bits of tape. `id` makes it clickable (see
     // GUIDE.lines and room.js).
     posters: [
         // the main wall, round the Supreme decks (see `boards` below): all different sizes,
         // all in the same black frame, and every one clickable (a close-up)
         // over the decks: Midrand's water tower (Jozi) in the middle, KZN photos either side
-        { src: 'images/room/posters/midrand.webp', wall: 'back', x: 3.55, y: 2.76, w: 0.62, rot: -0.004, border: '#111', id: 'jozi' },
+        { src: 'images/room/posters/midrand.webp', wall: 'back', x: 3.55, y: 2.76, w: 0.62, rot: -0.004, fm: true, id: 'jozi' },
         // KZN either side of it, each in its own frame and all different sizes, up into the
         // space under the ceiling: the coast over the cane fields on the left, Tongaat's
         // Daily Market over Phoenix's Al-Falah Centre on the right
-        { src: 'images/room/posters/kzn-coast.webp', wall: 'back', x: 2.88, y: 3.3, w: 0.5, rot: 0.01, border: '#111' },
-        { src: 'images/room/posters/kzn-cane.webp', wall: 'back', x: 2.87, y: 2.82, w: 0.44, rot: -0.008, border: '#111' },
-        { src: 'images/room/posters/tongaat-market.webp', wall: 'back', x: 4.2, y: 2.94, w: 0.56, rot: -0.01, border: '#111' },
-        { src: 'images/room/posters/phoenix-alfalah.webp', wall: 'back', x: 4.2, y: 2.47, w: 0.52, rot: 0.008, border: '#111' },
-        { src: 'images/room/posters/12th-fail.webp', wall: 'back', x: 4.18, y: 1.84, w: 0.5, rot: -0.012, border: '#111', id: 'twelfth' },   // (where the Stüssy 8 ball was)
-        { src: 'images/room/posters/spiderman.webp', wall: 'back', x: 2.24, y: 2.1, w: 0.47, rot: 0.02, border: '#111', id: 'spiderman' },
+        { src: 'images/room/posters/kzn-coast.webp', wall: 'back', x: 2.88, y: 3.3, w: 0.5, rot: 0.01, fm: true },
+        { src: 'images/room/posters/kzn-cane.webp', wall: 'back', x: 2.87, y: 2.82, w: 0.44, rot: -0.008, fm: true },
+        { src: 'images/room/posters/tongaat-market.webp', wall: 'back', x: 4.2, y: 2.94, w: 0.56, rot: -0.01, fm: true },
+        { src: 'images/room/posters/phoenix-alfalah.webp', wall: 'back', x: 4.2, y: 2.47, w: 0.52, rot: 0.008, fm: true },
+        { src: 'images/room/posters/12th-fail.webp', wall: 'back', x: 4.18, y: 1.84, w: 0.5, rot: -0.012, tape: true, id: 'twelfth' },   // (where the Stüssy 8 ball was)
+        { src: 'images/room/posters/spiderman.webp', wall: 'back', x: 2.24, y: 2.1, w: 0.47, rot: 0.02, tape: true, id: 'spiderman' },
         // small ones round Spider-Man and Bowen: a note under Spider-Man, the indentured
         // labourers arriving up high, Kalam over Mandela
-        { src: 'images/room/posters/authenticity.webp', wall: 'back', x: 2.26, y: 1.44, w: 0.22, rot: -0.02, border: '#111', id: 'authenticity' },
-        { src: 'images/room/posters/indentured.webp', wall: 'back', x: 2.13, y: 2.93, w: 0.62, rot: -0.008, border: '#111', id: 'indentured' },
-        { src: 'images/room/posters/kalam.webp', wall: 'back', x: 1.13, y: 2.63, w: 0.3, rot: 0.012, border: '#111', id: 'kalam' },
+        { src: 'images/room/posters/authenticity.webp', wall: 'back', x: 2.26, y: 1.44, w: 0.22, rot: -0.02, tape: true, id: 'authenticity' },
+        { src: 'images/room/posters/indentured.webp', wall: 'back', x: 2.13, y: 2.93, w: 0.62, rot: -0.008, fm: true, id: 'indentured' },
+        { src: 'images/room/posters/kalam.webp', wall: 'back', x: 1.13, y: 2.63, w: 0.3, rot: 0.012, fm: true, id: 'kalam' },
         // over the bookshelf: Mandela, and Bowen beside him (the ceiling slopes down above them)
-        { src: 'images/room/posters/mandela-rally.webp', wall: 'back', x: 1.15, y: 2.0, w: 0.46, rot: 0.01, border: '#111', id: 'mandela' },
-        { src: 'images/room/posters/bowen.webp', wall: 'back', x: 1.68, y: 2.33, w: 0.44, rot: -0.015, border: '#111', id: 'bowen' },
+        { src: 'images/room/posters/mandela-rally.webp', wall: 'back', x: 1.15, y: 2.0, w: 0.46, rot: 0.01, fm: true, id: 'mandela' },
+        { src: 'images/room/posters/bowen.webp', wall: 'back', x: 1.68, y: 2.33, w: 0.44, rot: -0.015, tape: true, id: 'bowen' },
         // Cam's additions, all different sizes: Biko over Bowen, Goku left of Mandela, Sisyphus
         // over the indentured labourers, 12th Fail at the foot of the right-hand column, and
         // Still Here Despite It All under the cane fields
-        { src: 'images/room/posters/biko.webp', wall: 'back', x: 1.47, y: 3.2, w: 0.36, rot: -0.01, border: '#111', id: 'biko' },
-        { src: 'images/room/posters/goku.webp', wall: 'back', x: 0.66, y: 2.25, w: 0.3, rot: 0.015, border: '#111', id: 'goku' },
-        { src: 'images/room/posters/sisyphus.webp', wall: 'back', x: 2.13, y: 3.41, w: 0.3, rot: -0.012, border: '#111', id: 'sisyphus' },
-        { src: 'images/room/posters/jordan.webp', wall: 'back', x: 3.86, y: 3.5, w: 0.6, rot: 0.006, border: '#111', id: 'jordan' },   // over the water tower and Tongaat's market
-        { src: 'images/room/posters/still-here.webp', wall: 'back', x: 2.88, y: 2.42, w: 0.4, rot: -0.01, border: '#111', id: 'stillhere' },
+        { src: 'images/room/posters/biko.webp', wall: 'back', x: 1.47, y: 3.2, w: 0.36, rot: -0.01, fm: true, id: 'biko' },
+        { src: 'images/room/posters/goku.webp', wall: 'back', x: 0.66, y: 2.25, w: 0.3, rot: 0.015, tape: true, id: 'goku' },
+        { src: 'images/room/posters/sisyphus.webp', wall: 'back', x: 2.13, y: 3.41, w: 0.3, rot: -0.012, tape: true, id: 'sisyphus' },
+        { src: 'images/room/posters/jordan.webp', wall: 'back', x: 3.86, y: 3.5, w: 0.6, rot: 0.006, tape: true, id: 'jordan' },   // over the water tower and Tongaat's market
+        { src: 'images/room/posters/still-here.webp', wall: 'back', x: 2.88, y: 2.42, w: 0.4, rot: -0.01, tape: true, id: 'stillhere' },
         // (the right wall has the pin board)
     ],
 
@@ -73,8 +74,13 @@ export const ROOM = {
     // ---- the pin board on the right wall: Cam's own photos. u, v: metres from the board's
     // centre (u to the right as you face it, v up); w: width in metres; rot: a slight tilt.
     pinboard: [
-        { src: 'images/room/pins/results-day.webp', u: -0.55, v: 0.12, w: 0.36, rot: 0.04, caption: 'results day · 7 & 8 distinctions', pin: '#e6b422' },
-        { src: 'images/room/pins/ylc-2017.webp', u: 0.38, v: 0.1, w: 0.44, rot: -0.03, caption: 'SAIIA Young Leaders · 2017', pin: '#2457d6' },
+        // THEN, on the left
+        { src: 'images/room/pins/ylc-2017.webp', u: -0.78, v: 0.2, w: 0.4, rot: -0.07, pin: '#e6b422', caption: '2017' },
+        { src: 'images/room/pins/results-day.webp', u: -0.3, v: -0.2, w: 0.36, rot: 0.05, pin: '#2457d6', caption: 'results day' },
+        // NEXT, on the right (cards stand in until he has the photos)
+        { card: 'grad', u: 0.3, v: -0.2, w: 0.38, rot: -0.05, pin: '#b3202a', caption: 'May 2027' },
+        { card: 'run', u: 0.8, v: 0.22, w: 0.4, rot: 0.05, pin: '#e6b422', caption: 'half marathon' },
+        { card: 'town', u: 0.82, v: -0.26, w: 0.3, rot: -0.04, pin: '#2457d6', caption: 'Cape Town' },
     ],
 
     // ---- the figures' first comics: under the logo once you pick a figure up -------
@@ -104,7 +110,7 @@ export const ROOM = {
     // Three decks across on wall pegs, top to bottom. Each is either an image
     // of the deck (`img`, lying sideways, nose to tail) or a colour with a word.
     // ---- the chair: where it stands (metres) and which way it faces (radians)
-    chair: { x: 4.0, z: 1.5, turn: -2.3 },
+    chair: { x: 3.9, z: 1.9, turn: -2.6 },
 
     boards: {
         x: 3.2, y: 1.78, gap: 0.035,
@@ -139,9 +145,9 @@ export const ROOM = {
     // ---- photo album (the framed photo on the desk opens it) ------------------
     // Add your school pictures here: { src, caption }.
     album: [
-        { src: 'images/academics/mhs_bg.jpg', caption: 'Midrand High School, 2014 – 2019' },
-        { src: 'images/academics/emeris_bg.jpg', caption: 'IIE Emeris, 2024 – 2026' },
-        { src: 'images/home/jhb_bg.jpg', caption: 'Home: Johannesburg' },
+        { src: 'images/academics/mhs_bg.jpg' },
+        { src: 'images/academics/emeris_bg.jpg' },
+        { src: 'images/home/jhb_bg.jpg' },
     ],
 }
 

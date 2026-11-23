@@ -135,7 +135,7 @@ export const FILMS = [
   "slug": "joe-2013",
   "poster": "https://image.tmdb.org/t/p/w500/numu669Pf8wOPcqImONWORYx0Pp.jpg",
   "logo": "https://image.tmdb.org/t/p/w500/WHXVA48JBwakp3cdwdUkNmowYR.png",
-  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/pa/d4/ds/cs/joe-1200-1200-675-675-crop-000000.jpg?v=94722c853a",
+  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/pa/d4/ds/cs/joe-1200-1200-675-675-crop-000000.jpg?v=95722c853a",
   "synopsis": "The rough-hewn boss of a lumber crew courts trouble when he steps in to protect the youngest member of his team from an abusive father.",
   "note": ""
  },
@@ -179,7 +179,7 @@ export const FILMS = [
   "slug": "moonlight-2016",
   "poster": "https://image.tmdb.org/t/p/w500/qLnfEmPrDjJfPyyddLJPkXmshkp.jpg",
   "logo": "https://image.tmdb.org/t/p/w500/6wN6IzgE6SuM8snMvplLw5AKmKy.png",
-  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/6x/tq/pl/q7/moonlight-2016-1200-1200-675-675-crop-000000.jpg?v=947301ae3d",
+  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/6x/tq/pl/q7/moonlight-2016-1200-1200-675-675-crop-000000.jpg?v=957301ae3d",
   "synopsis": "The tender, heartbreaking story of a young man’s struggle to find himself, told across three defining chapters in his life as he experiences the ecstasy, pain, and beauty of falling in love, while grappling with his own sexuality.",
   "note": ""
  },
@@ -190,7 +190,7 @@ export const FILMS = [
   "slug": "forrest-gump",
   "poster": "https://image.tmdb.org/t/p/w500/saHP97rTPS5eLmrLQEcANmKrsFl.jpg",
   "logo": "https://image.tmdb.org/t/p/w500/as10mpHSWebQVXwMbwQfWYfR27F.png",
-  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/ly/1s/z6/yx/forrest-gump-1200-1200-675-675-crop-000000.jpg?v=9486afc240",
+  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/ly/1s/z6/yx/forrest-gump-1200-1200-675-675-crop-000000.jpg?v=9586afc240",
   "synopsis": "A man with a low IQ has accomplished great things in his life and been present during significant historic events—in each case, far exceeding what anyone imagined he could do. But despite all he has achieved, his one true love eludes him.",
   "note": ""
  },
@@ -223,7 +223,7 @@ export const FILMS = [
   "slug": "boyz-n-the-hood",
   "poster": "https://image.tmdb.org/t/p/w500/kaS8BkTZESnkoB5i1zRQ02FIRGk.jpg",
   "logo": "https://image.tmdb.org/t/p/w500/6Advq2hn9AdzGkl3Yo5zaV8Ij0g.png",
-  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/2m/rw/z2/ea/boyz-n-hood-1200-1200-675-675-crop-000000.jpg?v=94ba4b561b",
+  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/2m/rw/z2/ea/boyz-n-hood-1200-1200-675-675-crop-000000.jpg?v=95ba4b561b",
   "synopsis": "In the middle of the Los Angeles ghetto, drugs, robberies and shootings dominate everyday life. During these times, Furious tries to raise his son Tre to be a decent person. Tre's friends, on the other hand, have little regard for the law and drag the entire neighborhood into a street war...",
   "note": ""
  },
@@ -256,7 +256,7 @@ export const FILMS = [
   "slug": "treasure-planet",
   "poster": "https://image.tmdb.org/t/p/w500/kNhZkR3UNbXfvESQo7mJpOi4tGd.jpg",
   "logo": "https://image.tmdb.org/t/p/w500/gq5U32W6ohl1j3hhwzDzOwIMz6K.png",
-  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/mr/t5/uh/fw/treasure-planet-1200-1200-675-675-crop-000000.jpg?v=94eed4fc64",
+  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/mr/t5/uh/fw/treasure-planet-1200-1200-675-675-crop-000000.jpg?v=95eed4fc64",
   "synopsis": "When space galleon cabin boy Jim Hawkins discovers a map to an intergalactic \"loot of a thousand worlds,\" a cyborg cook named John Silver teaches him to battle supernovas and space storms on their journey to find treasure.",
   "note": ""
  },
@@ -289,7 +289,7 @@ export const FILMS = [
   "slug": "3-idiots",
   "poster": "https://image.tmdb.org/t/p/w500/66A9MqXOyVFCssoloscw79z8Tew.jpg",
   "logo": "https://image.tmdb.org/t/p/w500/v6Hihdrx8TajNEbWSDD8cxi5er1.png",
-  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/5l/yf/td/02/3%20idiots-1200-1200-675-675-crop-000000.jpg?v=94a0413b96",
+  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/5l/yf/td/02/3%20idiots-1200-1200-675-675-crop-000000.jpg?v=95a0413b96",
   "synopsis": "Rascal. Joker. Dreamer. Genius... You've never met a college student quite like \"Rancho.\" From the moment he arrives at India's most prestigious university, Rancho's outlandish schemes turn the campus upside down—along with the lives of his two newfound best friends. Together, they make life miserable for \"Virus,\" the school’s uptight and heartless dean. But when Rancho catches the eye of the dean's daughter, Virus sets his sights on flunking out the \"3 idiots\" once and for all.",
   "note": ""
  },
@@ -311,7 +311,7 @@ export const FILMS = [
   "slug": "slumdog-millionaire",
   "poster": "https://image.tmdb.org/t/p/w500/5leCCi7ZF0CawAfM5Qo2ECKPprc.jpg",
   "logo": "https://image.tmdb.org/t/p/w500/bTL1Vkgt5Ux5aJp7ij6FER1FQXH.png",
-  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/hs/8w/zu/6c/slumdog-millionaire-1200-1200-675-675-crop-000000.jpg?v=94cd062a0c",
+  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/hs/8w/zu/6c/slumdog-millionaire-1200-1200-675-675-crop-000000.jpg?v=95cd062a0c",
   "synopsis": "A teenager reflects on his life after being accused of cheating on the Indian version of \"Who Wants to be a Millionaire?\".",
   "note": ""
  },
@@ -366,7 +366,7 @@ export const FILMS = [
   "slug": "her",
   "poster": "https://image.tmdb.org/t/p/w500/eCOtqtfvn7mxGl6nfmq4b1exJRc.jpg",
   "logo": "https://image.tmdb.org/t/p/w500/euFg9ZE59r6tWTq2vtjENupUdk7.png",
-  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/cb/fz/at/20/her-1200-1200-675-675-crop-000000.jpg?v=94add3bc83",
+  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/cb/fz/at/20/her-1200-1200-675-675-crop-000000.jpg?v=95add3bc83",
   "synopsis": "In the not so distant future, Theodore, a lonely writer, purchases a newly developed operating system designed to meet the user's every need. To Theodore's surprise, a romantic relationship develops between him and his operating system. This unconventional love story blends science fiction and romance in a sweet tale that explores the nature of love and the ways that technology isolates and connects us all.",
   "note": ""
  },
@@ -432,7 +432,7 @@ export const FILMS = [
   "slug": "captain-phillips",
   "poster": "https://image.tmdb.org/t/p/w500/8Td0kkocW6sD3uRpzwfMfkqMWhx.jpg",
   "logo": "https://image.tmdb.org/t/p/w500/zFq8MPe68ljeTVhowyGgregpZ8E.png",
-  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/7q/sp/pq/en/captain-phillips-1200-1200-675-675-crop-000000.jpg?v=94e0781a1f",
+  "backdrop": "https://a.ltrbxd.com/resized/sm/upload/7q/sp/pq/en/captain-phillips-1200-1200-675-675-crop-000000.jpg?v=95e0781a1f",
   "synopsis": "The true story of Captain Richard Phillips and the 2009 hijacking by Somali pirates of the US-flagged MV Maersk Alabama, the first American cargo ship to be hijacked in two hundred years.",
   "note": ""
  },

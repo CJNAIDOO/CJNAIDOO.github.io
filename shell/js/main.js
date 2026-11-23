@@ -15,12 +15,12 @@
 // wall shelf, or sit down at the PS3 and play it on the monitor. The "room"
 // button (bottom left) takes you back. If the room can't load, the PSP
 // floats in the dark studio as before.
-import { createHandheld } from './viewer.js?v=94';
-import { createStudio } from './studio.js?v=94';
-import { loadRoomAssets, buildRoom } from './room.js?v=94';
-import { createIntroName, paintNavName } from './intro-name.js?v=94';
-import { sfx } from './sfx.js?v=94';
-import { createLinkViewer } from './link-viewer.js?v=94';
+import { createHandheld } from './viewer.js?v=95';
+import { createStudio } from './studio.js?v=95';
+import { loadRoomAssets, buildRoom } from './room.js?v=124';
+import { createIntroName, paintNavName } from './intro-name.js?v=105';
+import { sfx } from './sfx.js?v=95';
+import { createLinkViewer } from './link-viewer.js?v=95';
 
 const params = new URLSearchParams(location.search);
 const autoSkip = params.has('skipintro');
@@ -52,7 +52,7 @@ const { done: markDone, dot, waiting: markWaiting } = window.MARK;
 //   building the room                 0.85
 //   warming up                        0.92
 //   the XMB booting                   1
-const setProgress = (p) => { markBar.style.transform = `scaleX(${Math.min(1, p).toFixed(3)})`; try { intro?.progress(p); } catch { /* not made yet */ } };   // the chrome name turns with it
+const setProgress = (p) => { setStatus(lineFor(p)); markBar.style.transform = `scaleX(${Math.min(1, p).toFixed(3)})`; try { intro?.progress(p); } catch { /* not made yet */ } };   // the chrome name turns with it
 const statusEl = $('mark-status');
 let status = '', introOver = false, ready = false;
 const showStatus = () => {
@@ -69,11 +69,13 @@ const query = new URLSearchParams(location.search);
 const LITE = !query.has('room') && (query.has('lite')
     || (matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 820)
     || (navigator.deviceMemory && navigator.deviceMemory <= 2));
+// what the loading screen says: understated, and nothing about what is being loaded
+const lineFor = (p) => (p < 0.2 ? 'one moment' : p < 0.7 ? 'preparing' : p < 0.75 ? 'nearly' : p < 0.9 ? 'just a little longer' : 'welcome');
 const loaded = { psp: 0, room: 0 };
 const showLoaded = () => {
     const p = LITE ? loaded.psp * 0.8 : loaded.psp * 0.2 + loaded.room * 0.6;
     setProgress(p);
-    if (p < 0.8) setStatus(`${LITE ? 'loading the PSP' : 'loading the room'} · ${Math.round(p / 0.8 * 100)}%`);
+    setStatus(lineFor(p));
 };
 
 // ---- the XMB on the screen ---------------------------------------------------
@@ -342,7 +344,6 @@ const ensureHandheld = () => handheldPromise ||= (async () => {
     let ctlDevice = 'psp';
     handheld.useScreen = (spec) => { useScreen(spec); ctlDevice = !spec || spec === 'psp' ? 'psp' : 'desktop'; xmbReady.then(() => send({ type: 'xmb-device', device: ctlDevice })); };
     if (assets) {
-        setStatus('setting up the room');
         // (the name keeps moving: it draws in a worker)
         setProgress(0.82);
         await frames(2);                        // let that show before the page is busy
@@ -367,12 +368,10 @@ const ensureHandheld = () => handheldPromise ||= (async () => {
     field.attach(handheld);                     // the studio follows the PSP
     handheld.setActive(false);                  // renders once, which loads the XMB
     if (room) {
-        setStatus('warming up');
         setProgress(0.88);
         await frames(2);
         try { await handheld.prepare('roomFar'); } catch (err) { console.warn('warm-up skipped', err); }
     }
-    setStatus(LITE ? 'switching on the PSP' : 'switching on the PS3');
     intro?.pause?.(false);
     setProgress(0.94);
     await Promise.race([xmbReady, sleep(7000)]);

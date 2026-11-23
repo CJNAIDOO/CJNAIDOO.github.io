@@ -4,8 +4,8 @@
 // on the page can't stall them. The name turns slightly as the room loads, then drifts towards you
 // and fades into the room. Without WebGL2, createIntroName returns null and main.js shows the 2D
 // name on the plain dark screen instead.
-import { createMetallicPaint } from './metallic-paint.js?v=94';
-import { createLiquidChrome } from './liquid-chrome.js?v=94';
+import { createMetallicPaint } from './metallic-paint.js?v=95';
+import { createLiquidChrome } from './liquid-chrome.js?v=95';
 
 export function createIntroName(host, { reduced = false } = {}) {
     const wrap = document.createElement('div');
@@ -20,7 +20,7 @@ export function createIntroName(host, { reduced = false } = {}) {
     let shared = null;
     try {
         if (typeof OffscreenCanvas !== 'undefined' && 'transferControlToOffscreen' in HTMLCanvasElement.prototype) {
-            shared = new Worker(new URL('./intro-worker.js?v=94', import.meta.url), { type: 'module' });
+            shared = new Worker(new URL('./intro-worker.js?v=95', import.meta.url), { type: 'module' });
         }
     } catch { shared = null; }
     const paint = createMetallicPaint(wrap, {
@@ -40,7 +40,23 @@ export function createIntroName(host, { reduced = false } = {}) {
     const veil = document.createElement('div');
     veil.className = 'mark__veil'; veil.setAttribute('aria-hidden', 'true');
     host.prepend(bg, veil);
-    const chrome = createLiquidChrome(bg, { color: '#ffffff', worker: true, sharedWorker: shared, workerTag: 'chrome', maxDevicePixelRatio: 1.5, pixelBudget: 1.3e6 });
+    // today's liquid chrome, baked into a seamless 30 s loop (images/room/chrome-loop.mp4), so the
+    // GPU is left to the room that is loading; only the name stays live. ?livechrome draws the real
+    // thing instead, and so does a browser that can't play the video.
+    let alive = true, chrome = null, vid = null;
+    const live = () => { if (!chrome && alive) chrome = createLiquidChrome(bg, { color: '#ffffff', worker: true, sharedWorker: shared, workerTag: 'chrome', maxDevicePixelRatio: 1.5, pixelBudget: 1.3e6 }); };
+    if (new URLSearchParams(location.search).has('livechrome')) live();
+    else {
+        vid = document.createElement('video');
+        vid.className = 'mark__chrome-video';
+        vid.muted = true; vid.loop = true; vid.playsInline = true; vid.autoplay = true; vid.preload = 'auto';
+        vid.setAttribute('aria-hidden', 'true');
+        vid.poster = 'images/room/chrome-loop.jpg?v=105';
+        vid.innerHTML = '<source src="images/room/chrome-loop.mp4?v=105" type="video/mp4">';
+        vid.addEventListener('error', () => { vid?.remove(); vid = null; live(); }, true);
+        bg.appendChild(vid);
+        vid.play?.().catch(() => {});
+    }
 
     // the role, written on like a white marker just under the name: set in The Overcook (a graffiti
     // hand, images/room/role-handwriting.svg has its letters as paths), each letter revealed by a
@@ -51,7 +67,7 @@ export function createIntroName(host, { reduced = false } = {}) {
     host.appendChild(graf);
     host.classList.add('has-graf');
     let hw = null;                                    // the worker that draws it, when there is one
-    const svgReady = fetch('images/room/role-handwriting.svg?v=94').then((r) => r.text()).then((svg) => {
+    const svgReady = fetch('images/room/role-handwriting.svg?v=95').then((r) => r.text()).then((svg) => {
         graf.innerHTML = svg;
         const pens = [...graf.querySelectorAll('.pen')];
         const lens = pens.map((p) => Math.ceil(p.getTotalLength()));
@@ -85,7 +101,7 @@ export function createIntroName(host, { reduced = false } = {}) {
             canvas.className = 'graf__canvas';
             const off = canvas.transferControlToOffscreen();
             const own = !shared;
-            const worker = shared || new Worker(new URL('./handwriting-worker.js?v=94', import.meta.url), { type: 'module' });
+            const worker = shared || new Worker(new URL('./handwriting-worker.js?v=95', import.meta.url), { type: 'module' });
             const send = (m, t) => worker.postMessage(own ? m : { ...m, to: 'hand' }, t || []);
             const pen = Number(pens[0]?.getAttribute('stroke-width')) || 300;
             return new Promise((res) => {
@@ -101,7 +117,7 @@ export function createIntroName(host, { reduced = false } = {}) {
                 if (own) worker.onerror = fail;
                 setTimeout(() => { if (!hw) fail(); }, 3000);
                 // the ink: the line as a white paint marker (tools/role-ink.py), laid out like the SVG
-                fetch('images/room/role-ink.png?v=94').then((r) => (r.ok ? r.blob() : null)).then((b) => (b ? createImageBitmap(b) : null)).catch(() => null).then((tex) => {
+                fetch('images/room/role-ink.png?v=95').then((r) => (r.ok ? r.blob() : null)).then((b) => (b ? createImageBitmap(b) : null)).catch(() => null).then((tex) => {
                     send({ type: 'init', canvas: off, w, h, W, asc, pen, color: '#f6f7fb', glyphs, tex }, tex ? [off, tex] : [off]);
                 });
             });
@@ -135,13 +151,12 @@ export function createIntroName(host, { reduced = false } = {}) {
         wrap.style.setProperty('--rx', `${(reduced ? 0 : 4 * (1 - p)).toFixed(2)}deg`);
     };
     turn(0);
-    let alive = true;
     const dispose = () => {
         if (!alive) return;
         alive = false;
         removeEventListener('resize', onResize);
         paint.destroy();
-        chrome?.destroy();
+        chrome?.destroy(); vid?.pause();
         setTimeout(() => shared?.terminate(), 100);
         wrap.remove(); bg.remove(); veil.remove(); hw?.post({ type: 'destroy' }); if (hw?.own) hw.worker.terminate(); graf.remove(); host.classList.remove('has-graf');
     };

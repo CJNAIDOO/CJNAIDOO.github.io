@@ -19,7 +19,7 @@ const PORTFOLIO = {
         photo: "images/home/jhb_bg.jpg",
         // Shown on its own (no name or location: the site already says both).
         summary: [
-            "I'm a Johannesburg-based developer in my final year of Computer Science at Emeris. I enjoy employing emerging technologies to deliver novel solutions to South African problems.", // TODO: your five things
+            "I'm a Johannesburg-based developer finishing my Computer Science degree at Emeris, graduating in May 2027. I enjoy employing emerging technologies to deliver novel solutions to South African problems.", // TODO: your five things
             "I'm looking for a software engineering graduate role where I can continue growing as a developer, and I'm looking forward to continuing my studies in computer science.",
         ],
     },
@@ -59,7 +59,7 @@ const PORTFOLIO = {
             location: "Waterfall, Gauteng",
             photo: "images/academics/emeris_bg.jpg",
             logo: "images/academics/emeris_logo.png",
-            summary: "Final-year BCAD student. I'm currently building HustleHub+, a freelance platform on the MERN stack; Peak, a Kotlin hiking app that brings safety information together so hikers stay aware in real time; and a mobile outreach platform.", // TODO: a few words on what the outreach platform does
+            summary: "BCAD student, graduating in May 2027. I'm currently building HustleHub+, a freelance platform on the MERN stack; Peak, a Kotlin hiking app that brings safety information together so hikers stay aware in real time; and a mobile outreach platform.", // TODO: a few words on what the outreach platform does
             trophies: [
                 { tier: "gold", title: "Top Achiever: First Year" },
                 { tier: "gold", title: "93% average" },
@@ -76,7 +76,7 @@ const PORTFOLIO = {
     //   learning: true = used it, still growing (the icon shows a bit dimmer)
     expertise: {
         frontend: {
-            label: "Frontend & Mobile",
+            label: "Frontend",
             tools: [
                 { name: "HTML", icon: "html5"},
                 { name: "CSS", icon: "css3"},
@@ -112,13 +112,8 @@ const PORTFOLIO = {
         ai: {
             label: "Data & AI",
             tools: [
-                { name: "Python", icon: "python"},
                 { name: "OpenCV", icon: "opencv"},
                 { name: "YOLO"},
-                { name: "Pandas", icon: "pandas"},
-                { name: "NumPy", icon: "numpy"},
-                { name: "Matplotlib", icon: "matplotlib"},
-                { name: "Prompt engineering"},
             ],
         },
         devops: {
@@ -131,8 +126,6 @@ const PORTFOLIO = {
                 { name: "GitHub", icon: "github", mono: true},
                 { name: "GitHub Actions", icon: "githubactions"},
                 { name: "Grafana", icon: "grafana"},
-                { name: "Cloudinary"},
-                { name: "Windows Server", icon: "windows11"},
             ],
         },
     },
@@ -204,12 +197,12 @@ const PORTFOLIO = {
         tetris: { title: "Tetris", play: true },
         // Ilifa: Phaser 3 action game (in development), games/ilifa/.
         // Started as the Syntax Sorcerers' IAT Fusion Hackathon entry (Mzanzi Chronicles).
-        ilifa: { title: "Ilifa", play: true },
+        ilifa: { title: "Ilifa", play: true, demo: true },
     },
 
     // ---- Let's Connect -----------------------------------------------------
     connect: {
-        linkedin: "", // TODO: "https://www.linkedin.com/in/your-profile/"
+        linkedin: "https://www.linkedin.com/in/cameron-joshua-naidoo-343a9b264/",
         github: "https://github.com/CJNAIDOO",
         email: {
             to: "Cameron J. Naidoo",

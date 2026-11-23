@@ -1,5 +1,5 @@
 // The handwritten line in a worker of its own (when there's no shared one): see handwriting-core.js.
-import { createHandwriting } from './handwriting-core.js?v=94';
+import { createHandwriting } from './handwriting-core.js?v=95';
 let hand = null;
 self.onmessage = (e) => {
     const m = e.data || {};

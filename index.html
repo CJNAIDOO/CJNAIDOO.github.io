@@ -4,12 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Cameron J. Naidoo · Portfolio</title>
-    <meta name="description" content="Cameron J. Naidoo, aspiring fullstack developer: a PS3/PSP XMB style portfolio running on a 3D PSP.">
+    <meta name="description" content="Cameron J. Naidoo, aspiring fullstack developer. A portfolio you walk into: a gaming bedroom with a desk, a shelf and a PSP, running the full portfolio on its screen.">
     <meta name="theme-color" content="#08080a">
+    <link rel="canonical" href="https://cjnaidoo.github.io/">
+    <!-- tab icon, home-screen icon and the preview card for LinkedIn / WhatsApp / X -->
+    <link rel="icon" href="favicon.ico" sizes="48x48">
+    <link rel="icon" type="image/png" href="images/favicon-32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="site.webmanifest">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Cameron J. Naidoo">
+    <meta property="og:title" content="Cameron J. Naidoo · Portfolio">
+    <meta property="og:description" content="Aspiring fullstack developer. Step into a gaming bedroom: projects on the PSP, academics on the shelf, and a few surprises.">
+    <meta property="og:url" content="https://cjnaidoo.github.io/">
+    <meta property="og:image" content="https://cjnaidoo.github.io/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="A 3D gaming bedroom: desk, monitor, shelf and a cork board of photos, with the name Cameron J. Naidoo.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Cameron J. Naidoo · Portfolio">
+    <meta name="twitter:description" content="Aspiring fullstack developer. Step into a gaming bedroom: projects on the PSP, academics on the shelf, and a few surprises.">
+    <meta name="twitter:image" content="https://cjnaidoo.github.io/images/og-image.jpg">
     <link rel="preload" as="font" type="font/woff2" href="fonts/Geist-Variable.woff2" crossorigin>
     <link rel="preload" as="font" type="font/woff2" href="fonts/InstrumentSerif-Italic.woff2" crossorigin>
     <link rel="stylesheet" href="shell/css/shell.css">
-    <link rel="stylesheet" href="shell/css/room.css?v=94">
+    <link rel="stylesheet" href="shell/css/room.css?v=111">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <!-- Satoshi (a few labels in the room): loaded without holding up the first paint -->
     <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&amp;display=swap" media="print" onload="this.media='all'">
@@ -25,11 +44,11 @@
     <!-- start fetching three.js and the room's code straight away, in parallel (otherwise each is
          only discovered once the one before it has loaded and been parsed) -->
     <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js">
-    <link rel="modulepreload" href="shell/js/viewer.js?v=94">
-    <link rel="modulepreload" href="shell/js/room.js?v=94">
+    <link rel="modulepreload" href="shell/js/viewer.js?v=95">
+    <link rel="modulepreload" href="shell/js/room.js?v=124">
     <!-- act 1 runs on its own, straight away; main.js (three.js) follows -->
-    <script defer src="shell/js/mark.js?v=94"></script>
-    <script type="module" src="shell/js/main.js?v=94"></script>
+    <script defer src="shell/js/mark.js?v=95"></script>
+    <script type="module" src="shell/js/main.js?v=124"></script>
 </head>
 <body data-stage="mark">
     <!-- act 2/3: the PSP (3D), with the XMB (xmb.html) on its screen -->
@@ -76,7 +95,7 @@
     <button class="room-btn" id="room-btn" type="button" hidden>room</button>
     <div class="view-switch" id="view-switch" role="group" aria-label="Look at the portfolio on" hidden>
         <button type="button" data-view="psp" aria-pressed="false">PSP</button>
-        <button type="button" data-view="ps3" aria-pressed="false">Desktop</button>
+        <button type="button" data-view="ps3" aria-pressed="false">PS3</button>
     </div>
     <div class="room-tip" id="room-tip" aria-hidden="true"></div>
     <!-- the room's corners: who, where, when -->
@@ -89,6 +108,9 @@
     </div>
     <div class="vol" id="vol" role="slider" tabindex="0" aria-label="Volume" aria-valuemin="0" aria-valuemax="5" aria-valuenow="4" hidden></div>
     <button class="sound-btn" id="sound-btn" type="button" aria-pressed="true" hidden>sound on</button>
+    <!-- a plain CV for anyone who would rather not explore a 3D room: shows once cv/Cameron-Naidoo-CV.pdf is added -->
+    <a class="cv-link" id="cv-link" href="cv/Cameron-Naidoo-CV.pdf" target="_blank" rel="noopener" hidden>CV (PDF)</a>
+    <script>fetch('cv/Cameron-Naidoo-CV.pdf', { method: 'HEAD' }).then((r) => { if (r.ok) document.getElementById('cv-link').hidden = false; }).catch(() => {});</script>
 
     <nav class="toolbar" id="toolbar" hidden aria-label="View controls">
         <button id="reset" type="button" title="Put the PSP back in front of you">reset view</button>
@@ -117,7 +139,7 @@
         <p>Posters on the main wall: a Spider-Man photo, a photo of Nelson Mandela and a St&uuml;ssy 8 Ball print, and Supreme&rsquo;s Kermit skate decks; all rights stay with their owners. Cyclops, The Hood, Jubilee, Daredevil, Jeff the Land Shark, The Thing and Marvel Rivals belong to Marvel and NetEase; PS3 and DualShock are trademarks of Sony Interactive Entertainment.</p>
         <p>2017 SAIIA Young Leaders&rsquo; Conference photo: <a href="https://x.com/DIRCO_ZA/status/885457414669168640" target="_blank" rel="noopener">DIRCO South Africa</a>.</p>
         <p>The name&rsquo;s liquid metal: MetallicPaint from <a href="https://reactbits.dev" target="_blank" rel="noopener">React Bits</a> by David Haz (MIT + Commons Clause), ported to plain JavaScript. Game covers and the textbooks&rsquo; covers: Wikipedia and Open Library.</p>
-        <p>The loading screen<p>Type: Geistrsquo;s liquid chrome is React Bits<p>Type: Geistrsquo; LiquidChrome (reactbits.dev), ported to plain JavaScript.</p>
+        <p>The loading screen&rsquo;s liquid chrome is LiquidChrome from <a href="https://reactbits.dev" target="_blank" rel="noopener">React Bits</a>, ported to plain JavaScript.</p>
         <p>Type: Geist, Instrument Serif, Lato and DM Mono, and on the game cases Cinzel, Bebas Neue, Montserrat, Barlow Condensed and Oswald (SIL Open Font License), Homemade Apple (Apache License 2.0), Satoshi (Fontshare / ITF Free Font License). Prince Valiant (freeware, <a href="https://www.fontspace.com/prince-valiant-font-f171055" target="_blank" rel="noopener">FontSpace</a>) for Cameron&rsquo;s name. The Overcook (freeware for personal use, <a href="https://www.fontspace.com/the-overcook-font-f61655" target="_blank" rel="noopener">FontSpace</a>) for the line under it on the loading screen.</p>
         <p>The PS4 band on the game cases is cropped from a photo of a real Star Wars Jedi: Fallen Order case; trophy icons from the PS3 XMB; trophy lists from Exophase.</p>
         <p>PSP, PlayStation and Sony are trademarks of Sony Interactive Entertainment. This is a non-commercial fan recreation.</p>

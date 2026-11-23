@@ -14,6 +14,7 @@
 @font-face { font-family: 'Geist', -apple-system, 'Helvetica Neue', Arial, sans-serif; font-weight: 400; src: url('../../fonts/dm-mono-latin-400-normal.woff2') format('woff2'); font-display: swap; }
 @font-face { font-family: 'Geist', -apple-system, 'Helvetica Neue', Arial, sans-serif; font-weight: 500; src: url('../../fonts/dm-mono-latin-500-normal.woff2') format('woff2'); font-display: swap; }
 @font-face { font-family: 'Homemade Apple'; src: url('../../fonts/homemade-apple-latin-400-normal.woff2') format('woff2'); font-display: swap; }
+@font-face { font-family: 'The Overcook'; src: url('../../fonts/overcook/TheOvercook.ttf') format('truetype'); font-display: swap; }
 
 /* ── the room's corners: NAME / LOCATION / LOCAL TIME / PORTFOLIO ── */
 .room-chrome { --rc-ink: #ecdfcc; --rc-dim: rgba(236, 223, 204, 0.55); }
@@ -1092,6 +1093,7 @@ body.rec-open .room-deck { opacity: 0 !important; pointer-events: none; }
    .mark--chrome); without it, the plain dark screen and the 2D name ── */
 .mark.mark--chrome { background: #050506; }
 .mark__chrome { position: absolute; inset: 0; z-index: 0; pointer-events: none; transition: opacity 900ms ease-in; }
+.mark__chrome-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; background: #0b0b0d; }
 .mark__veil { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(62% 46% at 50% 46%, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.22) 70%, rgba(0, 0, 0, 0)), linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 32%); transition: opacity 900ms ease-in; }
 .mark__chrome.is-leaving, .mark__veil.is-leaving { opacity: 0; }
 .mark--chrome .mark__role { color: #f1f3f7 !important; }
@@ -1125,3 +1127,43 @@ body.rec-open .room-deck { opacity: 0 !important; pointer-events: none; }
 .mark__load { height: 2px !important; border-radius: 1px; overflow: hidden; contain: layout paint; }
 .mark__load span { height: 100% !important; will-change: transform; backface-visibility: hidden; }
 .mark__status { min-height: 1.4em; }
+
+/* the record's middle on the deck is the cover (shell/js/room.js showMix); the name only when there's no cover */
+.deck__disc span img { width: 54%; height: 54%; border-radius: 50%; object-fit: cover; display: block; }
+.deck__disc span img[hidden] { display: none; }
+
+/* the menu over the room: the walls are light now, so the section names get brighter ink, a soft dark halo,
+   and the top band a little more depth behind them */
+body[data-stage="room"] .sitenav { background: linear-gradient(to bottom, rgba(8, 8, 10, .82), rgba(8, 8, 10, .45) 62%, rgba(8, 8, 10, 0)); height: calc(var(--nav-h) + 14px + env(safe-area-inset-top, 0px)); }
+body[data-stage="room"] .sitenav__links button { color: #e4e0d8; text-shadow: 0 1px 2px rgba(0, 0, 0, .85), 0 0 10px rgba(0, 0, 0, .55); }
+body[data-stage="room"] .sitenav__links button[aria-current="true"], body[data-stage="room"] .sitenav__links button:hover { color: #fff; }
+
+/* a plain CV link (index.html shows it once cv/Cameron-Naidoo-CV.pdf exists): same dark glass as the sound button,
+   bottom-right so it stays clear of the sound and volume controls */
+.cv-link {
+    position: fixed;
+    right: calc(clamp(14px, 2.4vw, 26px) + env(safe-area-inset-right, 0px));
+    bottom: calc(clamp(14px, 2.4vh, 26px) + env(safe-area-inset-bottom, 0px));
+    z-index: 60;
+    display: inline-flex;
+    align-items: center;
+    min-height: 50px;
+    padding: 0 1.15rem;
+    border: 1px solid rgba(233, 232, 238, 0.16);
+    border-radius: 999px;
+    background: rgba(8, 8, 10, 0.35);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: var(--night-ink-2);
+    font: 500 0.6875rem/1 'Geist', system-ui, sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+.cv-link[hidden], body[data-stage="mark"] .cv-link { display: none; }
+.cv-link:hover { color: var(--night-ink); border-color: rgba(233, 232, 238, 0.35); }
+.cv-link:focus-visible { outline: 2px solid var(--phosphor); outline-offset: 3px; }
+
+/* the deck's play button pulses when the browser blocked the record's autoplay: one click starts it */
+.deck__play.is-nudge { animation: deck-nudge 1.1s ease-in-out infinite; }
+@keyframes deck-nudge { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.55); } 50% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); } }

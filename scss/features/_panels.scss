@@ -208,8 +208,8 @@
 // divider: the screen-wide scrim darkens towards the right behind it.
 .skills-overlay .overlay-panel{
     box-sizing: border-box;
-    left: 54%;
-    width: 44%;
+    left: 58%;                              // clear of the longest row label (Cloud & DevOps)
+    width: 41%;
     top: calc(var(--row-y, 55%) - 26px);   // first row of icons level with the focused row (features.js sets --row-y)
     max-height: none;
     padding-left: 0;

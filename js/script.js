@@ -212,3 +212,17 @@ const startApp = () => {
 // Listen for the user's first click or key press to start the app
 document.addEventListener('click', startApp);
 document.addEventListener('keydown', startApp);
+
+// Keep the wave background moving. Browsers pause it when a game takes over the
+// screen or the tab loses focus; bring it back on return and on any input.
+{
+    const wake = () => {
+        if (video && video.paused && video.style.opacity === '1') video.play().catch(() => {})
+    }
+    document.addEventListener('visibilitychange', wake)
+    addEventListener('focus', wake)
+    addEventListener('pageshow', wake)
+    ;['keydown', 'pointerdown', 'wheel', 'touchstart', 'gamepadconnected'].forEach((e) => addEventListener(e, wake, { passive: true }))
+    video?.addEventListener('pause', () => setTimeout(wake, 250))
+    setInterval(wake, 2000)
+}

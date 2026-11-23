@@ -6,6 +6,7 @@
 //
 // An `action` adds a prompt, e.g. the controller's START: "play on the PS3".
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 export function createInspector() {
     const wrap = document.createElement('div');
@@ -31,7 +32,11 @@ export function createInspector() {
     scene.add(new THREE.HemisphereLight(0xffffff, 0x2a2a30, 1.6));
     const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(1.5, 2.5, 3);
     const rim = new THREE.DirectionalLight(0xbfd2ff, 1.4); rim.position.set(-2.5, 1.2, -2);
-    scene.add(key, rim);
+    // studio rim: white edge lights from behind both sides, so the shape reads against the dark
+    const rimL = new THREE.DirectionalLight(0xffffff, 3.0); rimL.position.set(-2.4, 0.6, -2.2);
+    const rimR = new THREE.DirectionalLight(0xffffff, 3.0); rimR.position.set(2.4, 0.4, -2.2);
+    scene.add(key, rim, rimL, rimR);
+    scene.environmentIntensity = 0.55;
     const turn = new THREE.Group();          // what you drag
     scene.add(turn);
 
@@ -113,6 +118,8 @@ export function createInspector() {
             renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1));
             renderer.outputColorSpace = THREE.SRGBColorSpace;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            const pm = new THREE.PMREMGenerator(renderer);
+            scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; pm.dispose();
             addEventListener('resize', () => { if (open) size(); });
         }
         held = obj;

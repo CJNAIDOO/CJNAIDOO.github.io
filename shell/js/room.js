@@ -23,12 +23,12 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { ROOM, GUIDE } from './room-config.js?v=94';
-import { sfx } from './sfx.js?v=94';
-import { createInspector } from './inspect.js';
-import { BOOKS, FILMS, GAMES, LINKS, TEXTBOOKS } from './shelf-data.js?v=94';
-import { countsHTML, trophyListHTML } from './trophy-list.js?v=94';
-import { DISCS } from './records-data.js?v=94';
+import { ROOM, GUIDE } from './room-config.js?v=103';
+import { sfx } from './sfx.js?v=95';
+import { createInspector } from './inspect.js?v=97';
+import { BOOKS, FILMS, GAMES, LINKS, TEXTBOOKS } from './shelf-data.js?v=95';
+import { countsHTML, trophyListHTML } from './trophy-list.js?v=95';
+import { DISCS } from './records-data.js?v=95';
 
 const MODELS = {
     bedroom: 'models/room/bedroom.glb',         // the room itself (its TV wall and desk set-up removed)
@@ -59,13 +59,14 @@ const MODELS = {
     rug: 'models/room/rug.glb',                 // a Persian rug on the floor
     lava: 'models/room/lava-lamp.glb',          // a lava lamp on the bedside table
     cork: 'models/room/corkboard.glb',          // a pin board on the wall behind the chair
-    curtain: 'models/room/curtain.glb',         // a sheer curtain over the low windows (the master bedroom's)
+    frames: 'models/room/frames.glb',           // nine black picture frames (frame + picture opening): the photos hang in these
+    blind: 'models/room/blind.glb',             // window blinds over the low windows (the file has three: 01, 02 lowered, 03 raised)
     ball: 'models/room/jabulani.glb',           // the 2010 World Cup ball, under the desk
 };
 
 // ---- loading (with progress, so the intro's bar can follow it) --------------
 // bump when a model file changes, so browsers fetch the new one (models are cached hard)
-const MODELS_V = 2;
+const MODELS_V = 3;
 export function loadRoomAssets(onProgress = () => {}) {
     // the models' geometry is decoded in background workers, so MZALA's loading face keeps moving
     try { MeshoptDecoder.useWorkers(Math.min(4, Math.max(1, (navigator.hardwareConcurrency || 4) - 1))); } catch { /* fine: on the main thread */ }
@@ -165,7 +166,9 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
     bedroom.scale.setScalar(BED_SCALE);
     bedroom.position.set(-147 * BED_SCALE, -437.4 * BED_SCALE, -114 * BED_SCALE);   // the back-left corner, on the floor, at 0
     world.add(bedroom);
-    const roomMats = { walls: std(0x1b1b1f, { roughness: 0.95 }), trim: std(0x121214), floor: null };
+    const WALLC = (() => { const q = new URLSearchParams(location.search).get('wall') || ''; return /^[0-9a-f]{6}$/i.test(q) ? parseInt(q, 16) : 0xc8bca8; })();   // warm greige; ?wall=RRGGBB previews another
+    const roomMats = { walls: std(WALLC, { roughness: 0.95 }), trim: std(0x121214), floor: null };
+    let paintMat = () => roomMats.walls;
     const floorTex = canvasTex(1024, 1024, (g, w, h) => {
         // wide oak boards, staggered; colour comes from the material (so it works for day and night)
         g.fillStyle = '#fff'; g.fillRect(0, 0, w, h);
@@ -197,8 +200,18 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         const tile = (url, rx, ry, srgb) => { const t = tl.load(url); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = 8; if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t; };
         Object.assign(roomMats.floor, { map: tile('images/room/tex/floor.webp', R.w / 4, R.d / 4, true), normalMap: tile('images/room/tex/floor_n.webp', R.w / 4, R.d / 4), roughness: 0.55 });
         roomMats.floor.normalScale.set(1, 1);
-        Object.assign(roomMats.walls, { normalMap: tile('images/room/tex/wall_n.webp', 3, 3), roughness: 0.9 });
-        roomMats.walls.normalScale.set(0.8, 0.8);
+        // the walls' uneven paint (a seamless PBR set: its normal map and roughness, the walls stay black)
+        Object.assign(roomMats.walls, { normalMap: tile('images/room/tex/wall_paint_n.webp?v=110', 1, 1), roughnessMap: tile('images/room/tex/wall_paint_r.webp?v=110', 1, 1), roughness: 1 });
+        roomMats.walls.normalScale.set(1, 1);
+        // a flat panel of wall (the right wall, the roof slope, the low windows' fill) paints the same
+        // way at the same scale: one tile per ~1.5 m, so the grain runs on across the joins
+        paintMat = (w, h, side) => {
+            const m = roomMats.walls.clone();
+            m.normalMap = tile('images/room/tex/wall_paint_n.webp?v=110', w / 1.5, h / 1.5);
+            m.roughnessMap = tile('images/room/tex/wall_paint_r.webp?v=110', w / 1.5, h / 1.5);
+            if (side) m.side = side;
+            return m;
+        };
         roomMats.frames = std(0xffffff, { map: tile('images/room/tex/metal.webp', 1, 1, true), normalMap: tile('images/room/tex/metal_n.webp', 1, 1), metalness: 0.6, roughness: 0.45 });
     }
     const rug = std(0x101012, { roughness: 1 });
@@ -222,8 +235,8 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         else if (recolour[name]) o.material = recolour[name];
         if (/^cuadro\d?_Material/.test(o.name)) frames[o.name.split('_')[0]] = o;
     });
-    const floor = new THREE.Mesh(new THREE.BoxGeometry(R.w + 0.1, 0.04, R.d + 0.05), roomMats.floor);
-    floor.position.set(R.w / 2, -0.02, R.d / 2);
+    const floor = new THREE.Mesh(new THREE.BoxGeometry(R.w + 0.3, 0.04, R.d + 0.05), roomMats.floor);      // runs out to the rebuilt left wall too
+    floor.position.set(R.w / 2 - 0.1, -0.02, R.d / 2);
     world.add(floor);
 
     // the gaming chair, pulled out to the right of the desk and turned so the PSP and MZALA
@@ -338,6 +351,8 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
     // the PS3 stands up in the pedestal's cubby, under the right end of the desk
     const ps3 = assets.ps3;
     ps3.rotation.z = Math.PI / 2;                            // on its side, standing up
+    ps3.rotation.y = Math.PI;                                // its front (the disc slot and logo) toward the room
+    ps3.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI));   // upside down about its front, so the disc tray is at the top
     world.add(ps3);
     {
         const b = boxOf(ps3);
@@ -1099,7 +1114,10 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
     // (it faces into the room only, so from the camera's corner it never blocks the view)
     {
         const H = 3.9;
-        const wallR = new THREE.Mesh(new THREE.PlaneGeometry(R.d + 0.02, H), roomMats.walls);
+        const wallR = new THREE.Mesh(new THREE.PlaneGeometry(R.d + 0.02, H), paintMat(R.d + 0.02, H));
+        // the right wall takes the light almost head-on, which washes the paint's relief out and brightens it: a touch
+        // darker and a stronger relief, so it reads as the same paint as the back and left walls
+        wallR.material.color.multiplyScalar(0.86); wallR.material.normalScale.set(2.6, 2.6);
         wallR.rotation.y = -Math.PI / 2;                                   // facing into the room
         wallR.position.set(4.567, H / 2, R.d / 2);
         wallR.receiveShadow = true; wallR.userData.noPick = true;
@@ -1123,8 +1141,54 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         const cb = boxOf(cork), cc = cb.getCenter(new THREE.Vector3());
         const face = ROOM.corkFace ?? 4.541;
         const pins = new THREE.Group(); world.add(pins);
+        // the vision board: cards without a photo yet (graduation, the half marathon, Cape Town)
+        const vbCard = (kind) => {
+            const c = document.createElement('canvas'); c.width = 800; c.height = 600;
+            const g = c.getContext('2d');
+            if (kind === 'grad' || kind === 'run') {
+                const gr = g.createLinearGradient(0, 0, 800, 600);
+                gr.addColorStop(0, kind === 'grad' ? '#2a2e3a' : '#1f3b2f'); gr.addColorStop(1, kind === 'grad' ? '#12141b' : '#0f1f19');
+                g.fillStyle = gr; g.fillRect(0, 0, 800, 600);
+                g.fillStyle = g.strokeStyle = '#f3f4f8'; g.textAlign = 'center'; g.textBaseline = 'middle';
+                if (kind === 'run') {
+                    g.font = "230px 'The Overcook', cursive"; g.fillText('21.1', 400, 280);
+                    g.font = '40px sans-serif'; g.fillText('K M', 400, 440);
+                } else {
+                    g.lineWidth = 9; g.lineCap = g.lineJoin = 'round'; g.translate(400, 300); g.scale(11, 11); g.translate(-12, -12);
+                    g.beginPath(); g.moveTo(2, 9); g.lineTo(12, 4); g.lineTo(22, 9); g.lineTo(12, 14); g.closePath(); g.stroke();
+                    g.beginPath(); g.moveTo(6, 11); g.lineTo(6, 16); g.bezierCurveTo(6, 17.5, 9, 19, 12, 19); g.bezierCurveTo(15, 19, 18, 17.5, 18, 16); g.lineTo(18, 11); g.stroke();
+                    g.beginPath(); g.moveTo(22, 9); g.lineTo(22, 15); g.stroke();
+                }
+            } else {
+                const gr = g.createLinearGradient(0, 0, 0, 600);
+                gr.addColorStop(0, '#2b3a5a'); gr.addColorStop(0.7, '#e08a5a'); gr.addColorStop(1, '#f4c27a');
+                g.fillStyle = gr; g.fillRect(0, 0, 800, 600);
+                g.fillStyle = '#10131c'; g.beginPath(); g.moveTo(0, 600); g.lineTo(0, 430); g.lineTo(80, 420); g.lineTo(150, 390); g.lineTo(240, 350); g.lineTo(340, 330); g.lineTo(490, 320); g.lineTo(580, 340); g.lineTo(650, 380); g.lineTo(800, 400); g.lineTo(800, 600); g.closePath(); g.fill();
+            }
+            return c;
+        };
+        // one straight red string across the middle, THEN to its left and NEXT to its right
+        if (ROOM.pinboardString) {
+            const S = ROOM.pinboardString, len = S.u1 - S.u0;
+            const str = new THREE.Mesh(new THREE.CylinderGeometry(0.0022, 0.0022, len, 6), std(0xb3202a, { roughness: 0.6 }));
+            str.rotation.x = Math.PI / 2;
+            str.position.set(face - 0.0008, cc.y + (S.v || 0), cc.z + (S.u0 + S.u1) / 2);
+            str.rotation.set(Math.PI / 2, 0, 0);
+            str.rotation.order = 'XYZ';
+            pins.add(str);
+            [['then', S.thenU], ['next', S.nextU]].forEach(([word, u]) => {
+                const W = 512, H = 160;
+                const tex = canvasTex(W, H, (g) => { g.fillStyle = '#3b2a18'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = "110px 'The Overcook', 'Homemade Apple', cursive"; g.fillText(word, W / 2, H / 2); });
+                document.fonts.load("40px 'The Overcook'").then(() => { tex.needsUpdate = true; }).catch(() => {});
+                const m = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.1), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
+                m.rotation.y = -Math.PI / 2;
+                m.position.set(face - 0.001, cc.y + (S.labelV ?? 0.42), cc.z + u);
+                pins.add(m);
+            });
+        }
         (ROOM.pinboard || []).forEach((p, k) => {
-            loadImg(p.src).then(async (im) => {
+            (p.card ? Promise.resolve(vbCard(p.card)) : loadImg(p.src)).then(async (im) => {
+                try { await document.fonts.load("40px 'The Overcook'"); } catch { /* the fallback hand */ }
                 try { await document.fonts.load("40px 'Homemade Apple'"); } catch { /* the fallback hand */ }
                 const W = 900, pad = Math.round(W * 0.045), photoW = W - 2 * pad, photoH = Math.round(photoW * im.height / im.width);
                 const capH = p.caption ? Math.round(W * 0.16) : pad;
@@ -1133,9 +1197,9 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
                     g.fillStyle = '#f8f6f0'; g.fillRect(0, 0, W, H);
                     g.drawImage(im, pad, pad, photoW, photoH);
                     if (p.caption) {
-                        g.fillStyle = '#1b1a4a'; g.textAlign = 'center'; g.textBaseline = 'middle';
-                        let size = 56; g.font = `${size}px 'Homemade Apple', cursive`;
-                        while (g.measureText(p.caption).width > W - 2 * pad && size > 18) g.font = `${(size -= 2)}px 'Homemade Apple', cursive`;
+                        g.fillStyle = '#2b241c'; g.textAlign = 'center'; g.textBaseline = 'middle';
+                        let size = 84; g.font = `${size}px 'The Overcook', 'Homemade Apple', cursive`;
+                        while (g.measureText(p.caption).width > W - 2 * pad && size > 18) g.font = `${(size -= 2)}px 'The Overcook', 'Homemade Apple', cursive`;
                         g.fillText(p.caption, W / 2, pad + photoH + capH * 0.52);
                     }
                 });
@@ -1173,14 +1237,29 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         const c = spot ? spot.getCenter(new THREE.Vector3()) : new THREE.Vector3(2.07, 0.5, 4.38);
         place(lamp, { x: c.x, y: spot ? spot.min.y : 0.5, z: c.z });
     }
-    // the sheer curtain, drawn across the low windows in the knee wall
-    if (assets.curtain) {
-        const cu = assets.curtain;
-        cu.traverse((o) => { if (o.isMesh) { o.receiveShadow = true; o.material.side = THREE.DoubleSide; } });
-        const sz = new THREE.Box3().setFromObject(cu).getSize(new THREE.Vector3());
-        cu.scale.set(0.14 / sz.x, 1.86 / sz.y, 2.98 / sz.z);               // thin, knee-wall high, both windows wide
-        world.add(cu);
-        place(cu, { x: -0.165, ax: '0', y: 0.05, z: 2.145 });
+    // blinds over the two low windows in the knee wall (02 is the clean lowered one; 03, the raised one, is unused)
+    const windowBlinds = [];
+    if (assets.blind) {
+        let src = null;
+        assets.blind.traverse((o) => { if (o.isMesh && /^02/.test(o.name)) src = o; });
+        if (src) {
+            src.updateWorldMatrix(true, false);
+            const make = (z) => {
+                const holder = new THREE.Group();
+                const m = src.clone(true);
+                m.matrix.copy(src.matrixWorld); m.matrix.decompose(m.position, m.quaternion, m.scale);
+                holder.add(m);
+                holder.traverse((o) => { if (o.isMesh) { o.receiveShadow = true; o.castShadow = false; o.material = o.material.clone(); o.material.side = THREE.DoubleSide; o.material.color?.set(0xdcd5c6);
+                } });   // off-white, not stark
+                const sz = new THREE.Box3().setFromObject(holder).getSize(new THREE.Vector3());
+                holder.scale.set(1.05 / sz.x, 1.55 / sz.y, 0.1 / sz.z);        // each window wide, knee-wall high, a slim depth
+                holder.rotation.y = Math.PI / 2;                                 // its face into the room
+                world.add(holder);
+                place(holder, { x: -0.165, ax: '0', y: 0.85, z });
+                windowBlinds.push(holder);
+            };
+            make(2.145 - 0.75); make(2.145 + 0.75);
+        }
     }
 
     // a Persian rug on the floor, in the open middle of the room
@@ -1665,6 +1744,18 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         left: { n: new THREE.Vector3(1, 0, 0), at: (p) => new THREE.Vector3(0.006, p.y, p.z) },
         right: { n: new THREE.Vector3(-1, 0, 0), at: (p) => new THREE.Vector3(R.w - 0.006, p.y, p.z) },
     };
+    // the nine frames in the pack: each one's outer size and picture-opening, measured from its geometry
+    const frameSet = [], frameMat = std(0x0c0c0d, { roughness: 0.5, side: THREE.DoubleSide });      // (the pack's mouldings have some back-facing pieces)
+    if (assets.frames) {
+        for (let i = 0; i < 9; i++) {
+            let fm = null, pm = null;
+            assets.frames.traverse((o) => { if (o.isMesh && o.parent?.name === `F${i}`) { if (/^frame/.test(o.name) || o.name === `frame${i}`) fm = o; else pm = o; } });
+            if (!fm || !pm) continue;
+            fm.geometry.computeBoundingBox(); pm.geometry.computeBoundingBox();
+            const fb = fm.geometry.boundingBox, qb = pm.geometry.boundingBox;
+            frameSet.push({ geo: fm.geometry, used: 0, ow: fb.max.x - fb.min.x, minZ: fb.min.z, qw: qb.max.x - qb.min.x, qh: qb.max.y - qb.min.y, qa: (qb.max.x - qb.min.x) / (qb.max.y - qb.min.y), qcx: (qb.max.x + qb.min.x) / 2, qcy: (qb.max.y + qb.min.y) / 2, qz: qb.min.z });
+        }
+    }
     await Promise.all(ROOM.posters.map(async (p) => {
         let tex;
         try { tex = await loadTex(p.src); } catch { return; }
@@ -1677,6 +1768,30 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
             else { tex.repeat.y = ia / fa; tex.offset.y = (1 - tex.repeat.y) / 2; }
             m.material = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5 });
             if (p.id) posters[p.id] = m;
+            return;
+        }
+        if (p.fm && frameSet.length) {                         // a real frame from the pack: pick the one nearest the photo's shape
+            const w = WALL[p.wall]; if (!w) return;
+            let best = null, bd = 1e9;
+            for (const f of frameSet) { const d = Math.abs(Math.log(f.qa / ia)) + f.used * 0.12; if (d < bd) { bd = d; best = f; } }
+            best.used++;
+            const sc = p.w * 1.0 / best.ow, qw = best.qw * sc, qh = best.qh * sc;
+            const cw = 1024, ch = Math.max(256, Math.round(1024 * qh / qw)), cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+            const g = cv.getContext('2d'); g.fillStyle = '#0b0b0c'; g.fillRect(0, 0, cw, ch);          // dark under the moulding, so no white edge ever shows past the frame's lip
+            const e = 0.055 * Math.min(cw, ch); g.fillStyle = '#f1efe8'; g.fillRect(e, e, cw - 2 * e, ch - 2 * e);          // the white mount, then the photo cropped to fit
+            const m = 0.12 * Math.min(cw, ch), iw = cw - 2 * m, ih = ch - 2 * m, k = Math.max(iw / tex.image.width, ih / tex.image.height);
+            g.save(); g.beginPath(); g.rect(m, m, iw, ih); g.clip();
+            g.drawImage(tex.image, m + (iw - tex.image.width * k) / 2, m + (ih - tex.image.height * k) / 2, tex.image.width * k, tex.image.height * k); g.restore();
+            const ct = new THREE.CanvasTexture(cv); ct.colorSpace = THREE.SRGBColorSpace; ct.anisotropy = 8;
+            const mesh = new THREE.Mesh(new THREE.PlaneGeometry(qw, qh), new THREE.MeshStandardMaterial({ map: ct, roughness: 0.45 }));
+            const fr = new THREE.Mesh(best.geo, frameMat);
+            fr.scale.setScalar(sc); fr.position.set(-best.qcx * sc, -best.qcy * sc, -best.qz * sc); fr.castShadow = true;
+            mesh.add(fr);
+            const at = w.at(p);
+            mesh.position.copy(at).addScaledVector(w.n, (best.qz - best.minZ) * sc + 0.004);
+            mesh.lookAt(at.clone().add(w.n)); mesh.rotateZ(p.rot || 0);
+            world.add(mesh);
+            posters[p.id || p.src.split('/').pop().replace(/\.\w+$/, '')] = mesh;
             return;
         }
         const w = WALL[p.wall]; if (!w) return;
@@ -1796,7 +1911,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
     const recordDisc = (i, d) => {
         const g = vinylDisc(d);
         const lab = g.children[1];
-        lab.material = DISCS[i].kind === 'playlist' ? playlistLabel(i) : albumLabel(i);
+        lab.material = albumLabel(i);   // the cover on every record, playlists too
         lab.geometry = new THREE.CircleGeometry(d * 0.19, 48);
         g.userData.rec = i;
         return g;
@@ -1923,7 +2038,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
     // things you can look at: the first click walks you up to it (a close-up), and from
     // there you can pick it up and turn it over (the inspector), or just step back
     const inspector = createInspector();
-    inspector.onClose(() => { sfx.chirp(2); if (!bioKey.get(focused?.obj)) hideBio(); });   // (still up close: the bio stays)
+    inspector.onClose(() => { sfx.chirp(2); hideComic(); if (!bioKey.get(focused?.obj)) hideBio(); });   // (still up close: the bio stays)
     const pickBtn = document.createElement('button');
     pickBtn.type = 'button'; pickBtn.className = 'room-pick'; pickBtn.hidden = true;
     pickBtn.innerHTML = '<span class="inspect__start">E</span> pick up';
@@ -2071,19 +2186,24 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
     figComic.innerHTML = '<p class="fig-bio__meta"><span></span></p><img class="fig-bio__cover" alt="" referrerpolicy="no-referrer">';
     document.body.append(figBio, figComic);
     let bioShown = null;
-    const showBio = (key) => {
+    // the comic cover (right) only shows once the figure is picked up, so it never sits over the music player
+    const showComic = () => { figComic.hidden = false; requestAnimationFrame(() => figComic.classList.add('is-in')); };
+    const hideComic = () => { figComic.classList.remove('is-in'); figComic.hidden = true; };
+    const showBio = (key, comic = false) => {
         const b = ROOM.bios?.[key];
         if (!b) { hideBio(); return; }
-        if (bioShown === key && !figBio.hidden) return;
-        bioShown = key;
-        figBio.querySelector('.fig-bio__meta b').textContent = b.name;
-        figBio.querySelector('.fig-bio__desc').textContent = b.about || '';
-        figComic.querySelector('.fig-bio__meta span').textContent = `First seen in ${b.first}`;
-        const im = figComic.querySelector('.fig-bio__cover');
-        im.hidden = !b.cover; if (b.cover) { im.alt = `Cover of ${b.first}`; im.src = b.cover; im.onerror = () => { im.hidden = true; }; }
-        for (const el of [figBio, figComic]) { el.hidden = false; requestAnimationFrame(() => el.classList.add('is-in')); }
+        if (bioShown !== key || figBio.hidden) {
+            bioShown = key;
+            figBio.querySelector('.fig-bio__meta b').textContent = b.name;
+            figBio.querySelector('.fig-bio__desc').textContent = b.about || '';
+            figComic.querySelector('.fig-bio__meta span').textContent = `First seen in ${b.first}`;
+            const im = figComic.querySelector('.fig-bio__cover');
+            im.hidden = !b.cover; if (b.cover) { im.alt = `Cover of ${b.first}`; im.src = b.cover; im.onerror = () => { im.hidden = true; }; }
+            figBio.hidden = false; requestAnimationFrame(() => figBio.classList.add('is-in'));
+        }
+        if (comic) showComic(); else hideComic();
     };
-    const hideBio = () => { bioShown = null; for (const el of [figBio, figComic]) { el.classList.remove('is-in'); el.hidden = true; } };
+    const hideBio = () => { bioShown = null; figBio.classList.remove('is-in'); figBio.hidden = true; hideComic(); };
     let recHide = () => {};                                    // (the record card: set up further down)
     let crateRestore = () => {};                               // (a sleeve out of the crate goes back: further down)
     let shelfRestore = () => {}, shelfRow = null;              // (a book, film or game held out goes back: further down)
@@ -2094,7 +2214,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         if (!f || ![sleeves, recCorner, tt].includes(f.obj)) crateRestore();
         if (!f || f.obj !== shelfRow) shelfRestore();
         const bk = bioKey.get(f?.obj);
-        if (bk) showBio(bk); else if (!inspector.open) hideBio();
+        if (bk) showBio(bk, inspector.open); else if (!inspector.open) hideBio();
         logoState.close = figName.get(f?.obj) || (inspector.open ? logoState.close : null);
         showLogo();
     };
@@ -2130,7 +2250,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
     for (const [f, label] of FIG) {
         const [vKey, vName] = VOICE[f.uuid] || [];
         const voiceKey = ROOM.voices?.[vKey] ? { key: 'v', label: 'voice line', run: () => ui.playVoice(ROOM.voices[vKey], vName) } : null;
-        const close = look(f, new THREE.Vector3(0, 0.15, 1), () => { pickUp(f.userData.figure, voiceKey ? { key: voiceKey } : undefined); showBio(vKey); });
+        const close = look(f, new THREE.Vector3(0, 0.15, 1), () => { pickUp(f.userData.figure, voiceKey ? { key: voiceKey } : undefined); showBio(vKey, true); });
         click(f, label, () => {
             if (!onTeam()) { showTeam(); return; }
             const goingClose = focused?.obj !== f;
@@ -2715,8 +2835,9 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
     moon.position.set(-2.8, 4.2, 3.0); moon.target.position.set(2.4, 0, 1.4);
     world.add(moon, moon.target);
     const lampShade = recolour['Material.015'];
-    // the walls, trim and floor: always the night colours
-    roomMats.walls.color.setHex(0x1b1b1f); roomMats.trim.color.setHex(0x131316);
+    // the walls, trim and floor: always the same colours day and night
+    roomMats.walls.color.setHex(WALLC); roomMats.trim.color.setHex(0x131316);
+    { roomMats.trim.map = oak.map; roomMats.trim.color.setHex(0xe0b070); roomMats.trim.roughness = 0.55; roomMats.trim.needsUpdate = true; }
     if (roomMats.floor) roomMats.floor.color.setHex(0xc7a383);                // (the oak, warmed: it read almost white)
     const sky = { day: -1, dusk: 0, el: 0, az: 0 };
     const lightFor = (date) => {
@@ -2812,15 +2933,43 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
     // ---- the windows are sealed: the openings walled over (flush with the wall and the roof
     // slope, in the wall's black), no frames, no sky, glass, sun or moon, and no light from
     // outside. The lamps and screens still follow the time of day.
+    const STRAIGHT = true, straightExtras = [];       // the left wall runs straight up (no slope)
     const SEALED = true;
     if (SEALED) {
         bedroom.traverse((o) => { if (o.isMesh && /^Cube\d*_marco/.test(o.name)) o.visible = false; });
         skyKnee.visible = skyRoof.visible = false;
         world.traverse((o) => { if (o.userData.glass) o.visible = false; });
-        const panel = (w, h) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), roomMats.walls); m.receiveShadow = true; world.add(m); return m; };
-        for (const [z0, z1] of [[0.77, 1.76], [2.53, 3.52]]) {
-            // the low window, in the knee wall (x -0.17: the wall's inside face)
-            const k = panel(z1 - z0, 1.85); k.rotation.y = Math.PI / 2; k.position.set(-0.168, 1.005, (z0 + z1) / 2);
+        const panel = (w, h) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), paintMat(w, h)); m.receiveShadow = true; world.add(m); return m; };
+        // the left wall, floor to top, as one clean painted panel (the model's own left wall and its
+        // window openings are hidden): wooden window frames with a sill around each blind, and a skirting
+        {
+            const H = 3.9, LX = -0.168;
+            const lw = new THREE.Mesh(new THREE.PlaneGeometry(R.d + 0.04, H), paintMat(R.d + 0.04, H));
+            lw.rotation.y = Math.PI / 2; lw.position.set(LX, H / 2, R.d / 2); lw.receiveShadow = true; lw.userData.noPick = true; world.add(lw);
+            const wood = (w, h, d, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), roomMats.trim); m.position.set(x, y, z); m.receiveShadow = true; m.castShadow = false; m.userData.noPick = true; world.add(m); return m; };
+            world.updateMatrixWorld(true);
+            for (const hd of windowBlinds) {
+                const bb = new THREE.Box3().setFromObject(hd), lo = world.worldToLocal(bb.min.clone()), hi = world.worldToLocal(bb.max.clone());
+                const y0 = Math.min(lo.y, hi.y), y1 = Math.max(lo.y, hi.y), z0 = Math.min(lo.z, hi.z), z1 = Math.max(lo.z, hi.z), t = 0.06, dp = 0.06, x = LX + dp / 2;
+                wood(dp, t, z1 - z0 + 2 * t, x, y1 + t / 2, (z0 + z1) / 2);                 // head
+                wood(dp, t, z1 - z0 + 2 * t, x, y0 - t / 2, (z0 + z1) / 2);                 // bottom rail
+                wood(dp, y1 - y0, t, x, (y0 + y1) / 2, z0 - t / 2);                          // jambs
+                wood(dp, y1 - y0, t, x, (y0 + y1) / 2, z1 + t / 2);
+                wood(0.14, 0.03, z1 - z0 + 2 * t + 0.1, LX + 0.07, y0 - t - 0.015, (z0 + z1) / 2);   // the sill, proud of the frame
+            }
+        }
+        // close the back wall's two ends: a narrow painted patch behind each corner, so no dark seam shows
+        for (const [x0, x1] of [[-0.17, 0.25], [4.3, 4.567]]) {
+            const cp = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, 3.9), paintMat(x1 - x0, 3.9, THREE.DoubleSide));
+            cp.position.set((x0 + x1) / 2, 1.95, 0.0015); cp.receiveShadow = true; cp.userData.noPick = true; world.add(cp);
+        }
+        // a wooden skirting right round the room (the back one is the model's own)
+        {
+            const SH = 0.11, ST = 0.024;
+            const sk = (w, d, x, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, SH, d), roomMats.trim); m.position.set(x, SH / 2, z); m.receiveShadow = true; m.userData.noPick = true; world.add(m); };
+            sk(ST, R.d, -0.168 + ST / 2, R.d / 2);                 // left
+            sk(ST, R.d, 4.567 - ST / 2, R.d / 2);                  // right
+            { const m = new THREE.Mesh(new THREE.BoxGeometry(4.567 + 0.168 - 2 * ST, SH, ST), roomMats.trim); m.position.set((4.567 - 0.168) / 2, SH / 2, ST / 2); m.receiveShadow = true; m.userData.noPick = true; world.add(m); }   // back, between the two
         }
         // above the low windows: the roof slope as ONE clean panel (no skylight openings or
         // reveals). The slope's own faces come out of the room's mesh...
@@ -2843,7 +2992,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
                     n.crossVectors(e1.subVectors(b, a), e2.subVectors(c, a)).normalize();
                     const cy = (a.y + b.y + c.y) / 3, cx = (a.x + b.x + c.x) / 3;
                     const cz = (a.z + b.z + c.z) / 3;
-                    const gableEnd = Math.abs(n.z) > 0.9 && (cz < 0.06 || cz > R.d - 0.06);      // (the end walls stay)
+                    const gableEnd = !STRAIGHT && Math.abs(n.z) > 0.9 && (cz < 0.06 || cz > R.d - 0.06);      // (the end walls stay)
                     const onSlope = cy > 1.97 && cx < slopeX(cy) + 0.35 && !gableEnd;              // the slope and the skylights' reveals
                     if (onSlope) { cut++; continue; }
                     keep.push(i0, i1, i2);
@@ -2853,17 +3002,95 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         }
         // ...and one flat panel in their place, at the roof's angle, from the knee wall up
         // (just inside where the roof's own surface was)
+        if (STRAIGHT) {
+            const TOP = 3.9;
+            // the triangle the slope used to cut off, filled on the back and front gables
+            const sh = new THREE.Shape(); sh.moveTo(-0.16, 1.9); sh.lineTo(0.6, 1.9); sh.lineTo(1.6, TOP); sh.lineTo(-0.16, TOP); sh.closePath();
+            for (const [z, k] of [[-0.01, 'back'], [R.d + 0.01, 'front']]) {
+                const t = new THREE.Mesh(new THREE.ShapeGeometry(sh), paintMat(2, 2, THREE.DoubleSide)); t.position.z = z; t.receiveShadow = true; t.userData.noPick = true; world.add(t); straightExtras.push({ mesh: t, k });
+            }
+        } else
         {
             const a = new THREE.Vector2(-0.16, 1.98), b = new THREE.Vector2(1.14, 3.77), len = a.distanceTo(b) + 0.5;
-            const roofMat = roomMats.walls.clone(); roofMat.side = THREE.DoubleSide;
+            const roofMat = paintMat(R.d, a.distanceTo(b) + 0.5, THREE.FrontSide);   // seen from inside only: from above it's open
             const r = new THREE.Mesh(new THREE.PlaneGeometry(R.d, len), roofMat);
             const up = new THREE.Vector3(b.x - a.x, b.y - a.y, 0).normalize(), along = new THREE.Vector3(0, 0, 1);
             const out = new THREE.Vector3().crossVectors(along, up);
-            r.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(along, up, out));
+            r.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(along.clone().negate(), up, out.clone().negate()));
             r.position.set((a.x + b.x) / 2, (a.y + b.y) / 2, R.d / 2).addScaledVector(out, -0.122).addScaledVector(up, -0.18);
             r.receiveShadow = true; r.userData.noPick = true;
             world.add(r);
         }
+    }
+    // ---- the cutaway: from above and outside, the near walls open up. The room's one wall mesh is split
+    // into its left wall, its near (open-side) gable and its back wall; each hides while the camera is
+    // beyond it, so a high camera looks straight into the room, like a dolls'-house cutaway.
+    {
+        const shells = [];
+        const capMat = new THREE.MeshStandardMaterial({ color: roomMats.walls.color, emissive: roomMats.walls.color, emissiveIntensity: 0.55, roughness: 1 });
+        world.updateMatrixWorld(true);
+        const inv = new THREE.Matrix4().copy(world.matrixWorld).invert();
+        const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), n = new THREE.Vector3(), e1 = new THREE.Vector3(), e2 = new THREE.Vector3();
+        bedroom.traverse((o) => {
+            if (!o.isMesh || !/^cuarto_Material01[46]_0$/.test(o.name) || !o.geometry.index) return;      // (the walls, and the trim along their edges)
+            const g = o.geometry, pos = g.attributes.position, idx = g.index.array;
+            const M = new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld);
+            // the room's walls came without texture coordinates: paint them by where they stand, a tile per
+            // 1.5 m, projected along each face's dominant axis, so the grain runs on across the panels and corners
+            if (!g.attributes.uv && g.attributes.normal) {
+                const nrm = g.attributes.normal, uv = new Float32Array(pos.count * 2), N3 = new THREE.Matrix3().getNormalMatrix(M), pv = new THREE.Vector3(), nv = new THREE.Vector3();
+                for (let i = 0; i < pos.count; i++) {
+                    pv.fromBufferAttribute(pos, i).applyMatrix4(M); nv.fromBufferAttribute(nrm, i).applyMatrix3(N3);
+                    const ax = Math.abs(nv.x), ay = Math.abs(nv.y), az = Math.abs(nv.z);
+                    if (ax >= ay && ax >= az) { uv[2 * i] = pv.z / 1.5; uv[2 * i + 1] = pv.y / 1.5; }
+                    else if (ay >= az) { uv[2 * i] = pv.x / 1.5; uv[2 * i + 1] = pv.z / 1.5; }
+                    else { uv[2 * i] = pv.x / 1.5; uv[2 * i + 1] = pv.y / 1.5; }
+                }
+                g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+            }
+            const groups = { left: [], front: [], back: [] }, rest = [];
+            for (let t = 0; t < idx.length; t += 3) {
+                a.fromBufferAttribute(pos, idx[t]).applyMatrix4(M); b.fromBufferAttribute(pos, idx[t + 1]).applyMatrix4(M); c.fromBufferAttribute(pos, idx[t + 2]).applyMatrix4(M);
+                n.crossVectors(e1.subVectors(b, a), e2.subVectors(c, a)).normalize();
+                const cx = (a.x + b.x + c.x) / 3, cz = (a.z + b.z + c.z) / 3;
+                const k = cz > R.d - 0.12 ? 'front' : cz < 0.12 ? 'back' : cx < 0.2 ? 'left' : null;      // (by where it sits, so a wall's edges go with it)
+                (k ? groups[k] : rest).push(idx[t], idx[t + 1], idx[t + 2]);
+            }
+            // the end faces of the back and front walls (their thickness, seen edge-on from the cutaway) get their own
+            // softly self-lit paint, so they never read as black lines at the corners
+            for (const k of ['back', 'front']) {
+                const caps = [], keep = [];
+                for (let t = 0; t < groups[k].length; t += 3) {
+                    const i0 = groups[k][t], i1 = groups[k][t + 1], i2 = groups[k][t + 2];
+                    a.fromBufferAttribute(pos, i0).applyMatrix4(M); b.fromBufferAttribute(pos, i1).applyMatrix4(M); c.fromBufferAttribute(pos, i2).applyMatrix4(M);
+                    n.crossVectors(e1.subVectors(b, a), e2.subVectors(c, a)).normalize();
+                    (o.name === 'cuarto_Material014_0' && Math.abs(n.x) > 0.9 ? caps : keep).push(i0, i1, i2);
+                }
+                groups[k] = keep; groups[k + 'Caps'] = caps;
+            }
+            delete groups.left;                                        // the left wall is rebuilt as a clean panel
+            if (o.name === 'cuarto_Material016_0') delete groups.back;      // (the back skirting is rebuilt below to match the others)
+            for (const [k, list] of Object.entries(groups)) {
+                if (!list.length) continue;
+                const ng = new THREE.BufferGeometry();
+                for (const name of Object.keys(g.attributes)) ng.setAttribute(name, g.attributes[name]);
+                ng.setIndex(list);
+                const m = new THREE.Mesh(ng, /Caps$/.test(k) ? capMat : o.material);
+                m.position.copy(o.position); m.quaternion.copy(o.quaternion); m.scale.copy(o.scale);
+                m.receiveShadow = o.receiveShadow; m.castShadow = o.castShadow;
+                m.name = o.name + '_' + k;
+                o.parent.add(m);
+                shells.push({ mesh: m, k: k.replace('Caps', '') });
+            }
+            g.setIndex(rest);
+        });
+        shells.push(...straightExtras);
+        const cam = new THREE.Vector3();
+        handheld.onFrame(() => {
+            if (!shells.length) return;
+            cam.copy(handheld.camera.position); world.worldToLocal(cam);
+            for (const { mesh, k } of shells) mesh.visible = k === 'left' ? cam.x > -0.1 : k === 'front' ? cam.z < R.d + 0.1 : cam.z > -0.1;
+        });
     }
     if (sunBody) { sunDisc.add(sunBody); sunBody.position.z = 0.02; }
     if (moonBody) { moonDisc.add(moonBody); moonBody.position.z = 0.02; }
@@ -2915,9 +3142,9 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
     });
 
     // ---- camera framings --------------------------------------------------------------------------
-    // the room: from the open corner, looking into the corner with the desk
+    // the room: from above the open corner, looking down into the corner with the desk (the near walls open up: see 'the cutaway')
     const roomTarget = new THREE.Vector3(2.85, 1.5, 1.1);
-    const roomDir = new THREE.Vector3(-0.42, 0.2, 0.88).normalize();
+    const roomDir = new THREE.Vector3(-0.5, 0.6, 0.75).normalize();
     const fit = (far) => {
         const fovT = Math.tan(THREE.MathUtils.degToRad(handheld.camera.fov) / 2);
         return Math.max(1.6 / fovT, 2.15 / (fovT * handheld.camera.aspect)) * (far ? 1.35 : 1);
@@ -2927,9 +3154,13 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         const pos = roomTarget.clone().addScaledVector(roomDir, d);
         if (far) pos.y += 0.8;
         const az = Math.atan2(roomDir.x, roomDir.z);
+        // the turn is locked at the left wall: the camera can't go round behind it (it stays on the room's side, x >= 0)
+        const rh = d * Math.cos(Math.asin(roomDir.y));
+        const leftStop = Math.asin(Math.max(-1, Math.min(1, (0.1 - roomTarget.x) / rh)));
+        const minAz = Math.min(az, Math.max(az - 0.6, leftStop));
         return {
             pos: toScene(pos), target: toScene(roomTarget),
-            limits: { minDistance: d * K * 0.22, maxDistance: d * K * 1.2, minAzimuth: az - 0.6, maxAzimuth: az + 0.55, minPolar: 0.95, maxPolar: 1.62, near: 2, far: 4000 },
+            limits: { minDistance: d * K * 0.22, maxDistance: d * K * 1.2, minAzimuth: minAz, maxAzimuth: az + 0.55, minPolar: 0.7, maxPolar: 1.62, near: 2, far: 4000 },
         };
     };
     // the desk: sitting in front of the monitor
@@ -3061,7 +3292,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         // the room's open: he says hello (a chime and a chatter; on your first click if sound can't start yet)
         hello: () => sfx.whenUnlocked(() => { sfx.ready(); setTimeout(() => sfx.chirp(4), 380); }),
         debug: () => ({ lapAngle: lapGroup.userData.angle, walk: { ...walk }, pos: buddy.position.toArray(), showing: guide.showing, talking: guide.talking }),
-        inspect: (name) => (name === 'ds3' ? pickUp(ds3, { turnTo: 0.35, tilt: 0.95, action: { label: '<span class="inspect__start">START</span> play on the PS3', run: play } }) : (pickUp(things[name]?.userData?.figure || things[name]), showBio(name))),
+        inspect: (name) => (name === 'ds3' ? pickUp(ds3, { turnTo: 0.35, tilt: 0.95, action: { label: '<span class="inspect__start">START</span> play on the PS3', run: play } }) : (pickUp(things[name]?.userData?.figure || things[name]), showBio(name, true))),
         closeOverlays: () => { ui.closeAll(); ui.stopVoice(); inspector.close(); },
         overlayOpen: () => ui.isOpen() || inspector.open,
     };
@@ -3318,7 +3549,7 @@ function createOverlays(guide) {
     deck.innerHTML = `
         <button type="button" class="deck__hide" aria-label="Close the player (the music keeps playing)">✕ close</button>
         <div class="deck__art">
-            <div class="deck__disc" aria-hidden="true"><span></span></div>
+            <div class="deck__disc" aria-hidden="true"><span><img alt="" hidden></span></div>
             <div class="deck__sleeve"><img alt=""></div>
         </div>
         <div class="deck__meta">
@@ -3356,7 +3587,22 @@ function createOverlays(guide) {
     const nowUri = () => (order.length ? `spotify:track:${order[pos]}` : `spotify:${current().kind || 'playlist'}:${current().spotify}`);
     const current = () => MIXES[mixIdx] || {};
     const playBtn = deck.querySelector('.deck__play');
-    const setPlaying = (on) => { if (playing !== on) { playing = on; deck.classList.toggle('is-playing', on); changed(); } };
+    const setPlaying = (on) => { if (playing !== on) { playing = on; deck.classList.toggle('is-playing', on); if (on) playBtn.classList.remove('is-nudge'); changed(); } };
+    // start the loaded song. Spotify's embed ignores a play() sent before it has finished loading (right after
+    // loadUri, or on the first load), so ask again a few times until it takes. If the browser is blocking
+    // autoplay it never does, and the play button pulses instead, so one click starts it.
+    let playTok = 0;
+    const kickPlay = () => {
+        const tok = ++playTok;
+        playBtn.classList.remove('is-nudge');
+        const go = (n) => {
+            if (tok !== playTok || !ctrl || stopped || playing) return;
+            ctrl.play();
+            if (n >= 5) { playBtn.classList.add('is-nudge'); return; }
+            setTimeout(() => go(n + 1), [400, 700, 1100, 1600, 2200][n]);
+        };
+        go(0);
+    };
     // covers and names from Spotify's oEmbed (no sign-in needed)
     const oembed = (kind, id) => fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(`https://open.spotify.com/${kind}/${id}`)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     const showMix = () => {
@@ -3364,10 +3610,17 @@ function createOverlays(guide) {
         titleEl.textContent = m.title || 'Playlist';
         byEl.textContent = m.by || m.artist || '';
         disc.style.setProperty('--label', m.color || '#d4202c');
-        disc.querySelector('span').textContent = m.title || '';
+        // the record's middle is the cover, as on the 3D record; only one without a cover shows its name
+        const lab = disc.querySelector('span'), labImg = lab.querySelector('img');
+        const setLabel = (src) => {
+            [...lab.childNodes].forEach((n) => n.nodeType === 3 && n.remove());
+            if (src) { labImg.src = src; labImg.hidden = false; }
+            else { labImg.hidden = true; labImg.removeAttribute('src'); lab.append(document.createTextNode(m.title || '')); }
+        };
+        setLabel(m.cover || null);
         lastTrack = '';
         if (m.cover) cover.src = m.cover;
-        else oembed(m.kind || 'playlist', m.spotify).then((o) => { if (o?.thumbnail_url && current() === m && !lastTrack) cover.src = o.thumbnail_url; });
+        else oembed(m.kind || 'playlist', m.spotify).then((o) => { if (o?.thumbnail_url && current() === m) { setLabel(o.thumbnail_url); if (!lastTrack) cover.src = o.thumbnail_url; } });
         if (order.length) showTrack(nowUri());          // a song's on: its cover, not the playlist's
     };
     // the song that's playing: its own cover on the sleeve, its name under the title
@@ -3397,7 +3650,7 @@ function createOverlays(guide) {
         setTimeout(() => reject(new Error('Spotify timed out')), 8000);
     });
     const slot = deck.querySelector('.deck__spotify');
-    let startAt = -1;
+    let startAt = -1, endTimer = 0, lastPos = 0, lastDur = 0;
     const loadPlayer = (auto) => {
         if (loaded) return; loaded = true;
         startMix(startAt);
@@ -3410,10 +3663,22 @@ function createOverlays(guide) {
                     const d = e.data;
                     setPlaying(!d.isPaused && !d.isBuffering);
                     if (!order.length) showTrack(d.playingURI);
-                    // a song's finished: on to the next one in the shuffle
-                    if (order.length && d.duration > 0 && d.position >= d.duration - 1200 && !ending) { ending = true; nextSong(); }
+                    // a song's finished: on to the next one. Spotify's updates come about once a second and the
+                    // player just stops at the end, so one that lands in the last second is easily missed:
+                    // a timer set for the song's end backs it up, and so does spotting that it stopped at the end.
+                    if (order.length && d.duration > 0) {
+                        clearTimeout(endTimer);
+                        const left = d.duration - d.position;
+                        if (!d.isPaused && left <= 1500 && !ending) { ending = true; nextSong(); }
+                        else if (!d.isPaused) endTimer = setTimeout(() => { if (!ending && !stopped) { ending = true; nextSong(); } }, Math.max(0, left) + 700);
+                        else if (lastDur === d.duration && lastPos >= d.duration - 4000 && (d.position <= 500 || d.position >= d.duration - 300) && !ending && !stopped) { ending = true; nextSong(); }
+                        lastPos = d.position; lastDur = d.duration;
+                    }
                 });
-                if (auto) c.addListener('ready', () => c.play());
+                if (auto) {
+                    c.addListener('ready', kickPlay);
+                    setTimeout(() => { if (!playing && !stopped && !playTok) kickPlay(); }, 2500);   // (in case 'ready' came before the listener)
+                }
             });
         }, () => {
             slot.innerHTML = `<iframe title="On Spotify" src="https://open.spotify.com/embed/${current().kind || 'playlist'}/${encodeURIComponent(current().spotify)}?theme=0" width="100%" height="80" frameborder="0" allow="autoplay; clipboard-write; encrypted-media" loading="lazy"></iframe>`;
@@ -3429,31 +3694,33 @@ function createOverlays(guide) {
         if (step < 0) pos = (pos - 1 + order.length) % order.length;
         else { pos = (pos + 1) % order.length; if (pos === 0 && !current().seq) shuffle(order); }   // round again (a playlist in a new order)
         lastTrack = '';
+        clearTimeout(endTimer); lastPos = lastDur = 0;
         showTrack(nowUri());
-        if (ctrl) { ctrl.loadUri(nowUri()); ctrl.play(); }
+        if (ctrl) { ctrl.loadUri(nowUri()); kickPlay(); }
         setTimeout(() => { ending = false; }, 2500);
     };
     const playMix = (id, at = -1) => {
         stopped = false;
         const i = MIXES.findIndex((m) => m.spotify === id);
         mixIdx = i < 0 ? 0 : i;
+        clearTimeout(endTimer); lastPos = lastDur = 0;
         if (!loaded) { startAt = at; showDeck(true, true); return; }
         showDeck(true);
         startMix(at);
         if (order.length) showTrack(nowUri());
-        if (ctrl) { ctrl.loadUri(nowUri()); ctrl.play(); }
+        if (ctrl) { ctrl.loadUri(nowUri()); kickPlay(); }
         else { const f = slot.querySelector('iframe'); if (f) f.src = `https://open.spotify.com/embed/${current().kind || 'playlist'}/${encodeURIComponent(current().spotify)}?theme=0`; }
     };
     playBtn.addEventListener('click', () => { if (!ctrl) return; if (deck.dataset.started) ctrl.resume(); else { ctrl.play(); deck.dataset.started = '1'; } });
-    deck.querySelector('.deck__pause').addEventListener('click', () => { ctrl?.pause(); setPlaying(false); });
+    deck.querySelector('.deck__pause').addEventListener('click', () => { playTok++; clearTimeout(endTimer); ctrl?.pause(); setPlaying(false); });
     // ‹ › : the previous / next song (a new record: pick one off the wall or out of the crate)
     deck.querySelector('.deck__next').addEventListener('click', () => { if (order.length) nextSong(1); });
     deck.querySelector('.deck__prev').addEventListener('click', () => { if (order.length) nextSong(-1); else ctrl?.seek?.(0); });
     // ■ stop: the music stops, the needle lifts and goes home (the record stays on; play starts it again)
     let stopped = false;
-    const stopRecord = () => { ctrl?.pause(); ctrl?.seek?.(0); setPlaying(false); stopped = true; changed(); };
+    const stopRecord = () => { playTok++; clearTimeout(endTimer); ctrl?.pause(); ctrl?.seek?.(0); setPlaying(false); stopped = true; changed(); };
     deck.querySelector('.deck__close').addEventListener('click', stopRecord);
-    playBtn.addEventListener('click', () => { stopped = false; changed(); });
+    playBtn.addEventListener('click', () => { stopped = false; playBtn.classList.remove('is-nudge'); changed(); });
     // ✕ close: the player goes away (the music keeps playing); click the record player to bring it back
     deck.querySelector('.deck__hide').addEventListener('click', () => showDeck(false));
 

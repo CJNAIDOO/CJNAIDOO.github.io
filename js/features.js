@@ -19,14 +19,13 @@
     // Overlays: a full-screen layer inside a row, shown while that row is focused
     // (same idea as Home's Welcome card).
     // ------------------------------------------------------------------------
-    const PHOTO_KINDS = new Set(['academic', 'about', 'project'])
     const addOverlay = (id, kind, panelHtml, photo, logo) => {
         const row = rowById(id)
         if (!row) return
         const el = document.createElement('div')
-        el.className = `xmb-overlay ${kind}-overlay`
-        const photoLayer = PHOTO_KINDS.has(kind)
-            ? `<div class="overlay-photo${photo ? '' : ' is-empty'}"${photo ? ` style="background-image:url('${esc(photo)}')"` : ''}></div>`
+        el.className = `xmb-overlay ${kind}-overlay${photo ? ' has-photo' : ''}`
+        const photoLayer = photo
+            ? `<div class="overlay-photo" style="background-image:url('${esc(photo)}')"></div>`
             : ''
         // the school's / university's / project's logo, bottom left of the screen
         const logoLayer = logo ? `<div class="overlay-logo"><img src="${esc(logo)}" alt=""></div>` : ''
@@ -135,7 +134,7 @@
     // LinkedIn, YouTube... with ○ to go back to the menu. Only a live app (a project's running
     // site) pops up over the whole site, in the shell's viewer; on its own the XMB opens it in a tab.
     let screenViewer = null
-    const screenLinks = () => screenViewer ||= import(new URL('shell/js/link-viewer.js?v=94', document.baseURI).href)
+    const screenLinks = () => screenViewer ||= import(new URL('shell/js/link-viewer.js?v=95', document.baseURI).href)
         .then((m) => { const v = m.createLinkViewer({ screen: true }); window.XMB_LINKS = v; return v })
     const openLink = (url, { live = false, label = '' } = {}) => {
         if (!url) { showToast('Link coming soon'); return }
@@ -165,7 +164,7 @@
         if (compose.open) { prompts.innerHTML = prompt('o', 'Cancel'); return }
         const id = currentRow()?.dataset.id
         const p = C.projects[id]
-        const label = C.games?.[id]?.play ? 'Play' : p ? (p.live ? 'Open live site' : p.repo ? 'View code' : '') : actionLabels[id]
+        const label = C.games?.[id]?.play ? (C.games[id].demo ? 'Play demo' : 'Play') : p ? (p.live ? 'Open live site' : p.repo ? 'View code' : '') : actionLabels[id]
         prompts.innerHTML = label ? prompt('x', label) : ''
     }
 
@@ -275,7 +274,7 @@
     const actions = {
         ...Object.fromEntries(Object.entries(C.projects).map(([id, p]) => [id, () => openProject(p)])),
         tetris: () => window.XMB_TETRIS?.open(),
-        ilifa: () => window.XMB_ILIFA?.open(),
+        ilifa: () => { window.XMB_ILIFA?.open(); document.dispatchEvent(new CustomEvent('ilifa:open')) },
         linkedin: () => openLink(C.connect.linkedin),
         github: () => openLink(C.connect.github),
         email: () => openCompose(),
@@ -358,6 +357,36 @@
         })
     }
     document.addEventListener('xmb:focus', syncGameVideos)
+
+    // Ilifa's menu music plays while its row is focused (a demo, so a taste of it), fading in
+    // and out, and stops when the game itself opens (it has its own music).
+    {
+        let tune = null, fade = 0
+        const ramp = (to, done) => {
+            clearInterval(fade)
+            fade = setInterval(() => {
+                if (!tune) return clearInterval(fade)
+                const v = tune.volume, d = to - v
+                if (Math.abs(d) < 0.03) { tune.volume = to; clearInterval(fade); done?.() } else tune.volume = Math.max(0, Math.min(1, v + Math.sign(d) * 0.03))
+            }, 40)
+        }
+        const syncIlifaTune = () => {
+            const on = currentRow()?.dataset.id === 'ilifa' && !window.XMB_ILIFA?.isOpen
+            if (on) {
+                if (!tune) { tune = new Audio('games/ilifa/assets/menu_music.mp3'); tune.loop = true; tune.volume = 0; tune.preload = 'auto' }
+                tune.play().then(() => ramp(0.35)).catch(() => {})
+            } else if (tune && !tune.paused) ramp(0, () => tune.pause())
+        }
+        document.addEventListener('xmb:focus', syncIlifaTune)
+        document.addEventListener('ilifa:close', syncIlifaTune)
+        document.addEventListener('ilifa:open', syncIlifaTune)
+    }
+    // Tetris's tune plays quietly, fading in, while its row is focused (the game then carries it on)
+    {
+        const syncTetrisTune = () => window.XMB_TETRIS?.preview(currentRow()?.dataset.id === 'tetris')
+        document.addEventListener('xmb:focus', syncTetrisTune)
+        document.addEventListener('tetris:close', syncTetrisTune)
+    }
     addEventListener('resize', alignToRow)
     updatePrompts()
 
