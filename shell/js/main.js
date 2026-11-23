@@ -66,7 +66,7 @@ markDone.then(() => { introOver = true; showStatus(); });
 // textures, 2 million triangles) is more than a phone's browser will hold, and the tab is killed
 // before it loads. ?room in the address forces the room, ?lite forces the PSP alone (to test).
 const query = new URLSearchParams(location.search);
-const PHONE_LOADING_MS = 8500;               // the least a phone shows the loading screen (since the page opened)
+const PHONE_LOADING_MS = 14000;               // the least a phone shows the loading screen (since the page opened)
 const LITE = !query.has('room') && (query.has('lite')
     || (matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 820)
     || (navigator.deviceMemory && navigator.deviceMemory <= 2));
