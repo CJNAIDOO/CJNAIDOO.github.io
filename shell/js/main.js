@@ -61,12 +61,14 @@ const showStatus = () => {
     markWaiting?.(introOver && !ready);
 };
 const setStatus = (text) => { status = text; showStatus(); };
-markDone.then(() => { introOver = true; showStatus(); });
+let markDoneAt = 0;
+markDone.then(() => { introOver = true; markDoneAt = performance.now(); showStatus(); });
 // Phones get the PSP on its own, in the studio: the room (36 models, about half a gigabyte of
 // textures, 2 million triangles) is more than a phone's browser will hold, and the tab is killed
 // before it loads. ?room in the address forces the room, ?lite forces the PSP alone (to test).
 const query = new URLSearchParams(location.search);
 const PHONE_LOADING_MS = 14000;               // the least a phone shows the loading screen (since the page opened)
+const PHONE_READ_MS = 8000;                   // ...and the least the finished name and title stay up (after they are fully written)
 const LITE = !query.has('room') && (query.has('lite')
     || (matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 820)
     || (navigator.deviceMemory && navigator.deviceMemory <= 2));
@@ -550,7 +552,7 @@ try {
             await ensureHandheld();
             // phones load the PSP alone, so this would be over almost as soon as the name is: hold the loading
             // screen until it has been up for PHONE_LOADING_MS in all, so the name, the role and the bar get seen
-            if (LITE) await sleep(PHONE_LOADING_MS - performance.now());
+            if (LITE) await sleep(Math.max(PHONE_LOADING_MS, markDoneAt + PHONE_READ_MS) - performance.now());
             await sleep(250);                       // a beat on the full bar before the stage opens
             if (!skipWanted) toPsp();
         }
