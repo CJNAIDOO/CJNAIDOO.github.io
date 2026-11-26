@@ -121,7 +121,7 @@
 
     // ---- sound: Korobeiniki + effects, synthesised with Web Audio (no audio files) ----
     const audio = (() => {
-        let ctx = null, master = null, timer = null, idx = 0, loopStart = 0, running = false
+        let ctx = null, master = null, muted = false, timer = null, idx = 0, loopStart = 0, running = false
         const BPM = 150, SPB = 60 / BPM, LOOP = 32
         const hz = (n) => 440 * 2 ** ((n - 69) / 12)
         // [midi, beats] (0 = rest). Korobeiniki is a Russian folk tune (public domain).
@@ -143,7 +143,7 @@
                 const AC = window.AudioContext || window.webkitAudioContext
                 if (!AC) return false
                 ctx = new AC()
-                master = ctx.createGain(); master.gain.value = 0.55
+                master = ctx.createGain(); master.gain.value = muted ? 0 : 0.55
                 master.connect(ctx.destination)
             }
             if (ctx.state === 'suspended') ctx.resume()
@@ -175,6 +175,7 @@
         const sfx = (fn) => { if (ensure()) fn(ctx.currentTime) }
         return {
             unlock() { ensure() },
+            setMuted(m) { muted = m; if (master) master.gain.setTargetAtTime(m ? 0 : 0.55, ctx.currentTime, 0.02) },
             begin(fadeIn) {
                 if (!ensure() || running) return
                 this.stop(true)
@@ -222,12 +223,18 @@
         <div class="tetris__side tetris__side--next"><p>Next</p><img alt=""><img class="small" alt=""><img class="small" alt=""></div>
         <div class="tetris__paused" hidden>
             <p class="tetris__over-title">Paused</p>
+            <div class="tetris__menu" role="menu">
+                <button type="button" class="tetris__opt" data-act="resume" role="menuitem">Resume</button>
+                <button type="button" class="tetris__opt" data-act="sound" role="menuitem">Sound: On</button>
+                <button type="button" class="tetris__opt" data-act="quit" role="menuitem">Quit game</button>
+            </div>
         </div>
         <div class="tetris__over" hidden>
             <p class="tetris__over-title">Game Over</p>
             <p class="tetris__over-score"></p>
             <p class="tetris__over-best"></p>
         </div>
+        <p class="tetris__keys"></p>
         <div class="tetris__prompts"></div>`
     document.body.appendChild(el)
     const canvas = el.querySelector('.tetris__board')
@@ -239,6 +246,16 @@
     const promptsEl = el.querySelector('.tetris__prompts')
     const pausedEl = el.querySelector('.tetris__paused')
     const bannerEl = el.querySelector('.tetris__banner')
+    const keysEl = el.querySelector('.tetris__keys')
+    const optEls = [...el.querySelectorAll('.tetris__opt')]
+    let soundOn = true, pick = 0
+    try { soundOn = localStorage.getItem('xmb-tetris-sound') !== 'off' } catch {}
+    audio.setMuted(!soundOn)
+    const KEYS = '<span><b>&larr; &rarr;</b>Move</span><span><b>&uarr;</b>Rotate</span><span><b>Z</b>Rotate back</span><span><b>Space</b>Hard drop</span><span><b>C</b>Hold</span>'
+    const paintMenu = () => {
+        optEls.forEach((b, i) => b.classList.toggle('is-on', i === pick))
+        optEls[1].textContent = soundOn ? 'Sound: On' : 'Sound: Off'
+    }
 
     let best = 0
     try { best = +localStorage.getItem('xmb-tetris-best') || 0 } catch {}
@@ -435,8 +452,9 @@
             : g.over
                 ? prompt('x', 'Play again') + prompt('o', 'Back')
                 : paused
-                    ? startBtn('Resume') + prompt('o', 'Back')
-                    : prompt('x', 'Drop') + prompt('t', 'Hold') + startBtn('Pause') + prompt('o', 'Back')
+                    ? prompt('x', 'Select') + prompt('o', 'Resume') + startBtn('Resume')
+                    : prompt('x', 'Drop') + prompt('t', 'Hold') + prompt('o', 'Pause') + startBtn('Pause')
+        keysEl.innerHTML = phase === 'play' && !g.over && !paused ? KEYS : ''
     }
 
     // ---- loop -----------------------------------------------------------------
@@ -493,6 +511,7 @@
     const setPaused = (on) => {
         paused = on
         pausedEl.hidden = !on
+        if (on) { pick = 0; paintMenu() }
         clearTimeout(timer)
         if (on) audio.pause()
         else { audio.resume(); timer = setTimeout(g.clearing ? endClear : tick, g.clearing ? 60 : delay()) }
@@ -510,6 +529,21 @@
         timer = setTimeout(tick, delay())
         audio.begin()
     }
+
+    const toggleSound = () => {
+        soundOn = !soundOn
+        try { localStorage.setItem('xmb-tetris-sound', soundOn ? 'on' : 'off') } catch {}
+        audio.setMuted(!soundOn); paintMenu()
+    }
+    const quitGame = () => {                 // leaves the game and wipes it, so the next visit starts fresh
+        phase = 'intro'; g = newGame(); fx.particles = []; paused = false; pausedEl.hidden = true
+        close()
+    }
+    const runOpt = (act) => { if (act === 'resume') setPaused(false); else if (act === 'sound') toggleSound(); else if (act === 'quit') quitGame() }
+    optEls.forEach((b, i) => {
+        b.addEventListener('mouseenter', () => { pick = i; paintMenu() })
+        b.addEventListener('click', (e) => { e.stopPropagation(); pick = i; paintMenu(); runOpt(b.dataset.act) })
+    })
 
     // open resumes a game in progress; otherwise it plays the TETRIS intro, then the game starts
     const open = () => {
@@ -546,11 +580,18 @@
         if (!isOpen) return
         e.stopImmediatePropagation()
         e.preventDefault()
-        if (e.key === 'Escape' || e.key === 'Backspace') { close(); return }
-        if (phase === 'intro') { if (e.key === 'Enter' || e.key === ' ') startGame(); return }
-        if (g.over) { if (e.key === 'Enter' || e.key === ' ') restart(); return }
-        if (e.key === 'p' || e.key === 'P') { setPaused(!paused); return }
-        if (paused || g.clearing) return
+        const back = e.key === 'Escape' || e.key === 'Backspace'
+        if (phase === 'intro') { if (back) close(); else if (e.key === 'Enter' || e.key === ' ') startGame(); return }
+        if (g.over) { if (back) close(); else if (e.key === 'Enter' || e.key === ' ') restart(); return }
+        if (paused) {                         // the pause menu
+            if (e.key === 'ArrowUp') { pick = (pick + 2) % 3; paintMenu() }
+            else if (e.key === 'ArrowDown') { pick = (pick + 1) % 3; paintMenu() }
+            else if (e.key === 'Enter' || e.key === ' ') runOpt(optEls[pick].dataset.act)
+            else if (back || e.key === 'p' || e.key === 'P') setPaused(false)
+            return
+        }
+        if (back || e.key === 'p' || e.key === 'P') { setPaused(true); return }
+        if (g.clearing) return
         const act = ACTIONS[e.key.length === 1 ? e.key.toLowerCase() : e.key]
         if (!act) return
         act()

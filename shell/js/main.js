@@ -15,12 +15,12 @@
 // wall shelf, or sit down at the PS3 and play it on the monitor. The "room"
 // button (bottom left) takes you back. If the room can't load, the PSP
 // floats in the dark studio as before.
-import { createHandheld } from './viewer.js?v=95';
+import { createHandheld } from './viewer.js?v=96';
 import { createStudio } from './studio.js?v=95';
-import { loadRoomAssets, buildRoom } from './room.js?v=124';
+import { loadRoomAssets, buildRoom } from './room.js?v=139';
 import { createIntroName, paintNavName } from './intro-name.js?v=106';
 import { sfx } from './sfx.js?v=95';
-import { createLinkViewer } from './link-viewer.js?v=95';
+import { createLinkViewer } from './link-viewer.js?v=96';
 
 const params = new URLSearchParams(location.search);
 const autoSkip = params.has('skipintro');
@@ -200,6 +200,25 @@ const goSection = (i) => {
     document.activeElement?.blur?.();      // keys go back to the PSP
 };
 $('brand').addEventListener('click', () => goSection(0));
+// What MZALA says for me over a project: the room's guide when there is a room, otherwise the same
+// docked caption on its own (phones show the PSP only).
+let liteBubble = null, liteTimer = null;
+const mzalaSays = (text) => {
+    if (room) { if (text) room.say({ text: String(text).slice(0, 600) }); else room.hush(); return; }
+    clearTimeout(liteTimer);
+    if (!liteBubble) {
+        liteBubble = document.createElement('div');
+        liteBubble.className = 'mz-bubble is-docked';
+        liteBubble.setAttribute('role', 'status');
+        liteBubble.innerHTML = '<p class="mz-bubble__text"></p>';
+        document.body.appendChild(liteBubble);
+    }
+    if (!text) { liteBubble.classList.remove('is-in'); return; }
+    liteBubble.querySelector('p').textContent = String(text).slice(0, 600);
+    liteBubble.hidden = false;
+    requestAnimationFrame(() => liteBubble.classList.add('is-in'));
+    liteTimer = setTimeout(() => liteBubble.classList.remove('is-in'), Math.max(4200, String(text).length * 55));
+};
 window.addEventListener('message', (e) => {
     if (e.source !== frame.contentWindow) return;
     if (e.data?.type === 'xmb-ready') buildNav(e.data.sections);
@@ -207,6 +226,7 @@ window.addEventListener('message', (e) => {
         field.pulse(e.data.index > navAt ? 1 : -1);   // a wave of light the way the XMB moved
         setNavAt(e.data.index);
     }
+    if (e.data?.type === 'xmb-say') mzalaSays(e.data.text);
     if (e.data?.type === 'xmb-menu') skipBtn.hidden = true;              // the XMB is at its menu
     if (e.data?.type === 'xmb-tap' && phase === 'armed') start();       // tapped the screen: Start
     if (e.data?.type === 'xmb-tap' && phase === 'room') enterDevice('ps3');

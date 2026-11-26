@@ -7,3 +7,24 @@
         margin-left: 10px;
     }
 }
+
+// One line per project name, so none runs on into the write-up on the right
+.xmb-title.projects .xmb-contents .submenu > .submenu-title{
+    white-space: nowrap;
+    width: auto;
+    font-size: 1.1rem;
+    line-height: 1.15;
+}
+
+.xmb-contents .submenu > img.project-icon.is-wide[src*=hustlehub]{
+    width: 80px;
+}
+
+// the screen's bottom-left logo: never huge
+.project-overlay .overlay-logo img{
+    max-width: 30vw;
+    max-height: 24vh;
+}
+.project-overlay .overlay-logo img[src*=hustlehub]{
+    max-width: 15vw;
+}

@@ -58,7 +58,7 @@ export const ROOM = {
     // out; its card shows the module's project(s), and Previous / Next flip through them.
     modules: [
         { code: 'PROG7312', projects: [
-            { title: 'Telemetry & Command Stream', about: 'A WPF desktop app on an ASP.NET Core API: it ingests sensor telemetry, runs device commands through my own queue, priority-queue and stack (with undo), and predicts what comes next.', link: null },
+            { title: 'Smart-X IoT Mesh', about: 'A WPF desktop app on a .NET API: it ingests sensor telemetry, runs device commands through my own queue, priority-queue and stack (with undo), and maps an ESP32 mesh with self-healing routes (BFS, Prim\'s MST, Dijkstra) and fast history queries from my own AVL tree.', link: null },
         ] },
         { code: 'PROG7314', projects: [
             { title: 'Peak', about: 'An Android hiking companion: trails on Google Maps, favourites, and live GPS tracking of distance and elevation, on a Node.js / Express API with JWT auth and Firebase.', link: null },
@@ -74,13 +74,15 @@ export const ROOM = {
     // ---- the pin board on the right wall: Cam's own photos. u, v: metres from the board's
     // centre (u to the right as you face it, v up); w: width in metres; rot: a slight tilt.
     pinboard: [
-        // THEN, on the left
-        { src: 'images/room/pins/ylc-2017.webp', u: -0.78, v: 0.2, w: 0.4, rot: -0.07, pin: '#e6b422', caption: '2017' },
-        { src: 'images/room/pins/results-day.webp', u: -0.3, v: -0.2, w: 0.36, rot: 0.05, pin: '#2457d6', caption: 'results day' },
-        // NEXT, on the right (cards stand in until he has the photos)
-        { card: 'grad', u: 0.3, v: -0.2, w: 0.38, rot: -0.05, pin: '#b3202a', caption: 'May 2027' },
-        { card: 'run', u: 0.8, v: 0.22, w: 0.4, rot: 0.05, pin: '#e6b422', caption: 'half marathon' },
-        { card: 'town', u: 0.82, v: -0.26, w: 0.3, rot: -0.04, pin: '#2457d6', caption: 'Cape Town' },
+        // top row
+        { src: 'images/room/pins/ylc-2017.webp', href: 'https://saiia.org.za/wp-content/uploads/2018/08/Highlights_2017_Report.pdf', u: -0.84, v: 0.2, w: 0.4, rot: -0.07, pin: '#e6b422' },
+        { src: 'images/room/pins/parents-1st-birthday.webp', u: -0.4, v: 0.17, w: 0.26, rot: 0.04, pin: '#b3202a' },
+        { src: 'images/room/pins/said-expo.webp', u: 0.1, v: 0.21, w: 0.4, rot: -0.04, pin: '#2457d6' },
+        { src: 'images/room/pins/two-oceans.webp', u: 0.8, v: 0.2, w: 0.42, rot: 0.05, pin: '#e6b422' },
+        // bottom row (the gap in the middle is for the school photo)
+        { src: 'images/room/pins/results-day.webp', href: 'https://www.citizen.co.za/midrand-reporter/news-headlines/2020/01/08/midrand-high-school-celebrates-matricresults2019/', u: -0.78, v: -0.22, w: 0.36, rot: 0.05, pin: '#2457d6' },
+        { src: 'images/room/pins/grandparents.webp', u: -0.28, v: -0.22, w: 0.38, rot: -0.05, pin: '#b3202a' },
+        { src: 'images/room/pins/cape-town.webp', u: 0.8, v: -0.22, w: 0.4, rot: -0.04, pin: '#2457d6' },
     ],
 
     // ---- the figures' first comics: under the logo once you pick a figure up -------

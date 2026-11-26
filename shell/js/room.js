@@ -23,7 +23,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { ROOM, GUIDE } from './room-config.js?v=103';
+import { ROOM, GUIDE } from './room-config.js?v=109';
 import { sfx } from './sfx.js?v=95';
 import { createInspector } from './inspect.js?v=97';
 import { BOOKS, FILMS, GAMES, LINKS, TEXTBOOKS } from './shelf-data.js?v=95';
@@ -1141,6 +1141,8 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         const cb = boxOf(cork), cc = cb.getCenter(new THREE.Vector3());
         const face = ROOM.corkFace ?? 4.541;
         const pins = new THREE.Group(); world.add(pins);
+        // each pinned photo can be clicked on its own once you're up close to the board (hooked up below, where `click` exists)
+        var pinCards = new Set(), pendingPins = [], registerPin = null;
         // the vision board: cards without a photo yet (graduation, the half marathon, Cape Town)
         const vbCard = (kind) => {
             const c = document.createElement('canvas'); c.width = 800; c.height = 600;
@@ -1190,7 +1192,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
             (p.card ? Promise.resolve(vbCard(p.card)) : loadImg(p.src)).then(async (im) => {
                 try { await document.fonts.load("40px 'The Overcook'"); } catch { /* the fallback hand */ }
                 try { await document.fonts.load("40px 'Homemade Apple'"); } catch { /* the fallback hand */ }
-                const W = 900, pad = Math.round(W * 0.045), photoW = W - 2 * pad, photoH = Math.round(photoW * im.height / im.width);
+                const W = 1280, pad = Math.round(W * 0.045), photoW = W - 2 * pad, photoH = Math.round(photoW * im.height / im.width);
                 const capH = p.caption ? Math.round(W * 0.16) : pad;
                 const H = pad + photoH + capH;
                 const tex = canvasTex(W, H, (g) => {
@@ -1198,7 +1200,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
                     g.drawImage(im, pad, pad, photoW, photoH);
                     if (p.caption) {
                         g.fillStyle = '#2b241c'; g.textAlign = 'center'; g.textBaseline = 'middle';
-                        let size = 84; g.font = `${size}px 'The Overcook', 'Homemade Apple', cursive`;
+                        let size = Math.round(84 * W / 900); g.font = `${size}px 'The Overcook', 'Homemade Apple', cursive`;
                         while (g.measureText(p.caption).width > W - 2 * pad && size > 18) g.font = `${(size -= 2)}px 'The Overcook', 'Homemade Apple', cursive`;
                         g.fillText(p.caption, W / 2, pad + photoH + capH * 0.52);
                     }
@@ -1216,6 +1218,8 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
                 g.position.set(face - 0.0015 * (k + 1), cc.y + (p.v || 0), cc.z + (p.u || 0));
                 g.userData.pin = p;
                 pins.add(g);
+                pinCards.add(g);
+                if (registerPin) registerPin(g); else pendingPins.push(g);
             }).catch(() => {});
         });
         shelfStuff.pins = pins;
@@ -2044,6 +2048,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
     pickBtn.innerHTML = '<span class="inspect__start">E</span> pick up';
     document.body.appendChild(pickBtn);
     let focused = null;                                       // { obj, pick } while in a close-up
+    let backToBoard = () => false;                            // (from a single pinned photo back to the whole board: set up with the board's clicks)
     // the book / film card: the cover, Cam's take and a link out, like a library page.
     // ← → (or the buttons) go along the shelf; Esc or ✕ closes it
     // (the records section, further down, fills these in: what's on, and putting one on)
@@ -2259,7 +2264,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
             if (goingClose && key) ui.playVoice(ROOM.voices?.[key], name);   // up close: his ultimate voice line
         }, true);
     }
-    click(shelf, 'The Rivals shelf', () => { if (!onTeam()) showTeam(); });
+    // (the shelf itself is clicked further down, once the rows' close-ups exist: it goes to the level you clicked)
     click(ps3, 'PS3', look(ps3, new THREE.Vector3(0, 0.25, 1), () => pickUp(ps3, { turnTo: -0.5 })));
     const ds3Pick = () => pickUp(ds3, { turnTo: 0.35, tilt: 0.95, action: { label: '<span class="inspect__start">START</span> play on the PS3', run: play } });
     click(ds3, 'DualShock 3', look(ds3, UP, ds3Pick));
@@ -2271,7 +2276,28 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
     const FRONT = new THREE.Vector3(0, 0.12, 1);
     if (shelfStuff.console.children.length) click(shelfStuff.console, 'PS4', look(shelfStuff.console, FRONT, shelfStuff.pad ? () => pickUp(shelfStuff.pad, { tilt: 0.6 }) : null));
     if (shelfStuff.plant) click(shelfStuff.plant, null, look(shelfStuff.plant, FRONT));
-    if (shelfStuff.cork) { const pinView = look(shelfStuff.cork, new THREE.Vector3(-1, 0, 0)); click(shelfStuff.cork, 'Pin board', pinView); click(shelfStuff.pins, 'Pin board', pinView); }
+    if (shelfStuff.cork) {
+        const pinView = look(shelfStuff.cork, new THREE.Vector3(-1, 0, 0));
+        click(shelfStuff.cork, 'Pin board', pinView); click(shelfStuff.pins, 'Pin board', pinView);
+        // the board first, then one photo: a click on a photo while you're at the board goes up close to just that
+        // one (and a click on it again, or back, returns to the board). A photo clicked from further away just goes to the board.
+        const NORM = new THREE.Vector3(-1, 0, 0);
+        const atBoard = () => handheld.mode === 'focus' && (focused?.obj === shelfStuff.cork || pinCards.has(focused?.obj));
+        const toBoard = () => { focusOn(shelfStuff.cork, NORM); setFocused({ obj: shelfStuff.cork, pick: null }); };
+        backToBoard = () => { if (!pinCards.has(focused?.obj)) return false; toBoard(); return true; };
+        registerPin = (g) => click(g, 'Photo', () => {
+            if (!atBoard()) { toBoard(); return; }
+            if (focused?.obj === g) {                      // a second click: the story behind the photo, in a new tab (or back to the board)
+                const href = g.userData.pin?.href;
+                if (href) { const a = document.createElement('a'); a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.dataset.newtab = ''; document.body.appendChild(a); a.click(); a.remove(); }
+                else toBoard();
+                return;
+            }
+            focusOn(g, NORM, 1.12); setFocused({ obj: g, pick: null });
+            if (g.userData.pin?.href) guide.say({ text: 'Click the photo again to open the story behind it.' });
+        });
+        pendingPins.forEach(registerPin); pendingPins.length = 0;
+    }
     if (shelfStuff.jar) click(shelfStuff.jar, 'Forest in a jar', look(shelfStuff.jar, FRONT));
     if (shelfStuff.potPlant) click(shelfStuff.potPlant, null, look(shelfStuff.potPlant, FRONT));
     // books, films and games: the first click goes up close to the row, then a spine pulls that
@@ -2288,6 +2314,37 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
                 shelfShow(m);
             });
         }
+    }
+    // The bookshelf itself (its boards and sides): go to the LEVEL you clicked, not always the top one.
+    // The top shelf (the Rivals team) only when you click the top shelf or one of the figures.
+    {
+        const levelOf = (y) => {                                // 0..3 = the rows from the bottom; 4 = the top shelf
+            for (let i = 0; i < ROWS.length; i++) if (y < shelfBox.min.y + ROWS[i][1] * r + 0.03) return i;
+            return ROWS.length;
+        };
+        const rowsHere = [[shelfBooks, 'books'], [shelfFilms, 'films'], [shelfStuff.games, 'games'], [shelfStuff.textbooks, 'textbooks'], [shelfStuff.notebooks, 'notebooks']].filter(([g]) => g && g.children.length);
+        const bandBox = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ visible: false }));
+        bandBox.userData.noPick = true; world.add(bandBox);
+        click(shelf, 'The Rivals shelf', () => {
+            const p = handheld.lastPoint?.();
+            if (!p) { if (!onTeam()) showTeam(); return; }
+            const y = world.worldToLocal(p.clone()).y, x = world.worldToLocal(p.clone()).x;
+            const lvl = levelOf(y);
+            if (lvl >= ROWS.length) { if (!onTeam()) showTeam(); return; }
+            const y0 = shelfBox.min.y + ROWS[lvl][0] * r - 0.02, y1 = shelfBox.min.y + ROWS[lvl][1] * r + 0.02;
+            // a row of things on that level (the one nearest along the shelf), else just the level itself
+            let best = null, bestD = 1e9;
+            for (const [g, line] of rowsHere) {
+                const b = boxOf(g), cy = (b.min.y + b.max.y) / 2;
+                if (cy < y0 || cy > y1) continue;
+                const d = x < b.min.x ? b.min.x - x : x > b.max.x ? x - b.max.x : 0;
+                if (d < bestD) { bestD = d; best = [g, line]; }
+            }
+            if (best) { if (focused?.obj !== best[0] || handheld.mode !== 'focus') { rowClose.get(best[0])(); tourSay(best[1]); } return; }
+            bandBox.position.set((shelfBox.min.x + shelfBox.max.x) / 2, (y0 + y1) / 2, (shelfBox.min.z + shelfBox.max.z) / 2);
+            bandBox.scale.set(shelfBox.max.x - shelfBox.min.x, y1 - y0, shelfBox.max.z - shelfBox.min.z);
+            focusOn(bandBox, FRONT); setFocused({ obj: bandBox, pick: null });
+        });
     }
     // ---- the records: the wall up close, then a sleeve (its card on the right); or the crate
     // under the player, flipping through the albums. "Put it on": the record comes out, flies
@@ -3219,6 +3276,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
     const unfocus = () => {
         if (handheld.mode !== 'focus') return false;
         if (backToTeam()) return true;                         // from one figure: back to the whole team
+        if (backToBoard()) return true;                        // from one pinned photo: back to the board
         setFocused(null);
         handheld.setMode('room', 1300);
         onFocus(false);
@@ -3245,6 +3303,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
     return {
         guide,
         say,
+        hush: () => guide.hush(),
         where,
         monitorScreen,
         onPs3: (fn) => { onPs3 = fn; },
@@ -3371,7 +3430,7 @@ function createGuide() {
             if (!voice && shown % 3 === 0 && /\w/.test(line[shown - 1] || '')) blip();
             if (shown >= line.length) {
                 clearInterval(typeTimer);
-                const wait = () => { if (voice) return setTimeout(wait, 200); talking = false; hideTimer = setTimeout(hush, 4200); };
+                const wait = () => { if (voice) return setTimeout(wait, 200); talking = false; hideTimer = setTimeout(hush, Math.max(4200, l.text.length * 55)); };
                 wait();
             }
         };

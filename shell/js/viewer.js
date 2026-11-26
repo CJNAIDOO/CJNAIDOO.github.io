@@ -431,11 +431,11 @@ export async function createHandheld({ container, glb, screenEl, screenUV, onKey
     if (!hit) return null;
     if (inPivot(hit.object)) return { psp: hit.object };
     const item = owner(hit.object);
-    return item ? { item } : null;
+    return item ? { item, point: hit.point } : null;
   };
   const pick = (e) => pickAny(e)?.psp ?? null;
   // a click (not a drag) on something in the room
-  let downAt = null;
+  let downAt = null, lastPoint = null;     // (where in the room the last click landed)
   container.addEventListener('pointerdown', (e) => { downAt = { x: e.clientX, y: e.clientY }; });
   container.addEventListener('pointerup', (e) => {
     if (!downAt) return;
@@ -444,7 +444,7 @@ export async function createHandheld({ container, glb, screenEl, screenUV, onKey
     if (moved > 6 || flight || (room ? !(mode === 'room' || mode === 'focus') : mode === 'immersive')) return;
     const h = pickAny(e);
     if (h?.psp) onPspClick?.();
-    else h?.item?.onClick?.();
+    else if (h?.item) { lastPoint = h.point; h.item.onClick?.(); }
   });
   container.addEventListener('pointerdown', (e) => {
     if (mode !== 'immersive') return;           // up close: the PSP's buttons work
@@ -660,6 +660,7 @@ export async function createHandheld({ container, glb, screenEl, screenUV, onKey
     get screen() { return screenNow === pspSpec ? 'psp' : 'other'; },
     addView: (name, fn) => { views[name] = fn; },
     addClickable: (root, opts) => { clickables.push({ root, ...opts }); },
+    lastPoint: () => lastPoint,
     setPspLabel: (l) => { pspLabel = l; },
     onFrame: (fn) => { frameHooks.push(fn); },
     onTheme: (fn) => { themeHooks.push(fn); },     // the room's day / night

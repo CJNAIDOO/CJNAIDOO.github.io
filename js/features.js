@@ -36,11 +36,11 @@
     // PlayStation-style trophies for achievements (platinum / gold / silver):
     // a plain list, each with a small trophy
     const TIERS = { platinum: 'Platinum', gold: 'Gold', silver: 'Silver' }
-    const trophyList = (items) => {
+    const trophyList = (items, heading = true) => {
         const list = (items || []).filter((t) => TIERS[t.tier])
         if (!list.length) return ''
         return `
-            <p class="panel-label">Trophies</p>
+            ${heading ? '<p class="panel-label">Trophies</p>' : ''}
             <ul class="trophy-list${list.some((t) => t.tier === 'platinum') || list.length > 3 ? '' : ' is-one-row'}">${list.map((t) => `
                 <li class="trophy is-${t.tier}">
                     <img class="trophy__icon" src="images/trophies/${t.tier}.png" alt="${TIERS[t.tier]} trophy">
@@ -99,6 +99,7 @@
             <p class="panel-meta">${[p.year, p.status].filter(Boolean).map(esc).join(' &middot; ')}</p>
             <p class="panel-summary">${esc(p.summary)}</p>
             ${p.stack?.length ? chips(p.stack) : ''}
+            ${trophyList(p.trophies, false)}
         `, p.photo, p.logo)
     }
 
@@ -146,6 +147,14 @@
         screenLinks().then((v) => v.show(url, label)).catch(() => window.open(url, '_blank', 'noopener'))
     }
     window.XMB_OPEN_LINK = (url, label) => openLink(url, { label })
+    // ✕ on GitHub, LinkedIn and a project's code / live app opens a new browser tab, every time; the
+    // menu stays where it is. (An anchor click counts as the key press's user gesture, so it isn't blocked.)
+    const openTab = (url) => {
+        if (!url) { showToast('Link coming soon'); return }
+        const a = document.createElement('a')
+        a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'
+        document.body.appendChild(a); a.click(); a.remove()
+    }
 
     // ------------------------------------------------------------------------
     // Button prompts (bottom right)
@@ -268,15 +277,14 @@
     const BACK = new Set(['Escape', 'Backspace'])
     const openProject = (p) => {
         if (!p.live && !p.repo) { showToast('Link coming soon'); return }
-        if (p.live) openLink(p.live, { live: true, label: p.title || '' })
-        else openLink(p.repo, { label: p.title || '' })
+        openTab(p.live || p.repo)
     }
     const actions = {
         ...Object.fromEntries(Object.entries(C.projects).map(([id, p]) => [id, () => openProject(p)])),
         tetris: () => window.XMB_TETRIS?.open(),
         ilifa: () => { window.XMB_ILIFA?.open(); document.dispatchEvent(new CustomEvent('ilifa:open')) },
-        linkedin: () => openLink(C.connect.linkedin),
-        github: () => openLink(C.connect.github),
+        linkedin: () => openTab(C.connect.linkedin),
+        github: () => openTab(C.connect.github),
         email: () => openCompose(),
     }
 
@@ -324,6 +332,26 @@
     })
 
     document.addEventListener('xmb:focus', updatePrompts)
+
+    // MZALA speaks for me: when a project row is focused, the shell has him say what I did on it
+    // (the room's guide, or a plain docked caption where there's no room). Once per visit per
+    // project, after a short pause so scrolling past doesn't start a line, and it stops on leaving.
+    if (window.parent !== window) {
+        const spoken = new Set()
+        let sayTimer, saying = null
+        document.addEventListener('xmb:focus', () => {
+            clearTimeout(sayTimer)
+            const id = currentRow()?.dataset.id
+            const text = C.projects[id]?.says
+            if (saying && saying !== id) { window.parent.postMessage({ type: 'xmb-say', text: null }, '*'); saying = null }
+            if (!text || spoken.has(id) || saying === id) return
+            sayTimer = setTimeout(() => {
+                if (currentRow()?.dataset.id !== id) return
+                spoken.add(id); saying = id
+                window.parent.postMessage({ type: 'xmb-say', id, text }, '*')
+            }, 700)
+        })
+    }
 
     // Line the right-hand lists (My Expertise, My Projects) up with the
     // focused row's label. The focused row always ends up in the same slot, so

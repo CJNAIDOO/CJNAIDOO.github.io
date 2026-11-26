@@ -1,4 +1,11 @@
 @font-face {
+  font-family: "Bungee";
+  src: url("../fonts/Bungee.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
   font-family: "PS3Font";
   src: url("../fonts/WebslingerBold-z8eEX.ttf") format("truetype");
   font-weight: normal;
@@ -371,7 +378,7 @@ body {
   transition: opacity 300ms ease-in-out;
 }
 .xmb-contents p {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 .xmb-contents .submenu {
   display: flex;
@@ -894,12 +901,18 @@ video.game-bg {
 
 .project-overlay .overlay-logo img {
   max-width: 30vw;
+  max-height: 24vh;
   object-fit: contain;
 }
 
+.project-overlay .overlay-logo img[src*=hustlehub] {
+  max-width: 15vw;
+}
+
 .xmb-title.projects .xmb-contents .submenu > .submenu-title {
-  white-space: normal;
-  width: 230px;
+  white-space: nowrap;
+  width: auto;
+  font-size: 1.1rem;
   line-height: 1.15;
 }
 
@@ -907,6 +920,10 @@ video.game-bg {
   width: 96px;
   max-height: none;
   margin-inline: 0;
+}
+
+.xmb-contents .submenu > img.project-icon.is-wide[src*=hustlehub] {
+  width: 80px;
 }
 
 .psn-compose {
@@ -1809,7 +1826,7 @@ body.album-open .xmb-prompts, body.album-open .clock {
   }
 }
 .tetris__over-best {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 300;
   margin-top: 6px !important;
   opacity: 0.8;
@@ -1837,3 +1854,38 @@ body.album-open .xmb-prompts, body.album-open .clock {
   margin-top: 1vh;
   opacity: 0.8;
 }
+
+/* v151: Bungee, bigger board, tile background, pause menu */
+.tetris{ font-family: "Bungee", "Geist", sans-serif; padding: 2vh 0 6vh; }
+.tetris__bg{ background: #16161a url("../images/tetris/background_v4.jpg") center / cover; }
+.tetris__bg::after{ content: ""; position: absolute; inset: 0; background: rgba(8, 8, 12, 0.6); }
+.tetris.is-intro .tetris__bg::after{ background: rgba(8, 8, 12, 0.38); }
+.tetris__boardwrap{ max-height: 86vh; }
+.tetris__board{ background: rgba(10, 10, 12, 0.78); }
+.tetris__score, .tetris__side p, .tetris__over-title, .tetris__over-score, .tetris__over-best{ font-weight: 400; letter-spacing: 0.06em; }
+.tetris__score{ font-size: 1.3rem; }
+.tetris__side p{ font-size: 1.1rem; }
+.tetris__over-title{ font-size: 3.2rem; }
+.tetris__over-score{ font-size: 1.5rem; }
+.tetris__over-best{ font-size: 1rem; }
+.tetris__paused{ display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.2vh; background: rgba(6, 6, 10, 0.55); }
+.tetris__paused[hidden]{ display: none; }
+.tetris__menu{ display: flex; flex-direction: column; align-items: center; gap: 1vh; }
+.tetris__opt{
+    font: inherit; font-size: 1.5rem; letter-spacing: 0.05em;
+    background: none; border: 0; padding: 0.15em 0.4em; cursor: pointer;
+    color: rgba(255, 255, 255, 0.72); text-shadow: 2px 2px 5px black;
+}
+.tetris__opt::before{ content: "\25B8"; margin-right: 0.6em; visibility: hidden; color: #efa000; }
+.tetris__opt.is-on{ color: #fff; }
+.tetris__opt.is-on::before{ visibility: visible; }
+.tetris__keys{
+    position: absolute; left: 0; right: 0; bottom: 3.6%;
+    display: flex; justify-content: center; gap: 1.6em; flex-wrap: wrap;
+    margin: 0; padding: 0 4% 0 4%; max-width: 62%;
+    font-size: 0.7rem; letter-spacing: 0.05em; color: rgba(255, 255, 255, 0.72);
+    pointer-events: none;
+}
+.tetris__keys b{ color: #fff; font-weight: 400; margin-right: 0.5em; }
+.tetris__prompts{ font-size: 0.8rem; }
+.tetris-bg{ background-image: url("../images/tetris/background_v4.jpg"); }
