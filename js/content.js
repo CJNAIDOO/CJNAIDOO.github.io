@@ -244,7 +244,11 @@ const PORTFOLIO = {
             to: "Cameron J. Naidoo",
             // Free key from https://web3forms.com (enter your email, they send the key).
             // It's meant to be public, so it's fine in this file.
-            web3formsKey: "", // TODO
+            // The Cloudflare Worker that holds the Web3Forms key (see worker/README.md). Messages go
+            // through it, so no key is needed on the site. Leave "" until the Worker is live.
+            endpoint: "https://portfolio-contact.cjnaidoo.workers.dev",
+            // Fallback while there is no Worker: the key itself (it is visible to anyone who views the site).
+            web3formsKey: "",
         },
     },
 }

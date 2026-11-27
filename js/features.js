@@ -238,20 +238,20 @@
             statusEl.className = 'psn-status is-error'
             return
         }
-        const key = C.connect.email.web3formsKey
-        if (!key) {
-            statusEl.textContent = "Messages aren't connected yet (add a Web3Forms key in js/content.js)."
+        const { endpoint, web3formsKey: key } = C.connect.email
+        if (!endpoint && !key) {
+            statusEl.textContent = "Messages aren't connected yet (add the Worker address or a Web3Forms key in js/content.js)."
             statusEl.className = 'psn-status is-error'
             return
         }
         statusEl.textContent = 'Sending…'
         statusEl.className = 'psn-status'
         try {
-            const res = await fetch('https://api.web3forms.com/submit', {
+            const res = await fetch(endpoint || 'https://api.web3forms.com/submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
                 body: JSON.stringify({
-                    access_key: key,
+                    ...(endpoint ? {} : { access_key: key }),
                     from_name: 'XMB Portfolio',
                     name: data.name,
                     email: data.email,
