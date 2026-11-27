@@ -1,7 +1,8 @@
 // Contact-form relay for the portfolio (Cloudflare Worker).
-// The site posts the message here; this adds the Web3Forms access key (kept as an encrypted
-// secret, so it never appears on the site) and forwards it. Set in the Worker's settings:
-//   WEB3FORMS_KEY  (Secret)   your Web3Forms access key
+// The site posts the message here; this emails it to you through Resend. The API key and your
+// address live as encrypted secrets, so neither appears on the site. Set in the Worker's settings:
+//   RESEND_API_KEY (Secret)   your Resend API key
+//   TO_EMAIL       (Secret)   the address messages are sent to
 //   ALLOWED_ORIGINS (Text, optional)  comma-separated sites allowed to post, default below
 
 const DEFAULT_ORIGINS = ['https://cjnaidoo.github.io'];
@@ -37,7 +38,6 @@ export default {
         }
         if (req.method !== 'POST') return json({ success: false, message: 'Not found.' }, 404, ok ? origin : '');
         if (!ok) return json({ success: false, message: 'Not allowed from this site.' }, 403, '');
-        if (!env.WEB3FORMS_KEY) return json({ success: false, message: 'The form is not connected yet.' }, 500, origin);
 
         const ip = req.headers.get('CF-Connecting-IP') || 'unknown', now = Date.now();
         const recent = (hits.get(ip) || []).filter((t) => now - t < WINDOW_MS);
@@ -55,13 +55,20 @@ export default {
             return json({ success: false, message: 'Add your name, a valid reply-to email and a message.' }, 400, origin);
         }
 
-        const res = await fetch('https://api.web3forms.com/submit', {
+        if (!env.RESEND_API_KEY || !env.TO_EMAIL) return json({ success: false, message: 'The form is not connected yet.' }, 500, origin);
+        const res = await fetch('https://api.resend.com/emails', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json', Origin: origin, Referer: origin + '/' },
-            body: JSON.stringify({ access_key: env.WEB3FORMS_KEY, from_name: 'XMB Portfolio', name, email, subject, message }),
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.RESEND_API_KEY}` },
+            body: JSON.stringify({
+                from: 'Portfolio <onboarding@resend.dev>',
+                to: [env.TO_EMAIL],
+                reply_to: email,
+                subject,
+                text: `From: ${name} <${email}>\n\n${message}`,
+            }),
         });
-        const out = await res.json().catch(() => ({}));
-        if (!res.ok || out.success === false) {
+        if (!res.ok) {
+            const out = await res.json().catch(() => ({}));
             return json({ success: false, message: out.message || 'The message service refused it.' }, 502, origin);
         }
         return json({ success: true, message: 'Sent.' }, 200, origin);

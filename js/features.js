@@ -104,19 +104,6 @@
         `, p.photo, p.logo)
     }
 
-    const connectCopy = {
-        linkedin: ['LinkedIn', 'Opens my LinkedIn profile in a new tab.'],
-        email: ['Email', 'Write me a message and it lands straight in my inbox.'],
-        github: ['GitHub', 'Opens my GitHub profile in a new tab.'],
-    }
-    for (const [id, [title, text]] of Object.entries(connectCopy)) {
-        addOverlay(id, 'connect', `
-            <p class="panel-eyebrow">Let's Connect</p>
-            <h2 class="panel-title">${esc(title)}</h2>
-            <p class="panel-summary">${esc(text)}</p>
-        `)
-    }
-
     // ------------------------------------------------------------------------
     // Toasts + opening links (works standalone and on the PSP's screen)
     // ------------------------------------------------------------------------

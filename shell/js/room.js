@@ -26,7 +26,7 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { ROOM, GUIDE } from './room-config.js?v=110';
 import { sfx } from './sfx.js?v=95';
 import { createInspector } from './inspect.js?v=97';
-import { BOOKS, FILMS, GAMES, LINKS, TEXTBOOKS } from './shelf-data.js?v=96';
+import { BOOKS, FILMS, GAMES, LINKS, TEXTBOOKS } from './shelf-data.js?v=98';
 import { countsHTML, trophyListHTML } from './trophy-list.js?v=95';
 import { DISCS } from './records-data.js?v=95';
 
@@ -992,7 +992,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         }
         q.restore();
     };
-    const gameSleeve = (gm, cover, kit, logo = null) => {
+    const gameSleeve = (gm, cover, kit, logo = null, backArt = null) => {
         const c = document.createElement('canvas'); c.width = c.height = 1024;
         const g = c.getContext('2d');
         const [b0, b1] = SLEEVE.back, [s0, s1] = SLEEVE.spine, [f0, f1] = SLEEVE.front;
@@ -1003,6 +1003,8 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         const sp = gm.spine || {};
         // back: the art blurred and dark under a plain blue band, the title, studio and year
         g.fillStyle = '#101216'; g.fillRect(b0, 0, b1 - b0, 1024);
+        if (backArt) g.drawImage(backArt, b0, 0, b1 - b0, 1024);       // the real back cover, when there is one
+        else {
         if (cover) { g.save(); g.filter = 'blur(12px) brightness(0.32) saturate(1.2)'; g.drawImage(cover, ...crop(cover), b0 - 30, -30, b1 - b0 + 60, 1084); g.restore(); }
         blueFill(b0, 0, b1 - b0, band);
         const sx = ((b1 - b0) / 1024) / SLEEVE.aspect;
@@ -1014,6 +1016,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         g.font = '400 30px Geist, Arial, sans-serif'; g.globalAlpha = 0.85;
         g.fillText(gm.studio, 0, y); g.fillText(String(gm.year), 0, y + 44);
         g.restore();
+        }
         // spine: the blue head with the PS mark over PS4, the game's colour, its title, PEGI at the foot
         const spW = 77, spc = document.createElement('canvas'); spc.width = spW; spc.height = 1024;
         const q = spc.getContext('2d');
@@ -1083,8 +1086,8 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
             if (jacket) {
                 jacket.material = new THREE.MeshStandardMaterial({ roughness: 0.45, color: 0x16161a });
                 const wear = (tex) => { jacket.material.map = tex; jacket.material.color.set(0xffffff); jacket.material.needsUpdate = true; };
-                if (gm.cover) Promise.all([loadImg(gm.cover), loadCaseKit(), gm.spine?.logo ? loadImg(gm.spine.logo).catch(() => null) : null])
-                    .then(([im, kit, logo]) => wear(gameSleeve(gm, im, kit, logo)))
+                if (gm.cover) Promise.all([loadImg(gm.cover), loadCaseKit(), gm.spine?.logo ? loadImg(gm.spine.logo).catch(() => null) : null, gm.back ? loadImg(gm.back).catch(() => null) : null])
+                    .then(([im, kit, logo, back]) => wear(gameSleeve(gm, im, kit, logo, back)))
                     .catch(() => wear(gameSleeve(gm, null, null)));
                 else wear(gameSleeve(gm, null, null));
             }

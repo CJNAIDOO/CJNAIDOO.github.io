@@ -478,10 +478,6 @@ body {
   background-repeat: no-repeat;
 }
 
-.gta6-bg {
-  background-image: url("../images/gta_6_background.webp");
-}
-
 .xmb-title.games.active .submenu.active .game-bg {
   opacity: 1;
 }

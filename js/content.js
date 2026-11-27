@@ -14,12 +14,12 @@ const PORTFOLIO = {
     about: {
         label: "About me",
         name: "Cameron J. Naidoo",
-        tagline: "Aspiring Creative Technologist & Fullstack Developer",
+        tagline: "Aspiring Fullstack Developer",
         location: "Johannesburg, South Africa", // TODO: check
         photo: "images/home/jhb_bg.jpg",
         // Shown on its own (no name or location: the site already says both).
         summary: [
-            "I'm a Johannesburg-based developer finishing my Computer Science degree at Emeris, graduating in May 2027. I enjoy employing emerging technologies to deliver novel solutions to South African problems.", // TODO: your five things
+            "I'm a Johannesburg-based developer who recently completed my Computer Science degree at Emeris, graduating in May 2027. I like using new technology to solve South African problems.",
             "I'm looking for a software engineering graduate role where I can continue growing as a developer, and I'm looking forward to continuing my studies in computer science.",
         ],
     },
@@ -38,10 +38,10 @@ const PORTFOLIO = {
             subjects: [
                 { name: "Physical Science", mark: "95%" },
                 { name: "Accounting", mark: "95%" },
-                { name: "Life Sciences" },              // TODO: mark?
-                { name: "Mathematics" },                // TODO: mark?
                 { name: "Afrikaans", mark: "90%" },
-                { name: "English" },                    // TODO: mark?
+                { name: "Life Sciences", mark: "88%" },
+                { name: "Mathematics", mark: "82%" },
+                { name: "English", mark: "80%" },
             ],
             // platinum gets its own line; the rest fill two columns, left then right
             trophies: [
@@ -59,7 +59,7 @@ const PORTFOLIO = {
             location: "Waterfall, Gauteng",
             photo: "images/academics/emeris_bg.jpg",
             logo: "images/academics/emeris_logo.png",
-            summary: "BCAD student, graduating in May 2027. I'm currently building HustleHub+, a freelance platform on the MERN stack; Peak, a Kotlin hiking app that brings safety information together so hikers stay aware in real time; and a mobile outreach platform.", // TODO: a few words on what the outreach platform does
+            summary: "Recently completed my BCAD degree, graduating in May 2027. My final-year projects include the SAID Outreach App, Peak, HustleHub+ and Smart-X IoT Mesh.",
             trophies: [
                 { tier: "gold", title: "Top Achiever: First Year" },
                 { tier: "gold", title: "93% average" },
@@ -86,13 +86,18 @@ const PORTFOLIO = {
                 { name: "WPF", icon: "dotnetcore"},
             ],
         },
-        backend: {
-            label: "Backend",
+        languages: {
+            label: "Languages",
             tools: [
                 { name: "C#", icon: "csharp"},
                 { name: "Java", icon: "java"},
                 { name: "C++", icon: "cplusplus"},
                 { name: "JavaScript", icon: "javascript"},
+            ],
+        },
+        backend: {
+            label: "Backend",
+            tools: [
                 { name: "ASP.NET Core MVC", icon: "dotnetcore"},
                 { name: "Node.js & Express", icon: "nodejs"},
                 { name: "Unit testing", icon: "junit"},
@@ -161,7 +166,7 @@ const PORTFOLIO = {
         },
         theloop: {
             says: "I was the group leader on this one. I was responsible for making sure everyone delivered their part, and I owned the back end: the Express API, the MongoDB data model and transactions, the security and role-based access, and the pipeline that deploys it to Azure. I also led the presentation.",
-            title: "SAID Mobile Outreach App",
+            title: "SAID Outreach App",
             year: "2026",
             status: "Web app · team of five",
             summary: "A platform for The Society for Animals in Distress that connects pet owners in underserved communities with SAID's Mobile Treatment Unit. Owners request visits, admins plan outreach days per area, and Animal Health Technicians record treatments in the field, even with no signal.",
@@ -182,7 +187,6 @@ const PORTFOLIO = {
             year: "2026",
             status: "Android app + API · team of two",
             summary: "An Android hiking companion: explore trails on Google Maps, bookmark favourites and track a hike live with GPS in a background service that logs distance and elevation gain, ending with a trip summary and photos. It runs on a Node.js / Express REST API with JWT auth, rate limiting and Firebase, and works offline.",
-            stack: ["Kotlin", "Google Maps", "Room", "Retrofit", "Firebase Auth", "Node.js", "Express"],
             photo: "images/projects/peak_bg.jpg?v=4", // placeholder: swap for a real screenshot or photo
             logo: "images/projects/peak_logo.png",
             live: null,
@@ -207,8 +211,7 @@ const PORTFOLIO = {
             title: "Smart-X IoT Mesh",
             year: "2026",
             status: "Desktop app + API · solo",
-            summary: "A WPF desktop app on a .NET 10 Minimal API for a growing facility's IoT sensors (hydroponic trays, irrigation valves, pumps). It ingests sensor telemetry, runs device commands with undo, and maps a 16-node ESP32 mesh with self-healing routes and fast historical queries. The queue, priority queue, stack, graph and AVL tree behind it are all hand-written, and the spanning tree keeps the mesh connected for about a third of the energy of using every link.",
-            stack: ["C#", ".NET 10", "WPF", "ASP.NET Core", "Graphs & AVL trees", "Dijkstra", "ESP32 mesh"],
+            summary: "A WPF desktop app on a .NET 10 Minimal API for a growing facility's IoT sensors (hydroponic trays, irrigation valves, pumps). It ingests sensor telemetry, runs device commands with undo, and maps a 16-node ESP32 mesh with self-healing routes and fast historical queries. The queue, priority queue, stack, graph and AVL tree behind it are all hand-written, and a spanning tree keeps the mesh connected on about a third of the energy of using every link.",
             photo: "images/projects/smartx_bg.jpg?v=5",
             logo: "images/projects/smartx_logo_wide.png",
             live: null,
