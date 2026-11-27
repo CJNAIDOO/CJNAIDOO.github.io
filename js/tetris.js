@@ -600,6 +600,12 @@
     el.addEventListener('click', () => { if (isOpen && phase === 'intro') startGame() })
 
     // the XMB plays the tune quietly, fading in, while the Tetris row is focused (like Ilifa's)
+    // Zoomed out of the PSP / PS3: a game in progress pauses and all its sound stops; zooming back in lets the
+    // tune carry on (a paused game stays paused, on its menu).
+    document.addEventListener('xmb:away', (e) => {
+        if (e.detail.away) { if (isOpen && phase === 'play' && !g.over && !paused) setPaused(true); audio.pause() }
+        else if (!(isOpen && paused)) audio.resume()
+    })
     const preview = (on) => { if (isOpen) return; on ? audio.begin(true) : audio.stop() }
 
     window.XMB_TETRIS = { open, close, preview, get isOpen() { return isOpen } }

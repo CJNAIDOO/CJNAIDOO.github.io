@@ -17,10 +17,10 @@
 // floats in the dark studio as before.
 import { createHandheld } from './viewer.js?v=96';
 import { createStudio } from './studio.js?v=95';
-import { loadRoomAssets, buildRoom } from './room.js?v=139';
+import { loadRoomAssets, buildRoom } from './room.js?v=140';
 import { createIntroName, paintNavName } from './intro-name.js?v=106';
 import { sfx } from './sfx.js?v=95';
-import { createLinkViewer } from './link-viewer.js?v=96';
+import { createLinkViewer } from './link-viewer.js?v=97';
 
 const params = new URLSearchParams(location.search);
 const autoSkip = params.has('skipintro');
@@ -487,6 +487,7 @@ const enterDevice = async (dev) => {
     showNav();
     setFrameClicks();
     document.activeElement?.blur?.();
+    send({ type: 'xmb-away', away: false });          // back at the screen: its music may play again
     if (!xmbStarted) {
         // the first time: the XMB boots (its intro can still be skipped)
         xmbStarted = true;
@@ -513,6 +514,7 @@ const enterRoom = () => {
     body.dataset.stage = 'room';
     delete body.dataset.device;
     setFrameClicks();
+    send({ type: 'xmb-away', away: true });           // zoomed out: everything the screen was playing goes quiet
     roomBtn.hidden = true;
     viewSwitch.hidden = true;
     skipBtn.hidden = true;

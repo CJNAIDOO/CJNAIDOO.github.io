@@ -14,9 +14,11 @@
     const DIR = 'games/ilifa/'
 
     // ---- input: what the game reads -------------------------------------------
-    // Keys map to named actions. A real keyboard sends keyup; presses from the
-    // 3D PSP's buttons may not, so those count as held for a short moment
-    // (long enough to bridge the gap before key repeat kicks in).
+    // Keys map to named actions. Every press (the shell forwards keyboard and PSP-button
+    // presses with a matching keyup) stays held until its keyup arrives, so holding ← or →
+    // keeps you running. The timer is only a safety net in case a keyup is ever lost: it is
+    // longer than the keyboard's initial repeat delay (up to about a second) and every key
+    // repeat renews it.
     const KEYMAP = {
         ArrowLeft: ['left'], a: ['left'],
         ArrowRight: ['right'], d: ['right'],
@@ -34,7 +36,7 @@
     const press = (names, trusted, repeat) => {
         for (const n of names) {
             clearTimeout(held.get(n))
-            held.set(n, trusted ? true : setTimeout(() => held.delete(n), 550))
+            held.set(n, trusted ? true : setTimeout(() => held.delete(n), 2500))
             if (!repeat) handlers[n]?.forEach((fn) => fn())
         }
     }
@@ -150,6 +152,8 @@
         if (names) release(names)
     }, true)
     window.addEventListener('blur', releaseAll)
+    // zoomed out of the PSP / PS3: the game pauses (and its music with it); zooming back in shows it paused
+    document.addEventListener('xmb:away', (e) => { if (e.detail.away) { releaseAll(); if (isOpen && game && !paused) setPaused(true) } })
 
     window.XMB_ILIFA = { open, close, get isOpen() { return isOpen }, get game() { return game } }
 })()

@@ -105,6 +105,7 @@
         if (d.type === 'xmb-skip' && !menuReady) skipIntro()
         if (d.type === 'xmb-go') goSection(Number(d.index))
         if (d.type === 'xmb-device') setControls(d.device)
+        if (d.type === 'xmb-away') document.dispatchEvent(new CustomEvent('xmb:away', { detail: { away: !!d.away } }))     // zoomed out of the device (or back in)
         if (d.type === 'xmb-link' && /^https?:\/\//.test(d.url)) window.XMB_OPEN_LINK?.(d.url, d.label || '')
         if (d.type === 'xmb-arm') {
             const prompt = document.querySelector('#start-screen h1')

@@ -23,10 +23,10 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { ROOM, GUIDE } from './room-config.js?v=109';
+import { ROOM, GUIDE } from './room-config.js?v=110';
 import { sfx } from './sfx.js?v=95';
 import { createInspector } from './inspect.js?v=97';
-import { BOOKS, FILMS, GAMES, LINKS, TEXTBOOKS } from './shelf-data.js?v=95';
+import { BOOKS, FILMS, GAMES, LINKS, TEXTBOOKS } from './shelf-data.js?v=96';
 import { countsHTML, trophyListHTML } from './trophy-list.js?v=95';
 import { DISCS } from './records-data.js?v=95';
 
@@ -36,7 +36,7 @@ const MODELS = {
     keyboard: 'models/room/keyboard.glb',
     mouse: 'models/room/mouse.glb',
     chair: 'models/room/chair.glb',             // the gaming chair
-    laptop: 'models/room/laptop.glb',           // Cameron's Legion
+    laptop: 'models/room/laptop.glb',           // my Legion
     stand: 'models/room/laptop-stand.glb',
     bookshelf: 'models/room/bookshelf.glb',
     ps3: 'models/room/ps3.glb',
@@ -2089,10 +2089,10 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         const stars = (n) => '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n);
         const line = (k, item, i) => {
             if (item.note) return item.note;
-            if (k === 'film') return `Number ${i + 1} on Cam’s all-time favourites list.`;
-            if (item.status === 'read') return item.rating ? `Cam gave this one ${item.rating} out of 5.` : 'Cam’s read this one.';
-            if (item.status === 'currently-reading') return 'Cam’s reading this one right now.';
-            return 'On Cam’s to-read list. Read it already? Tell him if it’s worth it.';
+            if (k === 'film') return `Number ${i + 1} on my all-time favourites list.`;
+            if (item.status === 'read') return item.rating ? `I gave this one ${item.rating} out of 5.` : 'I’ve read this one.';
+            if (item.status === 'currently-reading') return 'I’m reading this one right now.';
+            return 'On my to-read list. Read it already? Tell me if it’s worth it.';
         };
         const show = () => {
             const list = listOf(kind), item = list[at];
@@ -2472,7 +2472,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         const mins = Math.round(r.tracks.reduce((a, t) => a + t[2], 0) / 60);
         $r('.rec-card__title').textContent = r.title;
         $r('.rec-card__by').textContent = r.kind === 'playlist'
-            ? (r.tracks.length ? `Cameron’s playlist  ·  ${r.tracks.length} songs, shuffled` : 'Cameron’s playlist  ·  plays on Spotify')
+            ? (r.tracks.length ? `My playlist  ·  ${r.tracks.length} songs, shuffled` : 'My playlist  ·  plays on Spotify')
             : `${r.artist}  ·  ${r.year}  ·  ${r.tracks.length} songs, ${mins} min`;
         $r('.rec-card__link').hidden = true;                          // (Spotify lives in the player only)
         recCard.style.setProperty('--rec-bg', r.bg || '#333');
@@ -2663,9 +2663,9 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         setFocused({ obj: row, pick: null });
         renderRec(); showRecCard(true);
         const item = shelfData(it.kind)[it.i];
-        if (it.kind === 'notebook') say({ text: `${item.code}. One of Cam’s modules this year.` });
-        else if (it.kind === 'textbook') say({ text: `${item.title}. One of Cam’s textbooks.` });
-        else say({ text: item.note || (it.kind === 'film' ? `Number ${it.i + 1} on Cam’s all-time favourites list.` : it.kind === 'game' ? `${item.title}. ${item.line || 'One of Cam’s on the PS4.'}` : item.status === 'read' ? (item.rating ? `Cam gave this one ${item.rating} out of 5.` : 'Cam’s read this one.') : item.status === 'currently-reading' ? 'Cam’s reading this one right now.' : 'On Cam’s to-read list.') });
+        if (it.kind === 'notebook') say({ text: `${item.code}. One of my modules this year.` });
+        else if (it.kind === 'textbook') say({ text: `${item.title}. One of my textbooks.` });
+        else say({ text: item.note || (it.kind === 'film' ? `Number ${it.i + 1} on my all-time favourites list.` : it.kind === 'game' ? `${item.title}. ${item.line || 'One of mine on the PS4.'}` : item.status === 'read' ? (item.rating ? `I gave this one ${item.rating} out of 5.` : 'I’ve read this one.') : item.status === 'currently-reading' ? 'I’m reading this one right now.' : 'On my to-read list.') });
         if (shelfBusy) return;
         shelfBusy = true;
         try {

@@ -100,6 +100,7 @@
             <p class="panel-summary">${esc(p.summary)}</p>
             ${p.stack?.length ? chips(p.stack) : ''}
             ${trophyList(p.trophies, false)}
+            ${p.video ? '<button type="button" class="panel-watch" data-video>&#9654;&ensp;Watch the demo video</button>' : ''}
         `, p.photo, p.logo)
     }
 
@@ -135,7 +136,7 @@
     // LinkedIn, YouTube... with ○ to go back to the menu. Only a live app (a project's running
     // site) pops up over the whole site, in the shell's viewer; on its own the XMB opens it in a tab.
     let screenViewer = null
-    const screenLinks = () => screenViewer ||= import(new URL('shell/js/link-viewer.js?v=95', document.baseURI).href)
+    const screenLinks = () => screenViewer ||= import(new URL('shell/js/link-viewer.js?v=97', document.baseURI).href)
         .then((m) => { const v = m.createLinkViewer({ screen: true }); window.XMB_LINKS = v; return v })
     const openLink = (url, { live = false, label = '' } = {}) => {
         if (!url) { showToast('Link coming soon'); return }
@@ -152,7 +153,7 @@
     const openTab = (url) => {
         if (!url) { showToast('Link coming soon'); return }
         const a = document.createElement('a')
-        a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'
+        a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.dataset.newtab = ''
         document.body.appendChild(a); a.click(); a.remove()
     }
 
@@ -165,6 +166,7 @@
     const GLYPH_SVG = {
         x: '<svg viewBox="0 0 20 20"><path d="M6 6l8 8M14 6l-8 8"/></svg>',
         o: '<svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="4.6"/></svg>',
+        t: '<svg viewBox="0 0 20 20"><path d="M10 5.2l5 8.6H5z"/></svg>',
     }
     const prompt = (btn, text) => `<span class="prompt"><i class="glyph glyph-${btn}" aria-hidden="true">${GLYPH_SVG[btn]}</i>${esc(text)}</span>`
 
@@ -174,7 +176,7 @@
         const id = currentRow()?.dataset.id
         const p = C.projects[id]
         const label = C.games?.[id]?.play ? (C.games[id].demo ? 'Play demo' : 'Play') : p ? (p.live ? 'Open live site' : p.repo ? 'View code' : '') : actionLabels[id]
-        prompts.innerHTML = label ? prompt('x', label) : ''
+        prompts.innerHTML = (label ? prompt('x', label) : '') + (p?.video ? prompt('t', 'Watch video') : '')
     }
 
     // ------------------------------------------------------------------------
@@ -300,6 +302,9 @@
         }
         if (typing) return
 
+        if ((e.key === 'c' || e.key === 'C') && C.projects[currentRow()?.dataset.id]?.video) {     // △: the demo video, on the PSP's screen
+            e.preventDefault(); openLink(C.projects[currentRow().dataset.id].video, { label: 'Demo video' }); return
+        }
         if (CONFIRM.has(e.key)) {
             const action = actions[currentRow()?.dataset.id]
             if (action) { e.preventDefault(); action() }
@@ -330,6 +335,13 @@
             })
         })
     })
+
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest?.('[data-video]')
+        if (!btn) return
+        const p = C.projects[btn.closest('.submenu')?.dataset.id]
+        if (p?.video) { e.stopPropagation(); openLink(p.video, { label: 'Demo video' }) }
+    }, true)
 
     document.addEventListener('xmb:focus', updatePrompts)
 
@@ -425,9 +437,15 @@
             }
         }
         document.addEventListener('xmb:focus', syncIlifaTune)
+        document.addEventListener('xmb:away', (e) => {        // zoomed out: the menu tune stops at once; zooming back in brings it back
+            if (e.detail.away) { clearInterval(fade); clearTimeout(stopT); if (tune) { setLevel(0); tune.pause() } }
+            else syncIlifaTune()
+        })
         document.addEventListener('ilifa:close', syncIlifaTune)
         document.addEventListener('ilifa:open', syncIlifaTune)
     }
+    // a demo video on the PSP's screen stops when you zoom out
+    document.addEventListener('xmb:away', (e) => { if (e.detail.away && window.XMB_LINKS?.open) window.XMB_LINKS.close() })
     // Tetris's tune plays quietly, fading in, while its row is focused (the game then carries it on)
     {
         const syncTetrisTune = () => window.XMB_TETRIS?.preview(currentRow()?.dataset.id === 'tetris')

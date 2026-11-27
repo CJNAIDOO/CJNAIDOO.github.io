@@ -145,7 +145,7 @@ const PORTFOLIO = {
             photo: "images/projects/sekuriti_bg.jpg?v=4", // placeholder: swap for a real screenshot or photo
             logo: "images/projects/sekuriti_logo.png",
             live: null,
-            repo: null, // TODO: GitHub URL
+            repo: "https://github.com/CJNAIDOO/Sekuriti",
         },
         betterbudget: {
             says: "This started as a group project in the first semester of my third year, and I revamped it. I rebuilt the data layer, fixed the outstanding bugs and redesigned the UI so it feels more intuitive.",
@@ -174,6 +174,7 @@ const PORTFOLIO = {
             ],
             live: "https://theloopweb7315.z1.web.core.windows.net",
             repo: null, // github.com/EMGPMD/insy7315-2026-task-2-group-9 (university org: public?)
+            video: "https://youtu.be/3rbgwMpS6MU",
         },
         peak: {
             says: "A hiking app I built with a teammate. My side was the API, finding and saving trails, Google sign-in, fingerprint login, notifications and hike recaps. I also deployed the API and got the app ready for the Play Store.",
@@ -185,7 +186,8 @@ const PORTFOLIO = {
             photo: "images/projects/peak_bg.jpg?v=4", // placeholder: swap for a real screenshot or photo
             logo: "images/projects/peak_logo.png",
             live: null,
-            repo: null, // github.com/EMGPMD/prog7314-2026-part-2-group-15 (university org: public?)
+            repo: "https://github.com/CJNAIDOO/Peak-Hiking-Application",
+            video: "https://youtu.be/GLt1aZqTnJE",
         },
         hustlehub: {
             says: "A freelance marketplace, built with one teammate. I was responsible for the API throughout. In part one I set up the foundations: the secure authentication API. In part two I carried it on, with gigs, bookings, payments and income tracking. In part three I added the SARS tax estimate, account lockout, secret scanning, and the Docker and logging setup. I also helped out on the React front end.",
@@ -197,7 +199,8 @@ const PORTFOLIO = {
             photo: "images/projects/hustlehub_bg.jpg?v=4", // placeholder: jacaranda gradient; swap for a real screenshot
             logo: "images/projects/hustlehub_logo_wide.png?v=2", // one-line wordmark for the screen (the menu icon is the stacked one)
             live: null,
-            repo: null, // TODO: personal GitHub URL once migrated (now github.com/EMGPMD/insy7314-2026-poe-part-3-group-4)
+            repo: "https://github.com/CJNAIDOO/Hustlehub-Plus",
+            video: "https://youtu.be/gV5EHxqV2p4",
         },
         smartx: {
             says: "An individual project. I wrote the queues, the stack, a graph and an AVL tree myself, with no ready-made collections. The queues and stack run the live command stream with undo. The graph routes the sensor mesh around failures and keeps the power cost down. The AVL tree makes the history queries fast.",
@@ -209,7 +212,8 @@ const PORTFOLIO = {
             photo: "images/projects/smartx_bg.jpg?v=5",
             logo: "images/projects/smartx_logo_wide.png",
             live: null,
-            repo: null, // TODO: personal GitHub URL once migrated (now github.com/EMGPMD/prog7312-2026-poe-part-3-st10434031-cameron-naidoo)
+            repo: "https://github.com/CJNAIDOO/Smart-X",
+            video: "https://youtu.be/_TOfAmJ3q2Y",
         },
     },
 

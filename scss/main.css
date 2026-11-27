@@ -1889,3 +1889,10 @@ body.album-open .xmb-prompts, body.album-open .clock {
 .tetris__keys b{ color: #fff; font-weight: 400; margin-right: 0.5em; }
 .tetris__prompts{ font-size: 0.8rem; }
 .tetris-bg{ background-image: url("../images/tetris/background_v4.jpg"); }
+
+.project-overlay .panel-watch {
+  font: inherit; font-size: 1.05rem; letter-spacing: 0.04em;
+  background: none; border: 0; padding: 0; margin-top: 1.1rem; cursor: pointer;
+  color: #f5a623; text-shadow: 2px 2px 5px black; text-align: left;
+}
+.project-overlay .panel-watch:hover { text-decoration: underline; }

@@ -12,6 +12,7 @@
 //                  a card that says so, with the new-tab button
 //   anything else  the page in a frame (with the new-tab button in case it stays blank)
 const NO_FRAME = /(^|\.)(linkedin\.com|letterboxd\.com|goodreads\.com|github\.com|google\.com|instagram\.com|x\.com|twitter\.com|facebook\.com|psnprofiles\.com|playstation\.com)$/i;
+const TAB_ONLY = /(^|\.)(github\.com|linkedin\.com)$/i;
 const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 const CSS = new URL('../css/link-viewer.css?v=95', import.meta.url).href;
@@ -77,6 +78,8 @@ export function createLinkViewer({ screen = false, route = null } = {}) {
         let u;
         try { u = new URL(url, location.href); } catch { return; }
         if (!/^https?:$/.test(u.protocol)) { location.href = url; return; }      // mailto: and the like
+        // GitHub and LinkedIn never open on the PSP's screen: a summary of a repo isn't the code. A new tab, always.
+        if (TAB_ONLY.test(u.hostname)) { window.open(u.href, '_blank', 'noopener,noreferrer'); return; }
         const mine = ++job;
         lastFocus = document.activeElement;
         $('.lv__host').textContent = u.hostname.replace(/^www\./, '');
@@ -159,6 +162,7 @@ export function createLinkViewer({ screen = false, route = null } = {}) {
         if (!a || el.contains(a) || a.dataset.newtab != null || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
         let u; try { u = new URL(a.href, location.href); } catch { return; }
         if (!/^https?:$/.test(u.protocol) || u.origin === location.origin) return;
+        if (TAB_ONLY.test(u.hostname)) { a.target = '_blank'; a.rel = 'noopener noreferrer'; return; }      // GitHub / LinkedIn: let the link open its own tab
         e.preventDefault();
         if (route?.(u.href, a.dataset.label || '', a)) return;
         show(u.href, a.dataset.label || '');
