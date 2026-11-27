@@ -32,8 +32,7 @@ export const ICON = { p: 'images/trophies/platinum.png', g: 'images/trophies/gol
 const GRADE_NAME = Object.fromEntries(GRADES);
 // the card's summary: the four icons with Cam's count under each
 export const countsHTML = (game) => trophyCounts(game).map((c) => `
-    <li class="t-${c.g}" title="${c.name}"><img src="${ICON[c.g]}" alt="" width="34" height="36"><span>${c.unknown ? `<b>${c.total}</b>` : `<b>${c.earned}</b><i>/${c.total}</i>`}</span><small>${c.name}</small></li>`).join('')
-    + (game.trophies?.note ? `<li class="t-note">${esc(game.trophies.note)}</li>` : '');
+    <li class="t-${c.g}" title="${c.name}"><img src="${ICON[c.g]}" alt="" width="34" height="36"><span>${c.unknown ? `<b>${c.total}</b>` : `<b>${c.earned}</b><i>/${c.total}</i>`}</span><small>${c.name}</small></li>`).join('');   // (the note under the icons is gone: Mzala says it)
 
 // the full list, inside the card: progress, then every trophy (earned or still locked), scrolling
 const lists = new Map();

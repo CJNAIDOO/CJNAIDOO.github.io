@@ -17,7 +17,7 @@
 // floats in the dark studio as before.
 import { createHandheld } from './viewer.js?v=96';
 import { createStudio } from './studio.js?v=95';
-import { loadRoomAssets, buildRoom } from './room.js?v=141';
+import { loadRoomAssets, buildRoom } from './room.js?v=144';
 import { createIntroName, paintNavName } from './intro-name.js?v=106';
 import { sfx } from './sfx.js?v=95';
 import { createLinkViewer } from './link-viewer.js?v=97';

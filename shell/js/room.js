@@ -27,7 +27,7 @@ import { ROOM, GUIDE } from './room-config.js?v=110';
 import { sfx } from './sfx.js?v=95';
 import { createInspector } from './inspect.js?v=97';
 import { BOOKS, FILMS, GAMES, LINKS, TEXTBOOKS } from './shelf-data.js?v=98';
-import { countsHTML, trophyListHTML } from './trophy-list.js?v=95';
+import { countsHTML, trophyListHTML } from './trophy-list.js?v=96';
 import { DISCS } from './records-data.js?v=95';
 
 const MODELS = {
@@ -2092,7 +2092,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         const stars = (n) => '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n);
         const line = (k, item, i) => {
             if (item.note) return item.note;
-            if (k === 'film') return `Number ${i + 1} on my all-time favourites list.`;
+            if (k === 'film') return '';
             if (item.status === 'read') return item.rating ? `I gave this one ${item.rating} out of 5.` : 'I’ve read this one.';
             if (item.status === 'currently-reading') return 'I’m reading this one right now.';
             return 'On my to-read list. Read it already? Tell me if it’s worth it.';
@@ -2114,7 +2114,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
                 $('.shelf-card__synopsis').hidden = true; $('.shelf-card__note').hidden = true;
                 el.style.setProperty('--backdrop', 'none'); el.classList.remove('has-still');
                 $('.shelf-card__play').textContent = on ? '▶ Playing: go to the player' : '▶ Put it on';
-                a0.href = item.url; a0.textContent = 'On Spotify ↗';
+                a0.removeAttribute('href'); a0.hidden = true;       // (no outside link on a crate album)
                 $('.shelf-card__tracks').innerHTML = item.tracks.map(([id, name, secs, feat], k) => `<li${id === playingId ? ' class="is-on"' : ''}><button type="button" data-k="${k}"><span class="shelf-card__n">${k + 1}</span><span class="shelf-card__song">${esc(name)}${feat ? `<small> ft. ${esc(feat)}</small>` : ''}</span><span class="shelf-card__t">${mmss(secs)}</span></button></li>`).join('');
                 $('.shelf-card__count').textContent = `${at + 1} / ${list.length}`;
                 return;
@@ -2126,7 +2126,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
             if (src) { img.src = src; img.onerror = () => { img.hidden = true; blank.hidden = false; }; }
             $('.shelf-card__kicker').textContent = kind === 'book'
                 ? [STATUS[item.status], item.rating ? stars(item.rating) : '', item.year].filter(Boolean).join('  ·  ')
-                : ['All-time favourite #' + (at + 1)].join('  ·  ');
+                : 'All-time favourite';
             $('.shelf-card__title').textContent = item.title;
             $('.shelf-card__by').textContent = kind === 'book' ? item.author + (item.pages ? `, ${item.pages} pages` : '') : `${item.year}  ·  Directed by ${item.director}`;
             // films: the film's still behind everything, and its synopsis under the credits (books: what it's about)
@@ -2137,10 +2137,9 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
             const note = $('.shelf-card__note');
             note.textContent = item.note ? `“${item.note}”` : ''; note.hidden = !item.note;
             const a = $('.shelf-card__link');
-            a.href = kind === 'book' ? LINKS.goodreads(item) : LINKS.letterboxd(item);
-            a.textContent = kind === 'book' ? 'On Goodreads ↗' : 'On Letterboxd ↗';
+            a.removeAttribute('href'); a.hidden = true;       // (no Goodreads / Letterboxd link: Mzala shares a line from the review instead)
             $('.shelf-card__count').textContent = `${at + 1} / ${list.length}`;
-            say({ text: line(kind, item, at) });
+            { const t = line(kind, item, at); if (t) say({ text: t }); else guide.hush(); }
         };
         const go = (d) => { const n = listOf(kind).length; at = (at + d + n) % n; sfx.blip(); show(); };
         $('.shelf-card__play').addEventListener('click', () => { const i = ALBUMS[at]; close(); records.play(i, -1); });
@@ -2417,9 +2416,9 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
             $r('.rec-card__by').textContent = item.author + (item.pages ? `  ·  ${item.pages} pages` : '');
             about.textContent = item.about || ''; a.removeAttribute('href');                 // (no link: just the book)
         } else if (kind === 'film') {
-            $r('.rec-card__kicker').textContent = `All-time favourite #${i + 1}`;
+            $r('.rec-card__kicker').textContent = 'All-time favourite';
             $r('.rec-card__by').textContent = `${item.year}  ·  Directed by ${item.director}`;
-            about.textContent = item.synopsis || ''; a.href = LINKS.letterboxd(item); a.textContent = 'Letterboxd ↗';
+            about.textContent = item.synopsis || ''; a.removeAttribute('href');        // (no outside link: Mzala's the only way to Letterboxd)
         } else if (kind === 'textbook') {
             $r('.rec-card__kicker').textContent = 'Textbooks';
             $r('.rec-card__by').textContent = [item.author, item.edition].filter(Boolean).join('  ·  ');
@@ -2434,7 +2433,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
             if (link) { a.href = link; a.textContent = 'Live ↗'; a.dataset.live = ''; } else a.removeAttribute('href');
         } else {
             // the trophies instead of a summary: by grade, then the full list (trophy-list.js)
-            $r('.rec-card__kicker').textContent = ['PS4', item.year, item.trophy].filter(Boolean).join('  ·  ');
+            $r('.rec-card__kicker').textContent = '';
             $r('.rec-card__by').textContent = item.studio;
             about.textContent = '';
             about.hidden = true;
@@ -2668,7 +2667,9 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         const item = shelfData(it.kind)[it.i];
         if (it.kind === 'notebook') say({ text: `${item.code}. One of my modules this year.` });
         else if (it.kind === 'textbook') say({ text: `${item.title}. One of my textbooks.` });
-        else say({ text: item.note || (it.kind === 'film' ? `Number ${it.i + 1} on my all-time favourites list.` : it.kind === 'game' ? `${item.title}. ${item.line || 'One of mine on the PS4.'}` : item.status === 'read' ? (item.rating ? `I gave this one ${item.rating} out of 5.` : 'I’ve read this one.') : item.status === 'currently-reading' ? 'I’m reading this one right now.' : 'On my to-read list.') });
+        else if (it.kind === 'film') { if (item.note) say({ text: item.note }); }                     // no "number 23 on my list" any more
+        else if (it.kind === 'game') { if (item.key === 'gow') say({ text: item.trophies?.note || item.title }); }   // only God of War has something to say
+        else say({ text: item.note || ( item.status === 'read' ? (item.rating ? `I gave this one ${item.rating} out of 5.` : 'I’ve read this one.') : item.status === 'currently-reading' ? 'I’m reading this one right now.' : 'On my to-read list.') });
         if (shelfBusy) return;
         shelfBusy = true;
         try {
