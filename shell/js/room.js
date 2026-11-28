@@ -27,6 +27,7 @@ import { ROOM, GUIDE } from './room-config.js?v=110';
 import { sfx } from './sfx.js?v=95';
 import { createInspector } from './inspect.js?v=97';
 import { BOOKS, FILMS, GAMES, LINKS, TEXTBOOKS } from './shelf-data.js?v=98';
+import { FILM_BACKS } from './film-backs.js?v=1';
 import { countsHTML, trophyListHTML } from './trophy-list.js?v=96';
 import { DISCS } from './records-data.js?v=95';
 
@@ -845,7 +846,10 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
     // way a printed sleeve wraps round: back, spine, front), spines to the room
     // the sleeve, laid out like the model's own (a 1024 square: back 0-480, spine 480-528, front 528-1024)
     const SLEEVE = { back: [0, 484], spine: [484, 535], front: [535, 1024], aspect: 133 / 186 };   // (measured from the case's UVs: the spine, rounded edges included, is u 484-535)
-    const sleeve = (f, poster, logo = null) => {
+    const AWARD_KEYS = ['oscar', 'globe', 'bafta', 'cannes', 'venice', 'berlin', 'national', 'safta', 'critics', 'filmfare', 'sundance'];
+    let awardIcons = null;                                          // the award marks, loaded once (images/room/awards/)
+    const loadAwards = () => (awardIcons ||= Promise.all(AWARD_KEYS.map((k) => loadImg(`images/room/awards/${k}.png`).catch(() => null))).then((ims) => Object.fromEntries(AWARD_KEYS.map((k, i) => [k, ims[i]]))));
+    const sleeve = (f, poster, logo = null, icons = {}) => {
         const c = document.createElement('canvas'); c.width = c.height = 1024;
         const g = c.getContext('2d');
         const [b0, b1] = SLEEVE.back, [s0, s1] = SLEEVE.spine, [f0, f1] = SLEEVE.front;
@@ -859,16 +863,34 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         g.fillStyle = '#' + dark.getHexString(); g.fillRect(b0, 0, b1 - b0, 1024);
         if (poster) { g.save(); g.filter = 'blur(10px) brightness(0.35) saturate(1.2)'; g.drawImage(poster, ...crop(poster), b0 - 30, -30, b1 - b0 + 60, 1084); g.restore(); }
         const sx = ((b1 - b0) / 1024) / SLEEVE.aspect;               // the sleeve's pixels aren't square: squash text to match
-        g.save(); g.setTransform(sx, 0, 0, 1, b0 + 40, 0);
-        g.fillStyle = '#f3efe8'; g.textBaseline = 'top';
-        g.font = '700 54px Geist, Arial, sans-serif';
-        const words = f.title.toUpperCase().split(' '); let line = '', y = 120;
-        for (const w of words) { if (g.measureText(line + w).width > 560 && line) { g.fillText(line.trim(), 0, y); y += 62; line = ''; } line += w + ' '; }
-        g.fillText(line.trim(), 0, y); y += 90;
-        g.font = '400 30px Geist, Arial, sans-serif'; g.globalAlpha = 0.85;
-        g.fillText(`A film by ${f.director}`, 0, y); g.fillText(String(f.year), 0, y + 44);
-        g.globalAlpha = 0.7; g.font = '500 24px Geist, Arial, sans-serif';
-        g.fillText('ONE OF CAM’S ALL-TIME FAVOURITES', 0, 860); g.fillText('letterboxd.com/camwtf', 0, 900);
+        g.save(); g.setTransform(sx, 0, 0, 1, b0, 0);
+        {
+            // the back: a short summary at the top, the awards it won (mark, body, category) centred below. No title: it's on the front.
+            const W = (b1 - b0) / sx, M = 64, fb = FILM_BACKS[f.slug] || {};
+            g.fillStyle = '#f3efe8'; g.textBaseline = 'top';
+            const wrap = (t, max) => { const out = []; let ln = ''; for (const w of String(t).split(' ')) { const tt = ln ? ln + ' ' + w : w; if (g.measureText(tt).width > max && ln) { out.push(ln); ln = w; } else ln = tt; } if (ln) out.push(ln); return out; };
+            g.font = '400 36px Geist, Arial, sans-serif'; g.globalAlpha = 0.95;
+            const sum = wrap(fb.blurb || f.synopsis || '', W - 2 * M).slice(0, 8);
+            sum.forEach((l, i) => g.fillText(l, M, 120 + i * 50));
+            const aw = fb.awards || [];
+            if (aw.length) {
+                const iconH = aw.length >= 4 ? 46 : aw.length === 3 ? 56 : 68, gap = 26;
+                g.globalAlpha = 1;
+                const rows = aw.map(([k, body, cat]) => { g.font = '400 24px Geist, Arial, sans-serif'; const cl = wrap(cat, W - 2 * M); return { k, body, cl, h: iconH + 10 + 30 + cl.length * 30 }; });
+                const total = rows.reduce((t, r) => t + r.h, 0) + gap * (rows.length - 1);
+                let y = 1024 - 80 - total;
+                for (const r of rows) {
+                    const im = icons[r.k];
+                    if (im) { const k = Math.min(iconH / im.height, 200 / im.width), w = im.width * k; g.drawImage(im, (W - w) / 2, y, w, im.height * k); }
+                    g.textAlign = 'center';
+                    g.font = '700 24px Geist, Arial, sans-serif'; g.letterSpacing = '2px'; g.fillText(r.body.toUpperCase(), W / 2, y + iconH + 10);
+                    g.letterSpacing = '0px'; g.font = '400 24px Geist, Arial, sans-serif'; g.globalAlpha = 0.9;
+                    r.cl.forEach((l, i) => g.fillText(l, W / 2, y + iconH + 10 + 30 + i * 30));
+                    g.globalAlpha = 1; g.textAlign = 'left';
+                    y += r.h + gap;
+                }
+            }
+        }
         g.restore();
         // spine: one colour all the way, with the film's own title (its logo, as on the poster) down it
         const spW = 77, sp = document.createElement('canvas'); sp.width = spW; sp.height = 1024;
@@ -926,13 +948,13 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
             m.position.set(-c.x, -b.min.y, -c.z);
             const w = b.max.x - b.min.x, d = b.max.z - b.min.z;
             let jacket = null;
-            m.traverse((o) => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; if (o.material?.name === 'jaquette') jacket = o; } });
+            m.traverse((o) => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; if (o.material?.name === 'jaquette') { jacket = o; o.name = 'filmJacket'; } } });
             if (jacket) {
                 jacket.material = new THREE.MeshStandardMaterial({ roughness: 0.45, color: 0x16161a });
                 const wear = (tex) => { jacket.material.map = tex; jacket.material.color.set(0xffffff); jacket.material.needsUpdate = true; };
-                Promise.all([loadImg(LINKS.small(f.poster)), f.logo ? loadImg(f.logo).catch(() => null) : null])
-                    .then(([im, logo]) => wear(sleeve(f, im, logo)))
-                    .catch(() => wear(sleeve(f, null)));
+                Promise.all([loadImg(LINKS.small(f.poster)), f.logo ? loadImg(f.logo).catch(() => null) : null, loadAwards()])
+                    .then(([im, logo, icons]) => wear(sleeve(f, im, logo, icons)))
+                    .catch(() => loadAwards().then((icons) => wear(sleeve(f, null, null, icons))).catch(() => wear(sleeve(f, null))));
             }
             g.position.set(x + w / 2, y0, frontZ - d / 2);                // spines flush with the shelf's front, all upright
             g.userData.shelfItem = { kind: 'film', i, color: '#101012' };
@@ -3322,7 +3344,7 @@ export async function buildRoom(handheld, assets, { onPs3: onPs3Option } = {}) {
         },
         openShelf: (k, i) => shelfCard.open(k, i),
         records: { wall: () => wallView(), album: (i) => albumView(i), play: (i) => putOn(i), player: () => playerView() },
-        sleeves: () => { const out = []; world.traverse((m) => { if (m.name === 'gameJacket' && m.material.map?.image?.toDataURL) out.push(m.material.map.image.toDataURL('image/jpeg', 0.85)); }); return out; },
+        sleeves: () => { const out = []; world.traverse((m) => { if ((m.name === 'gameJacket' || m.name === 'filmJacket') && m.material.map?.image?.toDataURL) out.push(m.material.map.image.toDataURL('image/jpeg', 0.85)); }); return out; },
         uvSpan: (re) => { let o = null; world.traverse((m) => { if (!o && m.isMesh && new RegExp(re).test(m.name + '|' + (m.material?.name || ''))) o = m; }); if (!o) return null;
             const g = o.geometry, P = g.attributes.position, N = g.attributes.normal, U = g.attributes.uv, out = {};
             for (let i = 0; i < P.count; i++) { const n = [N.getX(i), N.getY(i), N.getZ(i)], a = n.map(Math.abs), d = a.indexOf(Math.max(...a)), k = 'xyz'[d] + (n[d] > 0 ? '+' : '-');
